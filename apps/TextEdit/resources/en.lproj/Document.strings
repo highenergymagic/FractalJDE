@@ -1,0 +1,99 @@
+/* The title of the window */
+"window.title" = "Untitled";
+
+/* What the body control is called */
+"body.accessibilityLabel" = "Document";
+
+/* What the body control is for */
+"body.accessibilityHelp" = "What you are writing";
+
+/* The name of a menu in the bar */
+"menu File.title" = "File";
+
+/* A command in the File menu */
+"menu File.new.title" = "New";
+
+/* A command in the File menu */
+"menu File.open.title" = "Open…";
+
+/* A command in the File menu */
+"menu File.close.title" = "Close";
+
+/* A command in the File menu */
+"menu File.save.title" = "Save";
+
+/* A command in the File menu */
+"menu File.save as.title" = "Save As…";
+
+/* A command in the File menu */
+"menu File.duplicate.title" = "Duplicate";
+
+/* A command in the File menu */
+"menu File.revert.title" = "Revert to Saved";
+
+/* The name of a menu in the bar */
+"menu Edit.title" = "Edit";
+
+/* A command in the Edit menu */
+"menu Edit.undo.title" = "Undo";
+
+/* A command in the Edit menu */
+"menu Edit.redo.title" = "Redo";
+
+/* A command in the Edit menu */
+"menu Edit.cut.title" = "Cut";
+
+/* A command in the Edit menu */
+"menu Edit.copy.title" = "Copy";
+
+/* A command in the Edit menu */
+"menu Edit.paste.title" = "Paste";
+
+/* A command in the Edit menu */
+"menu Edit.select all.title" = "Select All";
+
+/* The name of a menu in the bar */
+"menu Find.title" = "Find";
+
+/* A command in the Find menu */
+"menu Find.show find.title" = "Find…";
+
+/* A command in the Find menu */
+"menu Find.find next.title" = "Find Next";
+
+/* A command in the Find menu */
+"menu Find.find previous.title" = "Find Previous";
+
+/* A command in the Find menu */
+"menu Find.use selection.title" = "Use Selection for Find";
+
+/* A command in the Find menu */
+"menu Find.replace all.title" = "Replace All";
+
+/* A command in the Find menu */
+"menu Find.jump to selection.title" = "Jump to Selection";
+
+/* A command in the Find menu */
+"menu Find.select line.title" = "Select Line…";
+
+/* The name of a menu in the bar */
+"menu Format.title" = "Format";
+
+/* A command in the Format menu */
+"menu Format.bold.title" = "Bold";
+
+/* A command in the Format menu */
+"menu Format.italic.title" = "Italic";
+
+/* A command in the Format menu */
+"menu Format.underline.title" = "Underline";
+
+/* A command in the Format menu */
+"menu Format.align left.title" = "Align Left";
+
+/* A command in the Format menu */
+"menu Format.center.title" = "Center";
+
+/* A command in the Format menu */
+"menu Format.align right.title" = "Align Right";
+

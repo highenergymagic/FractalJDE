@@ -1,0 +1,27 @@
+/* The title of the window */
+"window.title" = "System Profiler";
+
+/* What the sections control is called */
+"sections.accessibilityLabel" = "Contents";
+
+/* What the sections control is for */
+"sections.accessibilityHelp" = "What this machine is, by part";
+
+/* What the details control is called */
+"details.accessibilityLabel" = "Details";
+
+/* What the details control is for */
+"details.accessibilityHelp" = "What the selected part is";
+
+/* The name of a menu in the bar */
+"menu File.title" = "File";
+
+/* A command in the File menu */
+"menu File.close.title" = "Close";
+
+/* The name of a menu in the bar */
+"menu View.title" = "View";
+
+/* A command in the View menu */
+"menu View.sections.title" = "Refresh";
+

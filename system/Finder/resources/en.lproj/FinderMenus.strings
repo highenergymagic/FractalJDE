@@ -1,0 +1,148 @@
+"window.title" = "Finder";
+
+"menu Finder.title" = "Finder";
+
+"menu Finder.aboutFinder.title" = "About Finder";
+
+"menu Finder.preferences.title" = "Preferences…";
+
+"menu Finder.emptyTrash.title" = "Empty Trash…";
+
+"menu Finder.secureEmptyTrash.title" = "Secure Empty Trash…";
+
+"menu Finder.Services.title" = "Services";
+
+"menu Finder.Services.revealInExplorer.title" = "Open in Windows Explorer";
+
+"menu Finder.Services.openTerminalHere.title" = "Open Terminal Here";
+
+"menu Finder.hideFinder.title" = "Hide Finder";
+
+"menu Finder.hideOthers.title" = "Hide Others";
+
+"menu Finder.showAll.title" = "Show All";
+
+"menu File.title" = "File";
+
+"menu File.newWindow.title" = "New Finder Window";
+
+"menu File.newFolder.title" = "New Folder";
+
+"menu File.newSmartFolder.title" = "New Smart Folder";
+
+"menu File.newBurnFolder.title" = "New Burn Folder";
+
+"menu File.open.title" = "Open";
+
+"menu File.Open With.title" = "Open With";
+
+"menu File.Open With.openWithDefault.title" = "Windows Default Application";
+
+"menu File.Open With.openWithChosen.title" = "Choose…";
+
+"menu File.print.title" = "Print";
+
+"menu File.closeWindow.title" = "Close Window";
+
+"menu File.getInfo.title" = "Get Info";
+
+"menu File.compress.title" = "Compress";
+
+"menu File.duplicate.title" = "Duplicate";
+
+"menu File.makeAlias.title" = "Make Alias";
+
+"menu File.quickLook.title" = "Quick Look";
+
+"menu File.showOriginal.title" = "Show Original";
+
+"menu File.addToSidebar.title" = "Add to Sidebar";
+
+"menu File.moveToTrash.title" = "Move to Trash";
+
+"menu File.eject.title" = "Eject";
+
+"menu File.burnToDisc.title" = "Burn to Disc…";
+
+"menu File.find.title" = "Find";
+
+"menu Edit.title" = "Edit";
+
+"menu Edit.undo.title" = "Undo";
+
+"menu Edit.redo.title" = "Redo";
+
+"menu Edit.cut.title" = "Cut";
+
+"menu Edit.copy.title" = "Copy";
+
+"menu Edit.paste.title" = "Paste Item";
+
+"menu Edit.selectAll.title" = "Select All";
+
+"menu Edit.showClipboard.title" = "Show Clipboard";
+
+"menu View.title" = "View";
+
+"menu View.viewAsIcons.title" = "as Icons";
+
+"menu View.viewAsList.title" = "as List";
+
+"menu View.viewAsColumns.title" = "as Columns";
+
+"menu View.viewAsCoverFlow.title" = "as Cover Flow";
+
+"menu View.cleanUp.title" = "Clean Up";
+
+"menu View.cleanUpSelection.title" = "Clean Up Selection";
+
+"menu View.Arrange By.title" = "Arrange By";
+
+"menu View.Arrange By.arrangeByName.title" = "Name";
+
+"menu View.Arrange By.arrangeByDateModified.title" = "Date Modified";
+
+"menu View.Arrange By.arrangeBySize.title" = "Size";
+
+"menu View.Arrange By.arrangeByKind.title" = "Kind";
+
+"menu View.toggleToolbar.title" = "Hide Toolbar";
+
+"menu View.customizeToolbar.title" = "Customize Toolbar…";
+
+"menu View.togglePathBar.title" = "Hide Path Bar";
+
+"menu View.toggleStatusBar.title" = "Hide Status Bar";
+
+"menu View.toggleSidebar.title" = "Hide Sidebar";
+
+"menu View.showViewOptions.title" = "Show View Options";
+
+"menu Go.title" = "Go";
+
+"menu Go.goBack.title" = "Back";
+
+"menu Go.goForward.title" = "Forward";
+
+"menu Go.goUp.title" = "Enclosing Folder";
+
+"menu Go.goComputer.title" = "Computer";
+
+"menu Go.goHome.title" = "Home";
+
+"menu Go.goDesktop.title" = "Desktop";
+
+"menu Go.goNetwork.title" = "Network";
+
+"menu Go.goApplications.title" = "Applications";
+
+"menu Go.goDocuments.title" = "Documents";
+
+"menu Go.goUtilities.title" = "Utilities";
+
+"menu Go.goDownloads.title" = "Downloads";
+
+"menu Go.goToFolder.title" = "Go to Folder…";
+
+"menu Go.connectToServer.title" = "Connect to Server…";
+

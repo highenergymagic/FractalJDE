@@ -1,0 +1,16 @@
+# Build output. Everything here is made by tools/build.sh and tools/release.sh.
+build/
+out/
+*.jar
+*.class
+
+# Archives produced by tools/release.sh
+FractalJDE-*.zip
+
+# Logs and scratch from a checking run
+*.log
+selftest.log
+selftest.txt
+
+# The base system image, which is built rather than kept
+BaseSystem.dmg

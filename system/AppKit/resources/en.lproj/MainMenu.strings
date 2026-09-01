@@ -1,0 +1,46 @@
+"window.title" = "Menu bar";
+
+"menu Fractal.title" = "Fractal";
+
+"menu Fractal.aboutThisComputer.title" = "About This Computer";
+
+"menu Fractal.softwareUpdate.title" = "Software Update…";
+
+"menu Fractal.fractalSoftware.title" = "FractalJDE Software…";
+
+"menu Fractal.systemPreferences.title" = "System Preferences…";
+
+"menu Fractal.Dock.title" = "Dock";
+
+"menu Fractal.Dock.dockMagnification.title" = "Turn Magnification On";
+
+"menu Fractal.Dock.dockPreferences.title" = "Dock Preferences…";
+
+"menu Fractal.forceQuit.title" = "Force Quit…";
+
+"menu Fractal.sleep.title" = "Sleep";
+
+"menu Fractal.lockScreen.title" = "Lock Screen";
+
+"menu Fractal.restart.title" = "Restart…";
+
+"menu Fractal.shutDown.title" = "Shut Down…";
+
+"menu Fractal.logOut.title" = "Log Out…";
+
+"menu Window.title" = "Window";
+
+"menu Window.minimize.title" = "Minimize";
+
+"menu Window.zoom.title" = "Zoom";
+
+"menu Window.cycleWindows.title" = "Cycle Through Windows";
+
+"menu Window.bringAllToFront.title" = "Bring All to Front";
+
+"menu Help.title" = "Help";
+
+"menu Help.help.title" = "Fractal Help";
+
+"menu Help.keyboardShortcuts.title" = "Keyboard Shortcuts";
+

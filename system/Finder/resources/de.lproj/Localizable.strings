@@ -1,0 +1,31 @@
+/* Was der Finder selbst sagt, ausserhalb der Menues. */
+
+"finder.quickLook" = "Übersicht";
+"finder.quickLookNamed" = "Übersicht „%1$@“";
+"finder.compress" = "Komprimieren";
+"finder.compressNamed" = "„%1$@“ komprimieren";
+"finder.compressMany" = "%1$@ Objekte komprimieren";
+
+"finder.hideToolbar" = "Symbolleiste ausblenden";
+"finder.showToolbar" = "Symbolleiste einblenden";
+"finder.hidePathBar" = "Pfadleiste ausblenden";
+"finder.showPathBar" = "Pfadleiste einblenden";
+"finder.hideStatusBar" = "Statusleiste ausblenden";
+"finder.showStatusBar" = "Statusleiste einblenden";
+"finder.hideSidebar" = "Seitenleiste ausblenden";
+"finder.showSidebar" = "Seitenleiste einblenden";
+
+"finder.noWindowOpen" = "Es ist kein Finder-Fenster geöffnet.";
+"finder.noBurning" = "Das Brennen von CDs wird nicht unterstützt.";
+"finder.noCustomToolbar" = "Die Symbolleiste dieses Finders lässt sich nicht anpassen.";
+"finder.noClipboard" = "Die Zwischenablage-Anzeige ist nicht vorhanden.";
+"finder.nothingToUndo" = "Es gibt nichts zu widerrufen.";
+"finder.nothingToRedo" = "Es gibt nichts zu wiederholen.";
+"finder.noCutting" = "Der Finder kopiert statt auszuschneiden; benutzen Sie Kopieren und Einsetzen.";
+"finder.tidiedUp" = "Aufgeräumt.";
+
+"finder.goToFolderPrompt" = "Gehe zum Ordner:";
+"finder.goToFolderTitle" = "Ordner";
+"finder.goToFolderButton" = "Öffnen";
+"finder.noSuchFolder" = "Der Ordner „%1$@“ kann nicht gefunden werden.";
+"finder.checkSpelling" = "Überprüfen Sie die Schreibweise und versuchen Sie es erneut.";

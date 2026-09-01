@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="Untitled" resizable="YES" id="window">
+            <rect key="contentRect" x="0" y="0" width="640" height="490"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <textView id="body" richText="YES">
+                        <rect key="frame" x="0" y="0" width="640" height="490"/>
+                        <textFieldCell key="cell" title=""/>
+                        <accessibility key="accessibilityLabel" label="Document" help="What you are writing"/>
+                        <connections><action selector="body"/></connections>
+                    </textView>
+                </subviews>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="New" keyEquivalent="n">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="new"/></connections>
+                    </menuItem>
+                    <menuItem title="Open…" keyEquivalent="o">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="open"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Close" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="close"/></connections>
+                    </menuItem>
+                    <menuItem title="Save" keyEquivalent="s">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="save"/></connections>
+                    </menuItem>
+                    <menuItem title="Save As…" keyEquivalent="s">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="save as"/></connections>
+                    </menuItem>
+                    <menuItem title="Duplicate" keyEquivalent="d">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="duplicate"/></connections>
+                    </menuItem>
+                    <menuItem title="Revert to Saved">
+                        <connections><action selector="revert"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Edit" id="menu Edit">
+                <items>
+                    <menuItem title="Undo" keyEquivalent="z">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="undo"/></connections>
+                    </menuItem>
+                    <menuItem title="Redo" keyEquivalent="Z">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="redo"/></connections>
+                    </menuItem>
+                    <menuItem title="Cut" keyEquivalent="x">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="cut"/></connections>
+                    </menuItem>
+                    <menuItem title="Copy" keyEquivalent="c">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="copy"/></connections>
+                    </menuItem>
+                    <menuItem title="Paste" keyEquivalent="v">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="paste"/></connections>
+                    </menuItem>
+                    <menuItem title="Select All" keyEquivalent="a">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="select all"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Find" id="menu Find">
+                <items>
+                    <menuItem title="Find…" keyEquivalent="f">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="show find"/></connections>
+                    </menuItem>
+                    <menuItem title="Find Next" keyEquivalent="g">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="find next"/></connections>
+                    </menuItem>
+                    <menuItem title="Find Previous" keyEquivalent="g">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="find previous"/></connections>
+                    </menuItem>
+                    <menuItem title="Use Selection for Find" keyEquivalent="e">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="use selection"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Replace All">
+                        <connections><action selector="replace all"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Jump to Selection" keyEquivalent="j">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="jump to selection"/></connections>
+                    </menuItem>
+                    <menuItem title="Select Line…" keyEquivalent="l">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="select line"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Format" id="menu Format">
+                <items>
+                    <menuItem title="Bold" keyEquivalent="b">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="bold"/></connections>
+                    </menuItem>
+                    <menuItem title="Italic" keyEquivalent="i">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="italic"/></connections>
+                    </menuItem>
+                    <menuItem title="Underline" keyEquivalent="u">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="underline"/></connections>
+                    </menuItem>
+                    <menuItem title="Align Left" keyEquivalent="{">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="align left"/></connections>
+                    </menuItem>
+                    <menuItem title="Center" keyEquivalent="|">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="center"/></connections>
+                    </menuItem>
+                    <menuItem title="Align Right" keyEquivalent="}">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="align right"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

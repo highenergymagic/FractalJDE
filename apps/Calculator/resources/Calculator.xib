@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="Calculator" resizable="NO" id="window">
+            <rect key="contentRect" x="0" y="0" width="232" height="300"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <textField id="display">
+                        <rect key="frame" x="12" y="12" width="208" height="28"/>
+                        <textFieldCell key="cell" title="0"/>
+                        <accessibility key="accessibilityLabel" label="Answer"/>
+                    </textField>
+                    <button id="clear">
+                        <rect key="frame" x="12" y="52" width="46" height="40"/>
+                        <buttonCell key="cell" title="C"/>
+                        <accessibility key="accessibilityLabel" label="Clear"/>
+                        <connections><action selector="clear"/></connections>
+                    </button>
+                    <button id="negate">
+                        <rect key="frame" x="64" y="52" width="46" height="40"/>
+                        <buttonCell key="cell" title="±"/>
+                        <accessibility key="accessibilityLabel" label="Change sign"/>
+                        <connections><action selector="negate"/></connections>
+                    </button>
+                    <button id="percent">
+                        <rect key="frame" x="116" y="52" width="46" height="40"/>
+                        <buttonCell key="cell" title="%"/>
+                        <accessibility key="accessibilityLabel" label="Percent"/>
+                        <connections><action selector="percent"/></connections>
+                    </button>
+                    <button id="divide">
+                        <rect key="frame" x="168" y="52" width="46" height="40"/>
+                        <buttonCell key="cell" title="÷"/>
+                        <accessibility key="accessibilityLabel" label="Divide"/>
+                        <connections><action selector="divide"/></connections>
+                    </button>
+                    <button id="digit 7">
+                        <rect key="frame" x="12" y="98" width="46" height="40"/>
+                        <buttonCell key="cell" title="7"/>
+                        <accessibility key="accessibilityLabel" label="Seven"/>
+                        <connections><action selector="digit 7"/></connections>
+                    </button>
+                    <button id="digit 8">
+                        <rect key="frame" x="64" y="98" width="46" height="40"/>
+                        <buttonCell key="cell" title="8"/>
+                        <accessibility key="accessibilityLabel" label="Eight"/>
+                        <connections><action selector="digit 8"/></connections>
+                    </button>
+                    <button id="digit 9">
+                        <rect key="frame" x="116" y="98" width="46" height="40"/>
+                        <buttonCell key="cell" title="9"/>
+                        <accessibility key="accessibilityLabel" label="Nine"/>
+                        <connections><action selector="digit 9"/></connections>
+                    </button>
+                    <button id="multiply">
+                        <rect key="frame" x="168" y="98" width="46" height="40"/>
+                        <buttonCell key="cell" title="×"/>
+                        <accessibility key="accessibilityLabel" label="Multiply"/>
+                        <connections><action selector="multiply"/></connections>
+                    </button>
+                    <button id="digit 4">
+                        <rect key="frame" x="12" y="144" width="46" height="40"/>
+                        <buttonCell key="cell" title="4"/>
+                        <accessibility key="accessibilityLabel" label="Four"/>
+                        <connections><action selector="digit 4"/></connections>
+                    </button>
+                    <button id="digit 5">
+                        <rect key="frame" x="64" y="144" width="46" height="40"/>
+                        <buttonCell key="cell" title="5"/>
+                        <accessibility key="accessibilityLabel" label="Five"/>
+                        <connections><action selector="digit 5"/></connections>
+                    </button>
+                    <button id="digit 6">
+                        <rect key="frame" x="116" y="144" width="46" height="40"/>
+                        <buttonCell key="cell" title="6"/>
+                        <accessibility key="accessibilityLabel" label="Six"/>
+                        <connections><action selector="digit 6"/></connections>
+                    </button>
+                    <button id="subtract">
+                        <rect key="frame" x="168" y="144" width="46" height="40"/>
+                        <buttonCell key="cell" title="−"/>
+                        <accessibility key="accessibilityLabel" label="Subtract"/>
+                        <connections><action selector="subtract"/></connections>
+                    </button>
+                    <button id="digit 1">
+                        <rect key="frame" x="12" y="190" width="46" height="40"/>
+                        <buttonCell key="cell" title="1"/>
+                        <accessibility key="accessibilityLabel" label="One"/>
+                        <connections><action selector="digit 1"/></connections>
+                    </button>
+                    <button id="digit 2">
+                        <rect key="frame" x="64" y="190" width="46" height="40"/>
+                        <buttonCell key="cell" title="2"/>
+                        <accessibility key="accessibilityLabel" label="Two"/>
+                        <connections><action selector="digit 2"/></connections>
+                    </button>
+                    <button id="digit 3">
+                        <rect key="frame" x="116" y="190" width="46" height="40"/>
+                        <buttonCell key="cell" title="3"/>
+                        <accessibility key="accessibilityLabel" label="Three"/>
+                        <connections><action selector="digit 3"/></connections>
+                    </button>
+                    <button id="add">
+                        <rect key="frame" x="168" y="190" width="46" height="40"/>
+                        <buttonCell key="cell" title="+"/>
+                        <accessibility key="accessibilityLabel" label="Add"/>
+                        <connections><action selector="add"/></connections>
+                    </button>
+                    <button id="digit 0">
+                        <rect key="frame" x="12" y="236" width="46" height="40"/>
+                        <buttonCell key="cell" title="0"/>
+                        <accessibility key="accessibilityLabel" label="Zero"/>
+                        <connections><action selector="digit 0"/></connections>
+                    </button>
+                    <button id="point">
+                        <rect key="frame" x="64" y="236" width="46" height="40"/>
+                        <buttonCell key="cell" title="."/>
+                        <accessibility key="accessibilityLabel" label="Point"/>
+                        <connections><action selector="point"/></connections>
+                    </button>
+                    <button id="equals" keyEquivalent="&#13;">
+                        <rect key="frame" x="116" y="236" width="46" height="40"/>
+                        <buttonCell key="cell" title="="/>
+                        <accessibility key="accessibilityLabel" label="Equals"/>
+                        <connections><action selector="equals"/></connections>
+                    </button>
+                </subviews>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="Close" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="close"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Edit" id="menu Edit">
+                <items>
+                    <menuItem title="Copy" keyEquivalent="c">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="copy"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Clear" keyEquivalent="Delete">
+                        <connections><action selector="clear"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="View" id="menu View">
+                <items>
+                    <menuItem title="Basic" keyEquivalent="1">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="basic"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

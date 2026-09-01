@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="System Preferences" resizable="NO" id="window">
+            <rect key="contentRect" x="0" y="0" width="620" height="420"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <tableView id="panes">
+                        <rect key="frame" x="12" y="12" width="150" height="356"/>
+                        <accessibility key="accessibilityLabel" label="Panes" help="Which settings are shown"/>
+                        <items>
+                            <item title="Desktop"/>
+                            <item title="Sidebar"/>
+                            <item title="Advanced"/>
+                            <item title="Appearance"/>
+                            <item title="Dock"/>
+                        </items>
+                        <connections><action selector="panes"/></connections>
+                    </tableView>
+                    <button id="hard disks" type="check">
+                        <rect key="frame" x="178" y="16" width="420" height="22"/>
+                        <buttonCell key="cell" title="Hard disks on the desktop"/>
+                        <accessibility key="accessibilityLabel" label="Hard disks on the desktop"/>
+                        <connections><action selector="hard disks"/></connections>
+                    </button>
+                    <button id="external disks" type="check">
+                        <rect key="frame" x="178" y="42" width="420" height="22"/>
+                        <buttonCell key="cell" title="External disks on the desktop"/>
+                        <accessibility key="accessibilityLabel" label="External disks on the desktop"/>
+                        <connections><action selector="external disks"/></connections>
+                    </button>
+                    <button id="removable media" type="check">
+                        <rect key="frame" x="178" y="68" width="420" height="22"/>
+                        <buttonCell key="cell" title="CDs, DVDs and iPods on the desktop"/>
+                        <accessibility key="accessibilityLabel" label="CDs, DVDs and iPods on the desktop"/>
+                        <connections><action selector="removable media"/></connections>
+                    </button>
+                    <button id="servers" type="check">
+                        <rect key="frame" x="178" y="94" width="420" height="22"/>
+                        <buttonCell key="cell" title="Connected servers on the desktop"/>
+                        <accessibility key="accessibilityLabel" label="Connected servers on the desktop"/>
+                        <connections><action selector="servers"/></connections>
+                    </button>
+                    <button id="sidebar devices" type="check">
+                        <rect key="frame" x="178" y="16" width="420" height="22"/>
+                        <buttonCell key="cell" title="Devices in the sidebar"/>
+                        <accessibility key="accessibilityLabel" label="Devices in the sidebar"/>
+                        <connections><action selector="sidebar devices"/></connections>
+                    </button>
+                    <button id="sidebar places" type="check">
+                        <rect key="frame" x="178" y="42" width="420" height="22"/>
+                        <buttonCell key="cell" title="Places in the sidebar"/>
+                        <accessibility key="accessibilityLabel" label="Places in the sidebar"/>
+                        <connections><action selector="sidebar places"/></connections>
+                    </button>
+                    <button id="sidebar search" type="check">
+                        <rect key="frame" x="178" y="68" width="420" height="22"/>
+                        <buttonCell key="cell" title="Search For in the sidebar"/>
+                        <accessibility key="accessibilityLabel" label="Search For in the sidebar"/>
+                        <connections><action selector="sidebar search"/></connections>
+                    </button>
+                    <button id="all extensions" type="check">
+                        <rect key="frame" x="178" y="16" width="420" height="22"/>
+                        <buttonCell key="cell" title="Show all filename extensions"/>
+                        <accessibility key="accessibilityLabel" label="Show all filename extensions"/>
+                        <connections><action selector="all extensions"/></connections>
+                    </button>
+                    <button id="warn on trash" type="check">
+                        <rect key="frame" x="178" y="42" width="420" height="22"/>
+                        <buttonCell key="cell" title="Show warning before emptying the Trash"/>
+                        <accessibility key="accessibilityLabel" label="Show warning before emptying the Trash"/>
+                        <connections><action selector="warn on trash"/></connections>
+                    </button>
+                    <button id="system icons" type="check">
+                        <rect key="frame" x="178" y="68" width="420" height="22"/>
+                        <buttonCell key="cell" title="Use Windows icons for applications"/>
+                        <accessibility key="accessibilityLabel" label="Use Windows icons for applications"/>
+                        <connections><action selector="system icons"/></connections>
+                    </button>
+                    <button id="show labels" type="check">
+                        <rect key="frame" x="178" y="94" width="420" height="22"/>
+                        <buttonCell key="cell" title="Show labels behind names"/>
+                        <accessibility key="accessibilityLabel" label="Show labels behind names"/>
+                        <connections><action selector="show labels"/></connections>
+                    </button>
+                    <button id="white on black" type="check">
+                        <rect key="frame" x="178" y="16" width="420" height="22"/>
+                        <buttonCell key="cell" title="Use white on black"/>
+                        <accessibility key="accessibilityLabel" label="Use white on black"/>
+                        <connections><action selector="white on black"/></connections>
+                    </button>
+                    <button id="magnification" type="check">
+                        <rect key="frame" x="178" y="16" width="420" height="22"/>
+                        <buttonCell key="cell" title="Magnification"/>
+                        <accessibility key="accessibilityLabel" label="Magnification"/>
+                        <connections><action selector="magnification"/></connections>
+                    </button>
+                    <textField id="dock size label" editable="NO">
+                        <rect key="frame" x="178" y="42" width="120" height="22"/>
+                        <textFieldCell key="cell" title="Size"/>
+                        <accessibility key="accessibilityLabel" label="Dock size"/>
+                    </textField>
+                    <slider id="dock size">
+                        <rect key="frame" x="178" y="68" width="240" height="28"/>
+                        <accessibility key="accessibilityLabel" label="Dock size" help="How big the Dock's icons are"/>
+                        <connections><action selector="dock size"/></connections>
+                    </slider>
+                </subviews>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="Close" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="close"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

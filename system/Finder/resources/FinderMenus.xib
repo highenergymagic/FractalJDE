@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0">
+    <objects>
+        <window title="Finder" id="window" resizable="NO">
+            <rect key="contentRect" x="0" y="0" width="1" height="1"/>
+            <view key="contentView" id="content">
+                <subviews/>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="Finder" id="menu Finder">
+                <items>
+                    <menuItem title="About Finder">
+                        <connections><action selector="aboutFinder"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Preferences…" keyEquivalent=",">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="preferences"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Empty Trash…" keyEquivalent="delete">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="emptyTrash"/></connections>
+                    </menuItem>
+                    <menuItem title="Secure Empty Trash…">
+                        <connections><action selector="secureEmptyTrash"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Services">
+                        <menu title="Services" id="menu Services">
+                            <items>
+                                <menuItem title="Open in Windows Explorer">
+                                    <connections><action selector="revealInExplorer"/></connections>
+                                </menuItem>
+                                <menuItem title="Open Terminal Here">
+                                    <connections><action selector="openTerminalHere"/></connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Hide Finder" keyEquivalent="h">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="hideFinder"/></connections>
+                    </menuItem>
+                    <menuItem title="Hide Others" keyEquivalent="h">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="hideOthers"/></connections>
+                    </menuItem>
+                    <menuItem title="Show All">
+                        <connections><action selector="showAll"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="New Finder Window" keyEquivalent="n">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="newWindow"/></connections>
+                    </menuItem>
+                    <menuItem title="New Folder" keyEquivalent="n">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="newFolder"/></connections>
+                    </menuItem>
+                    <menuItem title="New Smart Folder" keyEquivalent="n">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="newSmartFolder"/></connections>
+                    </menuItem>
+                    <menuItem title="New Burn Folder">
+                        <connections><action selector="newBurnFolder"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Open" keyEquivalent="o">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="open"/></connections>
+                    </menuItem>
+                    <menuItem title="Open With">
+                        <menu title="Open With" id="menu Open With">
+                            <items>
+                                <menuItem title="Windows Default Application">
+                                    <connections><action selector="openWithDefault"/></connections>
+                                </menuItem>
+                                <menuItem title="Choose…">
+                                    <connections><action selector="openWithChosen"/></connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </menuItem>
+                    <menuItem title="Print" keyEquivalent="p">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="print"/></connections>
+                    </menuItem>
+                    <menuItem title="Close Window" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="closeWindow"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Get Info" keyEquivalent="i">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="getInfo"/></connections>
+                    </menuItem>
+                    <menuItem title="Compress">
+                        <connections><action selector="compress"/></connections>
+                    </menuItem>
+                    <menuItem title="Duplicate" keyEquivalent="d">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="duplicate"/></connections>
+                    </menuItem>
+                    <menuItem title="Make Alias" keyEquivalent="l">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="makeAlias"/></connections>
+                    </menuItem>
+                    <menuItem title="Quick Look" keyEquivalent="y">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="quickLook"/></connections>
+                    </menuItem>
+                    <menuItem title="Show Original" keyEquivalent="r">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="showOriginal"/></connections>
+                    </menuItem>
+                    <menuItem title="Add to Sidebar" keyEquivalent="t">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="addToSidebar"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Move to Trash" keyEquivalent="delete">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="moveToTrash"/></connections>
+                    </menuItem>
+                    <menuItem title="Eject" keyEquivalent="e">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="eject"/></connections>
+                    </menuItem>
+                    <menuItem title="Burn to Disc…">
+                        <connections><action selector="burnToDisc"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Find" keyEquivalent="f">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="find"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Edit" id="menu Edit">
+                <items>
+                    <menuItem title="Undo" keyEquivalent="z">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="undo"/></connections>
+                    </menuItem>
+                    <menuItem title="Redo" keyEquivalent="z">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="redo"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Cut" keyEquivalent="x">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="cut"/></connections>
+                    </menuItem>
+                    <menuItem title="Copy" keyEquivalent="c">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="copy"/></connections>
+                    </menuItem>
+                    <menuItem title="Paste Item" keyEquivalent="v">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="paste"/></connections>
+                    </menuItem>
+                    <menuItem title="Select All" keyEquivalent="a">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="selectAll"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Show Clipboard">
+                        <connections><action selector="showClipboard"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="View" id="menu View">
+                <items>
+                    <menuItem title="as Icons" keyEquivalent="1">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="viewAsIcons"/></connections>
+                    </menuItem>
+                    <menuItem title="as List" keyEquivalent="2">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="viewAsList"/></connections>
+                    </menuItem>
+                    <menuItem title="as Columns" keyEquivalent="3">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="viewAsColumns"/></connections>
+                    </menuItem>
+                    <menuItem title="as Cover Flow" keyEquivalent="4">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="viewAsCoverFlow"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Clean Up">
+                        <connections><action selector="cleanUp"/></connections>
+                    </menuItem>
+                    <menuItem title="Clean Up Selection">
+                        <connections><action selector="cleanUpSelection"/></connections>
+                    </menuItem>
+                    <menuItem title="Arrange By">
+                        <menu title="Arrange By" id="menu Arrange By">
+                            <items>
+                                <menuItem title="Name">
+                                    <connections><action selector="arrangeByName"/></connections>
+                                </menuItem>
+                                <menuItem title="Date Modified">
+                                    <connections><action selector="arrangeByDateModified"/></connections>
+                                </menuItem>
+                                <menuItem title="Size">
+                                    <connections><action selector="arrangeBySize"/></connections>
+                                </menuItem>
+                                <menuItem title="Kind">
+                                    <connections><action selector="arrangeByKind"/></connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Hide Toolbar" keyEquivalent="t">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="toggleToolbar"/></connections>
+                    </menuItem>
+                    <menuItem title="Customize Toolbar…">
+                        <connections><action selector="customizeToolbar"/></connections>
+                    </menuItem>
+                    <menuItem title="Hide Path Bar" keyEquivalent="p">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="togglePathBar"/></connections>
+                    </menuItem>
+                    <menuItem title="Hide Status Bar" keyEquivalent="/">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="toggleStatusBar"/></connections>
+                    </menuItem>
+                    <menuItem title="Hide Sidebar" keyEquivalent="s">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="toggleSidebar"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Show View Options" keyEquivalent="j">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="showViewOptions"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Go" id="menu Go">
+                <items>
+                    <menuItem title="Back" keyEquivalent="[">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="goBack"/></connections>
+                    </menuItem>
+                    <menuItem title="Forward" keyEquivalent="]">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="goForward"/></connections>
+                    </menuItem>
+                    <menuItem title="Enclosing Folder" keyEquivalent="up">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="goUp"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Computer" keyEquivalent="c">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goComputer"/></connections>
+                    </menuItem>
+                    <menuItem title="Home" keyEquivalent="h">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goHome"/></connections>
+                    </menuItem>
+                    <menuItem title="Desktop" keyEquivalent="d">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goDesktop"/></connections>
+                    </menuItem>
+                    <menuItem title="Network" keyEquivalent="k">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goNetwork"/></connections>
+                    </menuItem>
+                    <menuItem title="Applications" keyEquivalent="a">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goApplications"/></connections>
+                    </menuItem>
+                    <menuItem title="Documents" keyEquivalent="o">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goDocuments"/></connections>
+                    </menuItem>
+                    <menuItem title="Utilities" keyEquivalent="u">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goUtilities"/></connections>
+                    </menuItem>
+                    <menuItem title="Downloads" keyEquivalent="l">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="goDownloads"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Go to Folder…" keyEquivalent="g">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="goToFolder"/></connections>
+                    </menuItem>
+                    <menuItem title="Connect to Server…" keyEquivalent="k">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="connectToServer"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

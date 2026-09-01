@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="Activity Monitor" resizable="YES" id="window">
+            <rect key="contentRect" x="0" y="0" width="560" height="420"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <tableView id="processes">
+                        <rect key="frame" x="12" y="12" width="536" height="330"/>
+                        <accessibility key="accessibilityLabel" label="Processes" help="Everything running, by number"/>
+                        <connections><action selector="processes"/></connections>
+                    </tableView>
+                    <button id="quit process">
+                        <rect key="frame" x="418" y="352" width="130" height="28"/>
+                        <buttonCell key="cell" title="Quit Process"/>
+                        <accessibility key="accessibilityLabel" label="Quit the chosen process"/>
+                        <connections><action selector="quit process"/></connections>
+                    </button>
+                </subviews>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="Close" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="close"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="View" id="menu View">
+                <items>
+                    <menuItem title="Refresh" keyEquivalent="r">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="refresh"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Quit Process" keyEquivalent="⌫">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="quit process"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

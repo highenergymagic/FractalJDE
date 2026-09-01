@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="Find" resizable="NO" id="window">
+            <rect key="contentRect" x="0" y="0" width="360" height="130"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <textField id="find label" editable="NO">
+                        <rect key="frame" x="12" y="14" width="70" height="22"/>
+                        <textFieldCell key="cell" title="Find:"/>
+                        <accessibility key="accessibilityLabel" label="Find"/>
+                    </textField>
+                    <textField id="find">
+                        <rect key="frame" x="88" y="12" width="258" height="24"/>
+                        <textFieldCell key="cell" title=""/>
+                        <accessibility key="accessibilityLabel" label="Find"/>
+                    </textField>
+                    <textField id="replace label" editable="NO">
+                        <rect key="frame" x="12" y="46" width="70" height="22"/>
+                        <textFieldCell key="cell" title="Replace:"/>
+                        <accessibility key="accessibilityLabel" label="Replace with"/>
+                    </textField>
+                    <textField id="replace">
+                        <rect key="frame" x="88" y="44" width="258" height="24"/>
+                        <textFieldCell key="cell" title=""/>
+                        <accessibility key="accessibilityLabel" label="Replace with"/>
+                    </textField>
+                    <button id="find next" keyEquivalent="&#13;">
+                        <rect key="frame" x="266" y="82" width="80" height="28"/>
+                        <buttonCell key="cell" title="Next"/>
+                        <accessibility key="accessibilityLabel" label="Find the next one"/>
+                        <connections><action selector="find next"/></connections>
+                    </button>
+                    <button id="replace all">
+                        <rect key="frame" x="148" y="82" width="110" height="28"/>
+                        <buttonCell key="cell" title="Replace All"/>
+                        <accessibility key="accessibilityLabel" label="Replace every one"/>
+                        <connections><action selector="replace all"/></connections>
+                    </button>
+                </subviews>
+            </view>
+        </window>
+    </objects>
+</document>

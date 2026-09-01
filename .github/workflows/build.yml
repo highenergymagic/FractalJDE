@@ -1,0 +1,96 @@
+# Builds the system, runs its own checks, and builds a release out of the same tree.
+#
+# Windows only, because the system is written against Windows APIs through
+# java.lang.foreign: it opens named pipes, reads window lists and talks to the shell.
+# A Linux runner would compile most of it and could not run any of it, which is a worse
+# answer than not running.
+name: build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install a JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build
+        shell: bash
+        run: sh tools/build.sh
+
+      - name: Check
+        shell: bash
+        # The desktop is built offscreen and drawn into an image, never shown, so this
+        # runs on a machine with no screen attached to it.
+        run: |
+          java --enable-preview --enable-native-access=ALL-UNNAMED \
+               -Dorg.fractalmicro.images="$PWD/build/frameworks" \
+               -cp build/FractalJDE.jar org.fractalmicro.Main --install
+          java --enable-preview --enable-native-access=ALL-UNNAMED \
+               -Dorg.fractalmicro.images="$PWD/build/frameworks" \
+               -jar build/FractalJDE.jar --selftest | tee selftest.txt
+          # Every count has to be zero, not one of them. Asking whether the words appear
+          # anywhere passes a run where one suite failed and another did not.
+          if grep -q "^FAIL" selftest.txt; then
+              echo "checks failed:"
+              grep "^FAIL" selftest.txt
+              exit 1
+          fi
+          grep -q "0 failed" selftest.txt
+
+      - name: Build a release
+        shell: bash
+        # The same thing anybody gets by running this: a kernel and a base image. It is
+        # built on every push rather than only on a tag, because a release path exercised
+        # once a version is a release path that is broken most of the time.
+        run: sh tools/release.sh | tee release.txt
+
+      - name: Check the release installs and starts
+        shell: bash
+        timeout-minutes: 5
+        # Onto an empty directory that is not this machine's own volume, which is the only
+        # way to find out whether what shipped can lay itself out somewhere it has never
+        # been. Then all the way up: the kernel unpacks, reads the loader off the volume it
+        # just wrote, starts launchd, launchd starts the session, and the session draws the
+        # desktop into a file without showing it. A picture at the end of that is the whole
+        # path having worked, which no amount of looking at the files can tell you.
+        run: |
+          version=$(sed -n 's/^version=//p' version.properties)
+          java --enable-preview --enable-native-access=ALL-UNNAMED \
+               -Dorg.fractalmicro.volume="$PWD/build/fresh" \
+               -cp "build/FractalJDE-$version/FractalJDE.jar" org.fractalmicro.Kernel \
+               --screenshot "$PWD/build/fresh-desktop.png" 2>&1 | tee boot.txt
+          grep -q "files written" boot.txt
+          grep -q "launchd: starting, as task 1" boot.txt
+          test -f build/fresh/usr/lib/dyld
+          test -f build/fresh/sbin/launchd
+          test -s build/fresh-desktop.png
+
+      - name: Keep what the checks said
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selftest
+          path: |
+            selftest.txt
+            release.txt
+            boot.txt
+            build/fresh-desktop.png
+
+      - name: Keep the release
+        uses: actions/upload-artifact@v4
+        with:
+          name: FractalJDE
+          path: build/FractalJDE-*.zip

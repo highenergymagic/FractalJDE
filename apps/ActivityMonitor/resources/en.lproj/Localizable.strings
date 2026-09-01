@@ -1,0 +1,10 @@
+/* What Activity Monitor says. Quitting a task is asked about because anything with
+   unsaved work in it loses that work, and the listing shows every task in the system
+   including the ones holding the screen up. */
+
+/* %1$@ is the name of the task that would be stopped. */
+"activitymonitor.quitQuestion" = "Are you sure you want to quit “%1$@”?";
+
+"activitymonitor.quitWarning" = "Any unsaved changes in that process will be lost.";
+
+"activitymonitor.quit" = "Quit";

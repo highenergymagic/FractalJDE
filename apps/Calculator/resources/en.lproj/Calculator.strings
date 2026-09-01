@@ -1,0 +1,144 @@
+/* The title of the window */
+"window.title" = "Calculator";
+
+/* What the display control is called */
+"display.accessibilityLabel" = "Answer";
+
+/* What is written on display */
+"display.title" = "0";
+
+/* What the clear control is called */
+"clear.accessibilityLabel" = "Clear";
+
+/* What is written on clear */
+"clear.title" = "C";
+
+/* What the negate control is called */
+"negate.accessibilityLabel" = "Change sign";
+
+/* What is written on negate */
+"negate.title" = "±";
+
+/* What the percent control is called */
+"percent.accessibilityLabel" = "Percent";
+
+/* What is written on percent */
+"percent.title" = "%";
+
+/* What the divide control is called */
+"divide.accessibilityLabel" = "Divide";
+
+/* What is written on divide */
+"divide.title" = "÷";
+
+/* What the digit 7 control is called */
+"digit 7.accessibilityLabel" = "Seven";
+
+/* What is written on digit 7 */
+"digit 7.title" = "7";
+
+/* What the digit 8 control is called */
+"digit 8.accessibilityLabel" = "Eight";
+
+/* What is written on digit 8 */
+"digit 8.title" = "8";
+
+/* What the digit 9 control is called */
+"digit 9.accessibilityLabel" = "Nine";
+
+/* What is written on digit 9 */
+"digit 9.title" = "9";
+
+/* What the multiply control is called */
+"multiply.accessibilityLabel" = "Multiply";
+
+/* What is written on multiply */
+"multiply.title" = "×";
+
+/* What the digit 4 control is called */
+"digit 4.accessibilityLabel" = "Four";
+
+/* What is written on digit 4 */
+"digit 4.title" = "4";
+
+/* What the digit 5 control is called */
+"digit 5.accessibilityLabel" = "Five";
+
+/* What is written on digit 5 */
+"digit 5.title" = "5";
+
+/* What the digit 6 control is called */
+"digit 6.accessibilityLabel" = "Six";
+
+/* What is written on digit 6 */
+"digit 6.title" = "6";
+
+/* What the subtract control is called */
+"subtract.accessibilityLabel" = "Subtract";
+
+/* What is written on subtract */
+"subtract.title" = "−";
+
+/* What the digit 1 control is called */
+"digit 1.accessibilityLabel" = "One";
+
+/* What is written on digit 1 */
+"digit 1.title" = "1";
+
+/* What the digit 2 control is called */
+"digit 2.accessibilityLabel" = "Two";
+
+/* What is written on digit 2 */
+"digit 2.title" = "2";
+
+/* What the digit 3 control is called */
+"digit 3.accessibilityLabel" = "Three";
+
+/* What is written on digit 3 */
+"digit 3.title" = "3";
+
+/* What the add control is called */
+"add.accessibilityLabel" = "Add";
+
+/* What is written on add */
+"add.title" = "+";
+
+/* What the digit 0 control is called */
+"digit 0.accessibilityLabel" = "Zero";
+
+/* What is written on digit 0 */
+"digit 0.title" = "0";
+
+/* What the point control is called */
+"point.accessibilityLabel" = "Point";
+
+/* What is written on point */
+"point.title" = ".";
+
+/* What the equals control is called */
+"equals.accessibilityLabel" = "Equals";
+
+/* What is written on equals */
+"equals.title" = "=";
+
+/* The name of a menu in the bar */
+"menu File.title" = "File";
+
+/* A command in the File menu */
+"menu File.close.title" = "Close";
+
+/* The name of a menu in the bar */
+"menu Edit.title" = "Edit";
+
+/* A command in the Edit menu */
+"menu Edit.copy.title" = "Copy";
+
+/* A command in the Edit menu */
+"menu Edit.clear.title" = "Clear";
+
+/* The name of a menu in the bar */
+"menu View.title" = "View";
+
+/* A command in the View menu */
+"menu View.basic.title" = "Basic";
+

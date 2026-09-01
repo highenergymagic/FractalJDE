@@ -1,0 +1,55 @@
+/* What TextEdit says. The questions are asked by the window server on this
+   program's behalf, because a program in a process of its own has no screen to
+   draw a dialog on. */
+
+"textedit.openPrompt" = "Open a document:";
+
+"textedit.open" = "Open";
+
+"textedit.nameLabel" = "Name:";
+
+"textedit.noSuchDocument" = "There is no document called \u201c%1$@\u201d.";
+
+"textedit.wholePath" = "Give the whole path, or a name in your Documents folder.";
+
+"textedit.openFailed" = "The document could not be opened.";
+
+"textedit.openFailedWhy" = "It may have been moved, or you may not be allowed to read it.";
+
+"textedit.savePrompt" = "Save this document as:";
+
+"textedit.save" = "Save";
+
+"textedit.saveFailed" = "The document could not be saved.";
+
+"textedit.saveFailedWhy" = "You may not be allowed to write there.";
+
+"textedit.revertQuestion" = "Do you want to revert to the saved version of \u201c%1$@\u201d?";
+
+"textedit.revertWarning" = "Anything you have changed since will be lost.";
+
+"textedit.revert" = "Revert";
+
+"textedit.saveChanges" = "Do you want to save the changes you made?";
+
+"textedit.saveChangesTo" = "Do you want to save the changes you made to \u201c%1$@\u201d?";
+
+"textedit.changesLost" = "Your changes will be lost if you don\u2019t save them.";
+
+"textedit.dontSave" = "Don\u2019t Save";
+
+"textedit.goToLine" = "Go to line:";
+
+"textedit.lineLabel" = "Line:";
+
+"textedit.select" = "Select";
+
+
+/* The kinds TextEdit writes, as they read in the File Format pop-up of the save panel.
+   Named as a person would say them rather than by extension: somebody choosing knows they
+   want rich text and does not necessarily know that is .rtf. */
+"textedit.formatRichText" = "Rich Text Format";
+"textedit.formatPlainText" = "Plain Text";
+
+/* What a document is called before it has been saved. */
+"textedit.untitled" = "Untitled";

@@ -1,0 +1,30 @@
+/* The title of the window */
+"window.title" = "Activity Monitor";
+
+/* What the processes control is called */
+"processes.accessibilityLabel" = "Processes";
+
+/* What the processes control is for */
+"processes.accessibilityHelp" = "Everything running, by number";
+
+/* What the quit process control is called */
+"quit process.accessibilityLabel" = "Quit the chosen process";
+
+/* What is written on quit process */
+"quit process.title" = "Quit Process";
+
+/* The name of a menu in the bar */
+"menu File.title" = "File";
+
+/* A command in the File menu */
+"menu File.close.title" = "Close";
+
+/* The name of a menu in the bar */
+"menu View.title" = "View";
+
+/* A command in the View menu */
+"menu View.refresh.title" = "Refresh";
+
+/* A command in the View menu */
+"menu View.quit process.title" = "Quit Process";
+

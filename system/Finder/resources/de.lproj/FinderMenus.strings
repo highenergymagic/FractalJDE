@@ -1,0 +1,80 @@
+/* The Finder's menus in German. Mac OS X calls the File menu Ablage, and the Finder's own
+   menu keeps the program's name, which is not translated. */
+
+"menu Finder.title" = "Finder";
+"menu Finder.aboutFinder.title" = "Über den Finder";
+"menu Finder.preferences.title" = "Einstellungen…";
+"menu Finder.emptyTrash.title" = "Papierkorb entleeren…";
+"menu Finder.secureEmptyTrash.title" = "Papierkorb sicher entleeren…";
+"menu Finder.Services.title" = "Dienste";
+"menu Finder.Services.revealInExplorer.title" = "Im Windows Explorer öffnen";
+"menu Finder.Services.openTerminalHere.title" = "Terminal hier öffnen";
+"menu Finder.hideFinder.title" = "Finder ausblenden";
+"menu Finder.hideOthers.title" = "Andere ausblenden";
+"menu Finder.showAll.title" = "Alle einblenden";
+
+"menu File.title" = "Ablage";
+"menu File.newWindow.title" = "Neues Finder-Fenster";
+"menu File.newFolder.title" = "Neuer Ordner";
+"menu File.newSmartFolder.title" = "Neuer intelligenter Ordner";
+"menu File.newBurnFolder.title" = "Neuer Brennordner";
+"menu File.open.title" = "Öffnen";
+"menu File.Open With.title" = "Öffnen mit";
+"menu File.Open With.openWithDefault.title" = "Standardprogramm von Windows";
+"menu File.Open With.openWithChosen.title" = "Auswählen…";
+"menu File.print.title" = "Drucken";
+"menu File.closeWindow.title" = "Fenster schließen";
+"menu File.getInfo.title" = "Informationen";
+"menu File.compress.title" = "Komprimieren";
+"menu File.duplicate.title" = "Duplizieren";
+"menu File.makeAlias.title" = "Alias erzeugen";
+"menu File.quickLook.title" = "Übersicht";
+"menu File.showOriginal.title" = "Original zeigen";
+"menu File.addToSidebar.title" = "Zur Seitenleiste hinzufügen";
+"menu File.moveToTrash.title" = "In den Papierkorb legen";
+"menu File.eject.title" = "Auswerfen";
+"menu File.burnToDisc.title" = "Auf CD/DVD brennen…";
+"menu File.find.title" = "Suchen";
+
+"menu Edit.title" = "Bearbeiten";
+"menu Edit.undo.title" = "Widerrufen";
+"menu Edit.redo.title" = "Wiederholen";
+"menu Edit.cut.title" = "Ausschneiden";
+"menu Edit.copy.title" = "Kopieren";
+"menu Edit.paste.title" = "Objekt einsetzen";
+"menu Edit.selectAll.title" = "Alles auswählen";
+"menu Edit.showClipboard.title" = "Zwischenablage einblenden";
+
+"menu View.title" = "Darstellung";
+"menu View.viewAsIcons.title" = "als Symbole";
+"menu View.viewAsList.title" = "als Liste";
+"menu View.viewAsColumns.title" = "als Spalten";
+"menu View.viewAsCoverFlow.title" = "als Cover Flow";
+"menu View.cleanUp.title" = "Aufräumen";
+"menu View.cleanUpSelection.title" = "Auswahl aufräumen";
+"menu View.Arrange By.title" = "Sortieren nach";
+"menu View.Arrange By.arrangeByName.title" = "Name";
+"menu View.Arrange By.arrangeByDateModified.title" = "Änderungsdatum";
+"menu View.Arrange By.arrangeBySize.title" = "Größe";
+"menu View.Arrange By.arrangeByKind.title" = "Art";
+"menu View.toggleToolbar.title" = "Symbolleiste ausblenden";
+"menu View.customizeToolbar.title" = "Symbolleiste anpassen…";
+"menu View.togglePathBar.title" = "Pfadleiste ausblenden";
+"menu View.toggleStatusBar.title" = "Statusleiste ausblenden";
+"menu View.toggleSidebar.title" = "Seitenleiste ausblenden";
+"menu View.showViewOptions.title" = "Darstellungsoptionen einblenden";
+
+"menu Go.title" = "Gehe zu";
+"menu Go.goBack.title" = "Zurück";
+"menu Go.goForward.title" = "Vorwärts";
+"menu Go.goUp.title" = "Übergeordneter Ordner";
+"menu Go.goComputer.title" = "Computer";
+"menu Go.goHome.title" = "Benutzerordner";
+"menu Go.goDesktop.title" = "Schreibtisch";
+"menu Go.goNetwork.title" = "Netzwerk";
+"menu Go.goApplications.title" = "Programme";
+"menu Go.goDocuments.title" = "Dokumente";
+"menu Go.goUtilities.title" = "Dienstprogramme";
+"menu Go.goDownloads.title" = "Downloads";
+"menu Go.goToFolder.title" = "Gehe zum Ordner…";
+"menu Go.connectToServer.title" = "Mit Server verbinden…";

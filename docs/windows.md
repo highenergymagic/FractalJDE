@@ -1,0 +1,196 @@
+# The window server
+
+A program describes a window and something else draws it. What that costs, what it
+buys, and how the menu bar changes hands.
+
+A program in another process now opens windows on this desktop. It sends a description; the
+desktop makes the controls; events come back.
+
+## Why the widgets and not the pixels
+
+There are two ways to split a window server. The system this imitates takes the other one:
+each program draws its own pixels and the server composites them. That could not be done
+here without giving up what the whole project is for.
+
+A window drawn into a picture has the appearance of controls and none of the controls.
+Nothing can say what is in it, move through it, or act on it: it is an image of a window,
+and the only thing that can use an image is an eye. If each program kept its own controls
+in its own process instead, they would describe windows the host system does not have,
+floating free of anything on screen. The separate-windows attempt already showed what
+that failure looks like.
+
+So the controls live where the windows live. There is one tree, in the process that owns
+the screen, and everything in it is named, because a description that leaves a control
+unnamed is **refused rather than drawn**, which is the only way to keep that true for
+programs nobody here has written yet.
+
+## Descriptions
+
+That is what makes interface descriptions necessary rather than merely tidy: a window has
+to arrive in one message, not a thousand calls setting properties one at a time. A
+description is a property list, the same format as everything else here, naming a window
+and its controls:
+
+```
+Window     Title, Width, Height, Resizable
+Controls   Class, Identifier, AccessibleName, Text, Action, X, Y, Width, Height
+```
+
+The classes are `FMButton`, `FMLabel`, `FMTextField`, `FMTextView`, `FMCheckBox`,
+`FMPopUpButton`, `FMSlider`, `FMProgressIndicator`, `FMTableView` and `FMSeparator`. Every
+one becomes the real Swing control it names, drawn by the Aqua delegates like anything else.
+
+## A program
+
+```java
+Nib nib = new Nib.Builder()
+    .title("Counter").size(320, 170)
+    .add(ControlClass.FMLabel, "caption", "Count", "Count:", 20, 20, 60, 20)
+    .add(ControlClass.FMTextField, "total", "Total", "0", 90, 18, 200, 24)
+    .button("more", "More", "increase", 190, 60, 100, 24, true)
+    .build();
+
+try (FMApplication app = FMApplication.named("Counter")) {
+    app.openWindow(nib);
+    app.on("increase", e -> app.set("total", String.valueOf(++count)));
+    app.run();
+}
+```
+
+`run()` asks for the next event and waits until there is one, so a program doing nothing
+costs nothing. That loop is the whole of its main thread.
+
+Two processes, checked together: the desktop at 108 MB serving, the program at 52 MB
+describing, one window on screen holding eleven named controls.
+
+## What a screen is
+
+Two systems disagree here, and the disagreement is older than either of them. On one, the
+menu bar belongs to the screen: there is one, at the top, showing the menus of whichever
+program is in front. On the other it belongs to the window: every window carries its own.
+
+GNUstep, which has had to run the same programs under both, does not pick a side. It
+names the argument. `NSMenuInterfaceStyle` is a user default, and setting it to
+`NSMacintoshInterfaceStyle` puts a horizontal menu at the top of the screen while
+`NSWindows95InterfaceStyle` puts it in the window. The same key, with the same two values,
+decides it here.
+
+Underneath that is a second question GNUstep never has to ask, because X11 answers it for
+them: whether a window of this system is a window of the host system. That is
+`FractalWindowStyle`, and it takes `Separate` or `Contained`.
+
+| | `Separate` (the default) | `Contained` |
+|---|---|---|
+| A Finder window is | a window Windows knows about, with its own place in Alt Tab | a drawing inside one big window |
+| The menu bar is | a strip along the top of the screen | the menu bar of that one window |
+| The Dock is | a strip along the bottom | inside that one window |
+| Maximising a Windows program | stops at the reserved edges | covers everything |
+
+The strips reserve their edges through `SHAppBarMessage`, which is the documented way for
+something that is not the taskbar to own a strip of screen: register the window, ask
+where a bar of that size may sit, then take it. That reservation is the whole difference
+between a menu bar and a window that happens to be at the top: with it, a maximised
+program stops underneath instead of burying it. If the shell refuses, which it does when
+Explorer is not running the desktop, the strips still work and simply stay on top, and the
+log says which happened.
+
+A window in `Separate` mode is the same window it always was, with the same class, the
+same title bar drawn by this program and the same accessible tree, living inside an undecorated
+frame of the host system's. The title bar drawn here moves the real window; the buttons
+act on it; closing it closes the frame. Nothing above that layer changed, which is why the
+checks did not have to.
+
+The checking runs force `Contained`, because a window that is never shown cannot be a
+window of the host system, and a check that rewrote the settings to run would not be a
+check.
+
+## The menu bar belongs to the front program
+
+The bar is not Finder's. When the front window belongs to another program, that
+program's name takes the second slot in bold and its own menus fill the bar: TextEdit
+puts File, Edit and Format there, and Finder's View and Go go away until a Finder window
+is in front again. The program menu holds About, Preferences, Hide, Hide Others, Show
+All and Quit, which closes that program's windows. A window says which program it
+belongs to by implementing `org.fractalmicro.appkit.AppWindow`; anything that does not is Finder's.
+
+### And so does a program in another process
+
+A window was never the whole of what a program puts on the screen. A program with no menus
+has no Close, no Copy, no Preferences and no Quit, so until the menus could cross the
+process boundary too, every program had to stay inside the desktop to have a File menu,
+which is what was really keeping them all in one process.
+
+The menus travel in the same description as the window:
+
+```
+.menu("File", MenuItem.of("Close", "close", "w", "command"))
+.menu("Edit", MenuItem.of("Copy", "copy", "c", "command"),
+              MenuItem.line(),
+              MenuItem.of("Clear", "clear", "Delete"))
+```
+
+Keys are written the way a person says them: the key, and which of command, shift, option
+and control are held, rather than a number that only this program would understand. The window
+server builds real menus from that description, hangs them off the window as
+`applicationMenus()`, and the bar treats them like any other program's. Choosing one sends
+an event back the same shape as pressing a button does, so a program answers both with the
+same `app.on("copy", ...)`.
+
+Three mistakes worth writing down, all of which only appeared once there were two programs
+instead of one.
+
+A menu built and added but never laid out is in the bar and paints nothing: it needs
+`validate()` and `doLayout()`, not just `add()`.
+
+A program started against the installed framework rather than the code that is running
+fails to find its own main class whenever the framework could not be replaced, which is
+whenever a daemon still has it open. Installing now asks the daemons to stop first, and a
+program starts from the code that is running.
+
+And the window server kept one queue of events for everybody. That was invisible while only
+one program was ever elsewhere; with two, each takes whatever is at the front, so one is
+told a window it has never heard of has closed while its own button press is read by the
+other. Events belong to the program whose window they came from, and a program says who it
+is when it asks for the next one.
+
+## The desktop
+
+The desktop shows `%USERPROFILE%\Desktop-Folder`, created on first run, plus whichever
+volumes the four checkboxes in Finder → Preferences → General ask for. Fixed drives are
+hard disks, removable ones are external disks, optical drives answer to "CDs, DVDs, and
+iPods", and mapped network drives are mounted servers. An optical drive with no disc in
+it appears nowhere, neither on the desktop nor in the sidebar, exactly as on a Mac; it
+is still listed under Computer, which is about the machine rather than about what is
+mounted.
+
+Disks are named by their volume label, or by the name Windows itself shows with the
+drive letter taken off: "Local Disk", "DVD RW Drive", "data". Never a bare drive letter.
+
+A disk on the desktop reads as its name and nothing else. Its size, free space and file
+system are in the status bar and in Get Info, where they were asked for.
+
+### Kinds
+
+Get Info's Kind field and the description an item carries come from a table of
+the types Mac OS X names for itself: a .plist is a property list, a .docx is a Microsoft
+Word document, a .png is a Portable Network Graphics image. Anything outside the table
+falls back to the description Windows holds for that extension, and anything Windows
+only knows as "XYZ File" is a document, which is what an unknown type is called on a
+Mac. So `thing.notanext` really is a document, and a .docx really is not.
+
+Anything the Finder treats as a program is an application, including the shortcuts the
+Applications folder is made of: a `.lnk` pointing at an `.exe` reads as "selected
+application", not as an alias.
+
+A selected item on the desktop is described as "selected icon". In a Finder view it is
+described by what it is: "selected application", "selected Microsoft Word document",
+"selected property list", "selected bundle".
+
+## Sheets
+
+A question about a document is attached to that document, not floated over the screen.
+[Sheet.java](system/AppKit/src/org/fractalmicro/appkit/Sheet.java) drops the panel from under the window's title
+bar, stops that window taking clicks while it is up, and leaves every other window alone.
+It waits for the answer on a secondary event loop, so painting and the keyboard keep
+working; a window that is not on screen falls back to the free standing alert, because a
+sheet with nothing to hang from cannot be answered.

@@ -1,0 +1,105 @@
+/* The title of the window */
+"window.title" = "System Preferences";
+
+/* What the panes control is called */
+"panes.accessibilityLabel" = "Panes";
+
+/* What the panes control is for */
+"panes.accessibilityHelp" = "Which settings are shown";
+
+/* What the hard disks control is called */
+"hard disks.accessibilityLabel" = "Hard disks on the desktop";
+
+/* What is written on hard disks */
+"hard disks.title" = "Hard disks on the desktop";
+
+/* What the external disks control is called */
+"external disks.accessibilityLabel" = "External disks on the desktop";
+
+/* What is written on external disks */
+"external disks.title" = "External disks on the desktop";
+
+/* What the removable media control is called */
+"removable media.accessibilityLabel" = "CDs, DVDs and iPods on the desktop";
+
+/* What is written on removable media */
+"removable media.title" = "CDs, DVDs and iPods on the desktop";
+
+/* What the servers control is called */
+"servers.accessibilityLabel" = "Connected servers on the desktop";
+
+/* What is written on servers */
+"servers.title" = "Connected servers on the desktop";
+
+/* What the sidebar devices control is called */
+"sidebar devices.accessibilityLabel" = "Devices in the sidebar";
+
+/* What is written on sidebar devices */
+"sidebar devices.title" = "Devices in the sidebar";
+
+/* What the sidebar places control is called */
+"sidebar places.accessibilityLabel" = "Places in the sidebar";
+
+/* What is written on sidebar places */
+"sidebar places.title" = "Places in the sidebar";
+
+/* What the sidebar search control is called */
+"sidebar search.accessibilityLabel" = "Search For in the sidebar";
+
+/* What is written on sidebar search */
+"sidebar search.title" = "Search For in the sidebar";
+
+/* What the all extensions control is called */
+"all extensions.accessibilityLabel" = "Show all filename extensions";
+
+/* What is written on all extensions */
+"all extensions.title" = "Show all filename extensions";
+
+/* What the warn on trash control is called */
+"warn on trash.accessibilityLabel" = "Show warning before emptying the Trash";
+
+/* What is written on warn on trash */
+"warn on trash.title" = "Show warning before emptying the Trash";
+
+/* What the system icons control is called */
+"system icons.accessibilityLabel" = "Use Windows icons for applications";
+
+/* What is written on system icons */
+"system icons.title" = "Use Windows icons for applications";
+
+/* What the show labels control is called */
+"show labels.accessibilityLabel" = "Show labels behind names";
+
+/* What is written on show labels */
+"show labels.title" = "Show labels behind names";
+
+/* What the white on black control is called */
+"white on black.accessibilityLabel" = "Use white on black";
+
+/* What is written on white on black */
+"white on black.title" = "Use white on black";
+
+/* What the magnification control is called */
+"magnification.accessibilityLabel" = "Magnification";
+
+/* What is written on magnification */
+"magnification.title" = "Magnification";
+
+/* What the dock size label control is called */
+"dock size label.accessibilityLabel" = "Dock size";
+
+/* What is written on dock size label */
+"dock size label.title" = "Size";
+
+/* What the dock size control is called */
+"dock size.accessibilityLabel" = "Dock size";
+
+/* What the dock size control is for */
+"dock size.accessibilityHelp" = "How big the Dock's icons are";
+
+/* The name of a menu in the bar */
+"menu File.title" = "File";
+
+/* A command in the File menu */
+"menu File.close.title" = "Close";
+

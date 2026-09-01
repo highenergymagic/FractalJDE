@@ -1,0 +1,1005 @@
+/*CDDL HEADER START
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://illumos.org/license/CDDL.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information:
+ *
+ * CDDL HEADER END
+ * Copyright (C) 2026 by Fractal Microsystems, Inc.
+ * Use is subject to license terms.
+ */
+package org.fractalmicro.windowserver;
+
+import org.fractalmicro.appkit.FMTextArea;
+import org.fractalmicro.appkit.FMTextField;
+import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.core.Log;
+import org.fractalmicro.nib.Nib;
+import org.fractalmicro.theme.Aqua;
+import org.fractalmicro.windowserver.Desktop;
+import org.fractalmicro.xpc.Message;
+import org.fractalmicro.xpc.Service;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * The window server: the one place that draws.
+ *
+ * A program in another process sends a description of a window. This builds it as real
+ * controls, in the process that owns the screen, and sends back events as they happen. The
+ * program never touches a control; it refers to them by the names its own description gave
+ * them.
+ *
+ * There are two places to cut a window server. Mac OS X cuts at the pixel: each program
+ * draws into a buffer and the server composites. That is not available here. A window
+ * drawn into an image is a picture of a window. It has the appearance of controls and
+ * none of the controls, so nothing can say what is in it, move through it, or act on it.
+ *
+ * So the cut is at the widget instead. The controls live in this process and they are
+ * real ones, each with a name. A description that leaves a control unnamed is refused.
+ *
+ * What crosses the boundary is small: a description once, then values and events.
+ */
+public final class WindowServer {
+
+    public static final String SERVICE = "org.fractalmicro.windowserver";
+
+    /* The messages it answers. */
+    public static final String OPEN = "openWindow";
+    public static final String CLOSE = "closeWindow";
+    public static final String SET = "setValue";
+
+    /**
+     * Replaces what is in a list.
+     *
+     * A value and a list of rows are different enough to be different messages. A
+     * program setting a value is saying what one control holds; a program setting rows
+     * is saying what a list is of, which is the thing that changes while a window is
+     * open and the reason a listing can show what is running rather than what was.
+     */
+    public static final String SET_ROWS = "setRows";
+
+    /**
+     * Shows or hides a control.
+     *
+     * A window with panes is one window, and the panes are all in it: they sit in the same
+     * place and one of them is shown. Describing a window per pane would mean a window that
+     * closes and reopens every time somebody clicks a name in the list, which is not what
+     * a pane is.
+     */
+    public static final String SET_VISIBLE = "setVisible";
+
+    /**
+     * Asks a control to do something to itself.
+     *
+     * Cut, paste, bold, centre: every one of them is a thing done to the text in a view,
+     * by the view, and none of them is something a program can do from outside. On a Mac
+     * the program does not do them either. It sends the command, and it travels down the
+     * responder chain until it reaches something that knows what "bold" means, which is
+     * the text view. This is that chain, with a process boundary in the middle of it.
+     *
+     * What the names are is not this system's invention: the editor kits have had them
+     * since text views did, and using them means the actions are the ones already tested
+     * against every kind of selection somebody can make.
+     */
+    public static final String PERFORM = "perform";
+
+    /** Choosing a stretch of text, and asking what is chosen. */
+    public static final String SELECT_RANGE = "selectRange";
+    public static final String SELECTION = "selection";
+    public static final String GET = "getValue";
+    public static final String SET_TITLE = "setTitle";
+    public static final String SET_ENABLED = "setEnabled";
+    public static final String NEXT_EVENT = "nextEvent";
+    public static final String LIST = "listWindows";
+
+    /**
+     * Asking a person something, and telling them something.
+     *
+     * A program in a process of its own cannot put up a dialog. It has no screen: the
+     * screen belongs to this process, and a window drawn anywhere else is a window sitting
+     * outside the desktop where nobody is looking for it. Save in TextEdit did exactly
+     * that for a while, and what it looked like from the outside was Save doing nothing.
+     *
+     * So the program asks and this answers, the same way it asks for a window. What comes
+     * back is what the person typed, or nothing if they cancelled.
+     */
+    public static final String ASK = "ask";
+    public static final String TELL = "tell";
+    public static final String CONFIRM = "confirm";
+
+    /**
+     * A question with three answers, one of which loses work.
+     *
+     * Save, Cancel, Don't Save: what a program asks when a document is being closed with
+     * changes in it. It answers with which was chosen, in the order the buttons are
+     * offered, because a program that only knew yes or no would have to ask twice.
+     */
+    public static final String CHOOSE = "choose";
+
+    /**
+     * The save and open panels.
+     *
+     * Every program that saves asks the same question, so the panel belongs to the system
+     * rather than to any of them. It is built here for the same reason a window is: this is
+     * the process with a screen, and on a Mac the panel is drawn outside the asking program
+     * too.
+     */
+    public static final String SAVE_PANEL = "savePanel";
+    public static final String OPEN_PANEL = "openPanel";
+
+    /* What comes back as an event. */
+    public static final String EVENT = "event";
+    public static final String EVENT_ACTION = "action";
+    public static final String EVENT_CLOSED = "windowClosed";
+    public static final String EVENT_MENU = "menu";
+    public static final String EVENT_NONE = "none";
+
+    private static WindowServer instance;
+
+    private final Map<Integer, Window> windows = new ConcurrentHashMap<>();
+    private final AtomicInteger nextWindow = new AtomicInteger(1);
+    /**
+     * Pending events, one queue per program.
+     *
+     * A single shared queue was fine while only one program lived outside the desktop. With
+     * two, each takes whatever is at the front: one gets told about a window it has never
+     * heard of while the other reads its button press. An event belongs to the program
+     * whose window produced it.
+     */
+    private final Map<String, LinkedBlockingQueue<Message>> events = new ConcurrentHashMap<>();
+    private Service service;
+
+    /**
+     * How many programs may have queues at once, and how many events each may hold.
+     *
+     * Both are ceilings on what a caller can make the server allocate. A queue is created
+     * only when a program opens a window, never from a name in a request, because a name in
+     * a request is whatever the sender typed; and a queue that fills drops its oldest event
+     * rather than growing, because a program that has stopped reading its events is not a
+     * reason to run the desktop out of memory.
+     */
+    private static final int MAX_PROGRAMS = 64;
+    private static final int MAX_EVENTS_PER_PROGRAM = 1024;
+
+    /**
+     * The largest window or control a description may ask for.
+     *
+     * Bigger than any real display, so no honest description is affected, and small enough
+     * that Swing can lay it out. Without this a description asking for two billion pixels is
+     * handed straight to setSize on the event thread.
+     */
+    private static final int MAX_DIMENSION = 16384;
+
+    /** One window the server is holding for somebody. */
+    private static final class Window {
+        final int id;
+        final String application;
+        final RemoteFrame frame;
+        final Map<String, JComponent> controls = new LinkedHashMap<>();
+        /** The rows of each list, kept so a program can put different ones in. */
+        final Map<String, DefaultListModel<String>> lists = new LinkedHashMap<>();
+
+        Window(int id, String application, RemoteFrame frame) {
+            this.id = id;
+            this.application = application;
+            this.frame = frame;
+        }
+    }
+
+    /**
+     * A window owned by a program in another process.
+     *
+     * Same class, title bar and accessible tree as any window here, and it owns the menu
+     * bar while it is in front. The menus arrived in the same description as the window and
+     * are built here; choosing one posts an event back, as a button press does.
+     */
+    private final class RemoteFrame extends JInternalFrame implements org.fractalmicro.appkit.AppWindow {
+        private final String application;
+        private final org.fractalmicro.foundation.FMArray<Nib.Menu> described;
+        private final int id;
+
+        RemoteFrame(int id, String application, Nib nib) {
+            super(nib.title().toString(), nib.resizable(), true, true, true);
+            this.id = id;
+            this.application = application;
+            this.described = nib.menus();
+        }
+
+        @Override public String applicationName() { return application; }
+
+        @Override public List<JMenu> applicationMenus() {
+            List<JMenu> out = new ArrayList<>();
+            for (Nib.Menu menu : described) out.add(build(menu));
+            return out;
+        }
+
+        private JMenu build(Nib.Menu described) {
+            JMenu menu = new JMenu(described.title().toString());
+            menu.getAccessibleContext().setAccessibleName(described.title().toString());
+            for (Nib.MenuItem item : described.items()) {
+                if (item.separator()) {
+                    menu.addSeparator();
+                    continue;
+                }
+                JMenuItem made = new JMenuItem(item.title().toString());
+                KeyStroke stroke = strokeOf(item);
+                if (stroke != null) made.setAccelerator(stroke);
+                made.setEnabled(item.enabled());
+                made.addActionListener(e -> post(application, Message.of(EVENT)
+                    .put("event", EVENT_MENU)
+                    .put("window", (long) id)
+                    .put("menu", described.title())
+                    .put("item", item.title())
+                    .put("action", item.action() == null ? "" : item.action())));
+                menu.add(made);
+            }
+            return menu;
+        }
+    }
+
+    /**
+     * Turns a description's key into a {@link KeyStroke}.
+     *
+     * Descriptions name keys the way a person does: the key, plus which of command, shift,
+     * option and control are held, rather than an AWT modifier mask.
+     */
+    public static KeyStroke strokeOf(Nib.MenuItem item) {
+        String key = item.key().toString();
+        if (key == null || key.isBlank()) return null;
+        int modifiers = 0;
+        for (org.fractalmicro.foundation.FMString named : item.modifiers()) {
+            switch (named.lowercase().toString()) {
+                case "command", "cmd" -> modifiers |= org.fractalmicro.windowserver.MainMenu.CMD;
+                case "shift" -> modifiers |= org.fractalmicro.windowserver.MainMenu.SHIFT;
+                case "option", "alt" -> modifiers |= org.fractalmicro.windowserver.MainMenu.OPT;
+                case "control", "ctrl" -> modifiers |= org.fractalmicro.windowserver.MainMenu.CTRL;
+                default -> { }
+            }
+        }
+        String named = key.trim();
+        int code = switch (named.toLowerCase(java.util.Locale.ROOT)) {
+            case "return", "enter" -> java.awt.event.KeyEvent.VK_ENTER;
+            case "delete", "backspace" -> java.awt.event.KeyEvent.VK_BACK_SPACE;
+            case "escape" -> java.awt.event.KeyEvent.VK_ESCAPE;
+            case "space" -> java.awt.event.KeyEvent.VK_SPACE;
+            case "left" -> java.awt.event.KeyEvent.VK_LEFT;
+            case "right" -> java.awt.event.KeyEvent.VK_RIGHT;
+            case "up" -> java.awt.event.KeyEvent.VK_UP;
+            case "down" -> java.awt.event.KeyEvent.VK_DOWN;
+            default -> named.length() == 1
+                ? java.awt.event.KeyEvent.getExtendedKeyCodeForChar(named.charAt(0))
+                : 0;
+        };
+        return code == 0 ? null : KeyStroke.getKeyStroke(code, modifiers);
+    }
+
+    public static synchronized WindowServer get() {
+        if (instance == null) instance = new WindowServer();
+        return instance;
+    }
+
+    /** Starts serving. Answers false when something else already is. */
+    public boolean start() {
+        if (service != null && service.isRunning()) return true;
+        service = new Service(SERVICE, this::answer);
+        boolean started = service.start();
+        if (started) {
+            org.fractalmicro.kernel.Tasks.register("org.fractalmicro.windowserver", "WindowServer",
+                org.fractalmicro.kernel.Task.Kind.SYSTEM, List.of(SERVICE));
+        }
+        return started;
+    }
+
+    public void stop() {
+        if (service != null) service.close();
+    }
+
+    public boolean isRunning() { return service != null && service.isRunning(); }
+
+    /* ------------------------------------------------------------ answering */
+
+    private Message answer(Message request) {
+        try {
+            return switch (request.type()) {
+                case OPEN -> open(request);
+                case CLOSE -> close(request);
+                case SET -> setValue(request);
+                case SET_ROWS -> setRows(request);
+                case SET_VISIBLE -> setVisible(request);
+                case PERFORM -> perform(request);
+                case SELECT_RANGE -> selectRange(request);
+                case SELECTION -> selection(request);
+                case GET -> getValue(request);
+                case SET_TITLE -> setTitle(request);
+                case SET_ENABLED -> setEnabled(request);
+                case NEXT_EVENT -> nextEvent(request);
+                case LIST -> listWindows();
+                case ASK -> ask(request);
+                case TELL -> tell(request);
+                case CONFIRM -> confirm(request);
+                case CHOOSE -> choose(request);
+                case SAVE_PANEL -> panel(request, false);
+                case OPEN_PANEL -> panel(request, true);
+                default -> Message.error("the window server does not answer " + request.type());
+            };
+        } catch (Exception e) {
+            Log.error("the window server could not answer " + request.type(), e);
+            // What went wrong is usually further down: work on the screen happens on the
+            // main thread, and what comes back from there is a wrapper with nothing in it.
+            // Saying the wrapper's name tells the program nothing it can act on.
+            Throwable cause = e;
+            while (cause.getCause() != null && cause.getMessage() == null) {
+                cause = cause.getCause();
+            }
+            return Message.error(cause.getMessage() == null
+                                 ? cause.toString() : cause.getMessage());
+        }
+    }
+
+    /** Makes a window from a description and puts it on the screen. */
+    private Message open(Message request) throws Exception {
+        String application = request.string("application", "Program");
+        byte[] description = describedIn(request);
+        Nib nib = Nib.parse(org.fractalmicro.foundation.FMData.of(description));
+
+        if (!openQueue(application)) {
+            return Message.error("too many programs have windows open");
+        }
+
+        int id = nextWindow.getAndIncrement();
+        Window[] made = new Window[1];
+        onSwing(() -> made[0] = build(id, application, nib));
+        if (made[0] == null) return Message.error("the window could not be made");
+        windows.put(id, made[0]);
+        Log.info("window " + id + " opened for " + application + ": " + nib.title());
+        List<Object> menuNames = new ArrayList<>();
+        for (Nib.Menu menu : nib.menus()) menuNames.add(menu.title());
+        return Message.of(OPEN).put("window", (long) id)
+                               .put("controls", new ArrayList<Object>(made[0].controls.keySet()))
+                               .put("menus", menuNames);
+    }
+
+    private byte[] describedIn(Message request) throws java.io.IOException {
+        Object described = request.get("description");
+        if (described instanceof byte[] bytes) return bytes;
+        if (described instanceof String text) {
+            return text.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
+        throw new java.io.IOException("this message carries no description");
+    }
+
+    /** Turns a description into controls. Everything made here is named. */
+    private Window build(int id, String application, Nib nib) {
+        RemoteFrame frame = new RemoteFrame(id, application, nib);
+        frame.setSize(clamped(nib.width()), clamped(nib.height()));
+        frame.getAccessibleContext().setAccessibleName(nib.title().toString());
+
+        JPanel body = new JPanel(null);
+        body.setBackground(Aqua.WINDOW_BG);
+        Window window = new Window(id, application, frame);
+
+        JButton defaultButton = null;
+        for (Nib.Control control : nib.controls()) {
+            JComponent made = make(control, window);
+            if (made == null) continue;
+            made.setBounds(clamped(control.x()), clamped(control.y()),
+                           clamped(control.width()), clamped(control.height()));
+            if (!control.name().isBlank()) {
+                made.getAccessibleContext().setAccessibleName(control.name().toString());
+            }
+            if (control.description() != null && !control.description().isBlank()) {
+                made.getAccessibleContext().setAccessibleDescription(control.description().toString());
+            }
+            body.add(made);
+            window.controls.put(control.identifier().toString(), made);
+            if (control.defaultButton() && made instanceof JButton button) defaultButton = button;
+        }
+
+        frame.setContentPane(new JScrollPane(body,
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+        if (defaultButton != null) frame.getRootPane().setDefaultButton(defaultButton);
+
+        frame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+            @Override public void internalFrameClosed(javax.swing.event.InternalFrameEvent e) {
+                windows.remove(id);
+                post(application, Message.of(EVENT)
+                    .put("event", EVENT_CLOSED).put("window", (long) id));
+            }
+        });
+        Desktop.get().addWindow(frame);
+        return window;
+    }
+
+    /** One control, as the real thing it names. */
+    private JComponent make(Nib.Control control, Window window) {
+        String text = control.text() == null ? "" : control.text().toString();
+        switch (control.kind()) {
+            case FMButton -> {
+                JButton button = new JButton(text);
+                button.addActionListener(e -> post(window.application, actionEvent(window, control)));
+                return button;
+            }
+            case FMLabel -> {
+                JLabel label = new JLabel(text);
+                label.setFont(Aqua.systemFont());
+                return label;
+            }
+            case FMTextField -> {
+                FMTextField field = new FMTextField(org.fractalmicro.foundation.FMString.of(text));
+                field.addActionListener(e -> post(window.application, actionEvent(window, control)));
+                return field;
+            }
+            case FMTextView -> {
+                FMTextArea area = new FMTextArea(org.fractalmicro.foundation.FMString.of(text), 0, 0);
+                area.setLineWrap(true);
+                area.setWrapStyleWord(true);
+                JScrollPane scroll = new JScrollPane(area);
+                scroll.getAccessibleContext().setAccessibleName(control.name().toString());
+                // The area is what the value is read from and written to.
+                window.controls.put(control.identifier() + ".text", area);
+                return scroll;
+            }
+            case FMCheckBox -> {
+                JCheckBox box = new JCheckBox(text, Boolean.TRUE.equals(control.value()));
+                box.addActionListener(e -> post(window.application, actionEvent(window, control)
+                    .put("value", box.isSelected())));
+                return box;
+            }
+            case FMPopUpButton -> {
+                JComboBox<String> popup = new JComboBox<>(
+                    textOf(control.choices()));
+                if (control.value() instanceof String chosen) popup.setSelectedItem(chosen);
+                popup.addActionListener(e -> post(window.application, actionEvent(window, control)
+                    .put("value", String.valueOf(popup.getSelectedItem()))));
+                return popup;
+            }
+            case FMSlider -> {
+                JSlider slider = new JSlider(0, 100,
+                    control.value() instanceof Number n ? n.intValue() : 50);
+                slider.addChangeListener(e -> {
+                    if (!slider.getValueIsAdjusting()) {
+                        post(window.application, actionEvent(window, control).put("value", (long) slider.getValue()));
+                    }
+                });
+                return slider;
+            }
+            case FMProgressIndicator -> {
+                JProgressBar bar = new JProgressBar(0, 100);
+                bar.setValue(control.value() instanceof Number n ? n.intValue() : 0);
+                return bar;
+            }
+            case FMRichText -> {
+                // A text pane rather than a text area, because what goes in it has fonts,
+                // sizes and styles in it. What crosses is RTF: the program has the
+                // document, the server has the screen, and RTF is what both of them
+                // already understand well enough to describe one to the other.
+                javax.swing.JTextPane pane = new javax.swing.JTextPane();
+                pane.setEditorKit(new javax.swing.text.rtf.RTFEditorKit());
+                pane.getAccessibleContext().setAccessibleName(control.name().toString());
+                if (control.text() != null && !control.text().isBlank()) {
+                    setRich(pane, control.text().toString());
+                }
+                pane.addFocusListener(new java.awt.event.FocusAdapter() {
+                    @Override public void focusLost(java.awt.event.FocusEvent e) {
+                        post(window.application, actionEvent(window, control));
+                    }
+                });
+                JScrollPane scroll = new JScrollPane(pane);
+                scroll.getAccessibleContext().setAccessibleName(control.name().toString());
+                // Under the text name, because what the window holds is the scroll pane
+                // and that is what gets stored under the plain one. Everything a program
+                // does to a document is done to the pane inside it.
+                window.controls.put(control.identifier() + ".text", pane);
+                return scroll;
+            }
+            case FMTableView -> {
+                DefaultListModel<String> model = new DefaultListModel<>();
+                for (String row : textOf(control.choices())) model.addElement(row);
+                JList<String> list = new JList<>(model);
+                list.addListSelectionListener(e -> {
+                    if (!e.getValueIsAdjusting() && list.getSelectedValue() != null) {
+                        post(window.application, actionEvent(window, control).put("value", list.getSelectedValue()));
+                    }
+                });
+                JScrollPane scroll = new JScrollPane(list);
+                scroll.getAccessibleContext().setAccessibleName(control.name().toString());
+                window.controls.put(control.identifier() + ".list", list);
+                window.lists.put(control.identifier().toString(), model);
+                return scroll;
+            }
+            case FMSeparator -> {
+                return new JSeparator();
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+
+    private Message actionEvent(Window window, Nib.Control control) {
+        return Message.of(EVENT)
+            .put("event", EVENT_ACTION)
+            .put("window", (long) window.id)
+            .put("control", control.identifier())
+            .put("action", control.action() == null ? "" : control.action());
+    }
+
+    private void post(String application, Message event) {
+        LinkedBlockingQueue<Message> queue = events.get(key(application));
+        if (queue == null) return;              // no window open for it; nothing to tell
+        if (!queue.offer(event)) {
+            queue.poll();                       // drop the oldest and keep the newest
+            queue.offer(event);
+        }
+    }
+
+    /**
+     * The queue a program reads from, made when it opens its first window.
+     *
+     * Answers false when there are already too many programs and none of them can be let
+     * go. Queues belonging to programs with no windows left are reclaimed first, which is
+     * what makes the ceiling a ceiling rather than a wall.
+     */
+    private boolean openQueue(String application) {
+        String name = key(application);
+        if (events.containsKey(name)) return true;
+        if (events.size() >= MAX_PROGRAMS) {
+            events.keySet().removeIf(this::hasNoWindows);
+            if (events.size() >= MAX_PROGRAMS) return false;
+        }
+        events.putIfAbsent(name, new LinkedBlockingQueue<>(MAX_EVENTS_PER_PROGRAM));
+        return true;
+    }
+
+    /** How many programs the server is holding queues for. */
+    public int programCount() { return events.size(); }
+
+    private boolean hasNoWindows(String application) {
+        for (Window window : windows.values()) {
+            if (key(window.application).equals(application)) return false;
+        }
+        return true;
+    }
+
+    private static String key(String application) {
+        return application == null ? "" : application;
+    }
+
+    /** Keeps a number from a description inside what can actually be drawn. */
+    private static int clamped(int value) {
+        return Math.max(0, Math.min(value, MAX_DIMENSION));
+    }
+
+    /* ---------------------------------------------------------- the values */
+
+    private Message setValue(Message request) throws Exception {
+        JComponent control = find(request);
+        Object value = request.get("value");
+        onSwing(() -> apply(control, value));
+        return Message.of(SET).put("ok", Boolean.TRUE);
+    }
+
+    /**
+     * Puts different rows in a list, keeping the selection where it can.
+     *
+     * A listing that jumps back to the top every time it refreshes is a listing nobody can
+     * read, so what was selected is selected again if it is still there.
+     */
+    private Message setRows(Message request) throws Exception {
+        Window window = windowOf(request);
+        String control = request.string("control", "");
+        List<String> rows = request.strings("rows");
+        DefaultListModel<String> model = window.lists.get(control);
+        if (model == null) return Message.error("no list called " + control);
+        onSwing(() -> {
+            JComponent found = window.controls.get(control + ".list");
+            Object was = found instanceof JList<?> list ? list.getSelectedValue() : null;
+            model.clear();
+            for (String row : rows) model.addElement(row);
+            if (was != null && found instanceof JList<?> list) {
+                int at = model.indexOf(String.valueOf(was));
+                if (at >= 0) list.setSelectedIndex(at);
+            }
+        });
+        return Message.of(SET_ROWS).put("ok", Boolean.TRUE);
+    }
+
+    /**
+     * Shows or hides one control, and whatever is holding it.
+     *
+     * A control inside a scroll pane is not the thing on the screen; the scroll pane is.
+     * Hiding the control and leaving the frame around it would leave a hole where the pane
+     * was, which is worse than not hiding it at all.
+     */
+    private Message setVisible(Message request) throws Exception {
+        JComponent control = find(request);
+        boolean shown = request.bool("visible", true);
+        onSwing(() -> {
+            JComponent outermost = control;
+            java.awt.Container above = control.getParent();
+            while (above instanceof javax.swing.JViewport
+                   || above instanceof javax.swing.JScrollPane) {
+                if (above instanceof JComponent held) outermost = held;
+                above = above.getParent();
+            }
+            outermost.setVisible(shown);
+            outermost.getParent().repaint();
+        });
+        return Message.of(SET_VISIBLE).put("ok", Boolean.TRUE);
+    }
+
+    /**
+     * Puts styled text into a pane, or plain text when it is not styled.
+     *
+     * A program that has never set a font sends plain text, and it would be wrong to
+     * refuse that: the pane holds a document either way and plain is a document with one
+     * style in it.
+     */
+    private static void setRich(javax.swing.JTextPane pane, String text) {
+        if (!text.startsWith("{" + "\\rtf")) {
+            // Not through setText. A pane with an RTF kit reads everything
+            // given to it as RTF, and plain words are not RTF: what arrives is
+            // nothing at all. The document takes them directly, which is what
+            // plain text in a styled document is anyway.
+            try {
+                javax.swing.text.Document held =
+                    pane.getEditorKit().createDefaultDocument();
+                held.insertString(0, text, null);
+                pane.setDocument(held);
+            } catch (javax.swing.text.BadLocationException cannotHappen) {
+                pane.setText(text);
+            }
+            return;
+        }
+        try {
+            pane.setDocument(pane.getEditorKit().createDefaultDocument());
+            pane.getEditorKit().read(new java.io.StringReader(text), pane.getDocument(), 0);
+        } catch (Exception notRich) {
+            pane.setText(text);
+        }
+    }
+
+    /** What is in a pane, as RTF, so the styles survive the crossing back. */
+    private static String richOf(javax.swing.JTextPane pane) {
+        try {
+            java.io.StringWriter out = new java.io.StringWriter();
+            pane.getEditorKit().write(out, pane.getDocument(), 0, pane.getDocument().getLength());
+            return out.toString();
+        } catch (Exception notRich) {
+            return pane.getText();
+        }
+    }
+
+    /**
+     * Runs a named action on a control.
+     *
+     * The action comes from the control's own action map, which is where a text view keeps
+     * everything it knows how to do to itself. A name it does not know is answered with an
+     * error rather than ignored, because a menu item that quietly does nothing is worse
+     * than one that says why.
+     */
+    private Message perform(Message request) throws Exception {
+        JComponent control = find(request);
+        String action = request.string("action", "");
+        boolean[] done = {false};
+        onSwing(() -> {
+            javax.swing.Action found = actionNamed(control, action);
+            if (found == null) return;
+            control.requestFocusInWindow();
+            found.actionPerformed(new java.awt.event.ActionEvent(
+                control, java.awt.event.ActionEvent.ACTION_PERFORMED, action));
+            done[0] = true;
+        });
+        return done[0] ? Message.of(PERFORM).put("ok", Boolean.TRUE)
+                       : Message.error("the control cannot " + action);
+    }
+
+    /**
+     * The action a control knows by that name.
+     *
+     * A text component's own action map has the ones the keyboard is bound to. The rest,
+     * bold and italic and the alignments, belong to the editor kit, which is where a styled
+     * view keeps what it can do to a document. Both are asked, because which of the two an
+     * action lives in is an implementation detail of the toolkit and not something a
+     * program should have to know.
+     */
+    private static javax.swing.Action actionNamed(JComponent control, String name) {
+        javax.swing.Action found = control.getActionMap().get(name);
+        if (found != null) return found;
+        if (control instanceof javax.swing.JEditorPane pane) {
+            for (javax.swing.Action one : pane.getEditorKit().getActions()) {
+                if (name.equals(one.getValue(javax.swing.Action.NAME))) return one;
+            }
+        }
+        return null;
+    }
+
+    /** Chooses a stretch of text, and shows it. */
+    private Message selectRange(Message request) throws Exception {
+        JComponent control = find(request);
+        int from = (int) request.integer("from", 0);
+        int to = (int) request.integer("to", 0);
+        onSwing(() -> {
+            if (!(control instanceof javax.swing.text.JTextComponent text)) return;
+            int length = text.getDocument().getLength();
+            text.select(Math.max(0, Math.min(from, length)),
+                        Math.max(0, Math.min(to, length)));
+            text.requestFocusInWindow();
+        });
+        return Message.of(SELECT_RANGE).put("ok", Boolean.TRUE);
+    }
+
+    /** What is chosen: where it starts, where it ends, and the text of it. */
+    private Message selection(Message request) throws Exception {
+        JComponent control = find(request);
+        int[] where = {0, 0};
+        String[] text = {""};
+        onSwing(() -> {
+            if (!(control instanceof javax.swing.text.JTextComponent field)) return;
+            where[0] = field.getSelectionStart();
+            where[1] = field.getSelectionEnd();
+            String chosen = field.getSelectedText();
+            text[0] = chosen == null ? "" : chosen;
+        });
+        return Message.of(SELECTION)
+            .put("from", (long) where[0]).put("to", (long) where[1]).put("text", text[0]);
+    }
+
+    private void apply(JComponent control, Object value) {
+        String text = value == null ? "" : String.valueOf(value);
+        if (control instanceof javax.swing.JTextPane pane) {
+            setRich(pane, text);
+        } else if (control instanceof javax.swing.text.JTextComponent field) {
+            field.setText(text);
+        } else if (control instanceof JLabel label) {
+            label.setText(text);
+        } else if (control instanceof JCheckBox box) {
+            box.setSelected(Boolean.TRUE.equals(value) || "true".equalsIgnoreCase(text));
+        } else if (control instanceof JProgressBar bar) {
+            bar.setValue(value instanceof Number n ? n.intValue() : 0);
+        } else if (control instanceof JSlider slider) {
+            slider.setValue(value instanceof Number n ? n.intValue() : 0);
+        } else if (control instanceof JComboBox<?> popup) {
+            popup.setSelectedItem(text);
+        } else if (control instanceof AbstractButton button) {
+            button.setText(text);
+        }
+    }
+
+    private Message getValue(Message request) throws Exception {
+        JComponent control = find(request);
+        Object[] value = new Object[1];
+        onSwing(() -> value[0] = read(control));
+        return Message.of(GET).put("value", value[0] == null ? "" : value[0]);
+    }
+
+    private Object read(JComponent control) {
+        if (control instanceof javax.swing.JTextPane pane) return richOf(pane);
+        if (control instanceof javax.swing.text.JTextComponent field) return field.getText();
+        if (control instanceof JCheckBox box) return box.isSelected();
+        if (control instanceof JComboBox<?> popup) return String.valueOf(popup.getSelectedItem());
+        if (control instanceof JSlider slider) return (long) slider.getValue();
+        if (control instanceof JProgressBar bar) return (long) bar.getValue();
+        if (control instanceof JList<?> list) {
+            Object selected = list.getSelectedValue();
+            return selected == null ? "" : String.valueOf(selected);
+        }
+        if (control instanceof AbstractButton button) return button.getText();
+        if (control instanceof JLabel label) return label.getText();
+        return "";
+    }
+
+    private Message setTitle(Message request) throws Exception {
+        Window window = windowOf(request);
+        String title = request.string("title", "");
+        onSwing(() -> {
+            window.frame.setTitle(title);
+            window.frame.getAccessibleContext().setAccessibleName(title);
+        });
+        return Message.of(SET_TITLE).put("ok", Boolean.TRUE);
+    }
+
+    private Message setEnabled(Message request) throws Exception {
+        JComponent control = find(request);
+        boolean enabled = request.bool("enabled", true);
+        onSwing(() -> control.setEnabled(enabled));
+        return Message.of(SET_ENABLED).put("ok", Boolean.TRUE);
+    }
+
+    private Message close(Message request) throws Exception {
+        Window window = windowOf(request);
+        onSwing(() -> window.frame.doDefaultCloseAction());
+        return Message.of(CLOSE).put("ok", Boolean.TRUE);
+    }
+
+    private Message listWindows() {
+        List<Object> open = new ArrayList<>();
+        for (Window window : windows.values()) {
+            Map<String, Object> one = new LinkedHashMap<>();
+            one.put("window", (long) window.id);
+            one.put("application", window.application);
+            one.put("title", window.frame.getTitle());
+            open.add(one);
+        }
+        return Message.of(LIST).put("windows", open);
+    }
+
+    /**
+     * Blocks for up to the caller's timeout and returns the next event, so a program in
+     * another process can run an ordinary event loop.
+     */
+    private Message nextEvent(Message request) throws InterruptedException {
+        long wait = Math.max(0, Math.min(request.integer("timeout", 1000), 30_000));
+        // Looked up, never created: the name comes from the caller, and a caller that can
+        // make the server allocate by naming something new can make it allocate for ever.
+        LinkedBlockingQueue<Message> queue = events.get(key(request.string("application", "")));
+        if (queue == null) return Message.of(EVENT).put("event", EVENT_NONE);
+        Message event = queue.poll(wait, TimeUnit.MILLISECONDS);
+        return event == null ? Message.of(EVENT).put("event", EVENT_NONE) : event;
+    }
+
+    /* ---------------------------------------------------------------- pieces */
+
+    private Window windowOf(Message request) throws Exception {
+        int id = (int) request.integer("window", -1);
+        Window window = windows.get(id);
+        if (window == null) throw new java.io.IOException("there is no window " + id);
+        return window;
+    }
+
+    private JComponent find(Message request) throws Exception {
+        Window window = windowOf(request);
+        String identifier = request.string("control", "");
+        JComponent control = window.controls.get(identifier + ".text");
+        if (control == null) control = window.controls.get(identifier + ".list");
+        if (control == null) control = window.controls.get(identifier);
+        if (control == null) {
+            throw new java.io.IOException("window " + window.id + " has no control called "
+                                          + identifier);
+        }
+        return control;
+    }
+
+
+    /* ------------------------------------------------------- asking a person */
+
+    /**
+     * Puts a question on the screen for a program that has no screen.
+     *
+     * The dialog is drawn here, over the desktop, where a person is already looking. It is
+     * modal, so this waits: the program that asked is waiting too, and a question nobody
+     * answers is not a question.
+     */
+    private Message ask(Message request) throws Exception {
+        FMString[] answer = new FMString[1];
+        onSwing(() -> answer[0] = Alert.ask(
+            said(request, "message"), said(request, "label"),
+            said(request, "value"), said(request, "action")));
+        return Message.of(ASK).put("value", answer[0] == null ? "" : answer[0].toString());
+    }
+
+    /** Says something to a person on behalf of a program that cannot say it itself. */
+    private Message tell(Message request) throws Exception {
+        onSwing(() -> Alert.tell(said(request, "message"), said(request, "informative")));
+        return Message.of(TELL);
+    }
+
+    /**
+     * Asks a yes or no question, and answers which was chosen.
+     *
+     * The buttons are named for what they do rather than saying OK, which is the same rule
+     * everywhere else here: somebody reading only the buttons still knows which one keeps
+     * their work.
+     */
+    private Message confirm(Message request) throws Exception {
+        boolean[] chose = new boolean[1];
+        onSwing(() -> chose[0] = Alert.confirm(Alert.Kind.CAUTION,
+            said(request, "message"), said(request, "informative"),
+            said(request, "action")));
+        return Message.of(CONFIRM).put("chose", chose[0]);
+    }
+
+    /** The three-answer question, which answers with the button that was pressed. */
+    private Message choose(Message request) throws Exception {
+        int[] chosen = new int[1];
+        onSwing(() -> chosen[0] = Alert.confirmIrreversible(
+            said(request, "message"), said(request, "informative"),
+            said(request, "action"), said(request, "other")));
+        return Message.of(CHOOSE).put("chosen", (long) chosen[0]);
+    }
+
+    /**
+     * Runs a save or open panel for a program that has no screen to run one on.
+     *
+     * What crosses the boundary is what the program said about the panel and what came
+     * back out of it: a name, a place, the kinds it writes, and afterwards the file that
+     * was chosen and which format. The panel itself never leaves this process.
+     */
+    private Message panel(Message request, boolean opening) throws Exception {
+        org.fractalmicro.appkit.FMSavePanel panel = opening
+            ? org.fractalmicro.appkit.FMOpenPanel.openPanel()
+            : org.fractalmicro.appkit.FMSavePanel.savePanel();
+
+        panel.nameFieldStringValue(said(request, "name"))
+             .title(said(request, "title"))
+             .message(said(request, "message"))
+             .allowedFileTypes(textList(request, "types"))
+             .formats(textList(request, "formats"), said(request, "formatLabel"))
+             .chosenFormat((int) request.integer("format", 0));
+        FMString where = said(request, "directory");
+        if (!where.isEmpty()) {
+            panel.directoryURL(org.fractalmicro.foundation.FMURL.ofPath(where));
+        }
+        FMString prompt = said(request, "prompt");
+        if (!prompt.isEmpty()) panel.prompt(prompt);
+
+        int[] answer = new int[1];
+        onSwing(() -> answer[0] = panel.runModal());
+
+        Message reply = Message.of(opening ? OPEN_PANEL : SAVE_PANEL)
+            .put("answer", (long) answer[0])
+            .put("format", (long) panel.chosenFormat());
+        if (answer[0] == org.fractalmicro.appkit.FMSavePanel.OK && panel.url() != null) {
+            reply = reply.put("path", panel.url().path().toString());
+        }
+        return reply;
+    }
+
+    /** A list of text out of a request, which arrives as whatever the message held. */
+    private static org.fractalmicro.foundation.FMArray<FMString> textList(Message request,
+                                                                         String named) {
+        org.fractalmicro.foundation.FMMutableArray<FMString> out =
+            org.fractalmicro.foundation.FMMutableArray.empty();
+        for (String one : request.strings(named)) out.add(FMString.of(one));
+        return out.asArray();
+    }
+
+    /** One piece of text out of a request, as this system's own kind of text. */
+    private static FMString said(Message request, String named) {
+        Object value = request.get(named);
+        return value == null ? FMString.EMPTY : FMString.describing(value);
+    }
+
+    /** Everything that touches a control happens where controls are allowed to be touched. */
+    private void onSwing(Runnable task) throws Exception {
+        if (SwingUtilities.isEventDispatchThread()) task.run();
+        else SwingUtilities.invokeAndWait(task);
+    }
+
+    /** How many windows are open, for anything that wants to say so. */
+    public int windowCount() { return windows.size(); }
+
+    /**
+     * A list of names as the toolkit underneath wants them.
+     *
+     * Everything above this class works in FMString. Swing works in the runtime's own, and
+     * something has to do the conversion. Doing it here, at the one place the two meet,
+     * keeps it out of everywhere else.
+     */
+    private static String[] textOf(org.fractalmicro.foundation.FMArray<org.fractalmicro.foundation.FMString> names) {
+        String[] out = new String[names.count()];
+        for (int i = 0; i < out.length; i++) out[i] = names.at(i).toString();
+        return out;
+    }
+}

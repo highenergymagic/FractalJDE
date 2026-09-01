@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" targetRuntime="MacOSX.Cocoa">
+    <objects>
+        <window title="System Profiler" resizable="YES" id="window">
+            <rect key="contentRect" x="0" y="0" width="620" height="420"/>
+            <view key="contentView" id="content">
+                <subviews>
+                    <tableView id="sections">
+                        <rect key="frame" x="12" y="12" width="150" height="356"/>
+                        <accessibility key="accessibilityLabel" label="Contents" help="What this machine is, by part"/>
+                        <items>
+                            <item title="Hardware"/>
+                            <item title="Software"/>
+                            <item title="Volumes"/>
+                            <item title="Locations"/>
+                        </items>
+                        <connections><action selector="sections"/></connections>
+                    </tableView>
+                    <tableView id="details">
+                        <rect key="frame" x="174" y="12" width="434" height="356"/>
+                        <accessibility key="accessibilityLabel" label="Details" help="What the selected part is"/>
+                    </tableView>
+                </subviews>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="File" id="menu File">
+                <items>
+                    <menuItem title="Close" keyEquivalent="w">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="close"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="View" id="menu View">
+                <items>
+                    <menuItem title="Refresh" keyEquivalent="r">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="sections"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

@@ -1,0 +1,83 @@
+/* The title of the window */
+"window.title" = "Rechner";
+
+/* What the display control is called */
+"display.accessibilityLabel" = "Antwort";
+
+/* What the clear control is called */
+"clear.accessibilityLabel" = "Löschen";
+
+/* What the negate control is called */
+"negate.accessibilityLabel" = "Vorzeichen wechseln";
+
+/* What the percent control is called */
+"percent.accessibilityLabel" = "Prozent";
+
+/* What the divide control is called */
+"divide.accessibilityLabel" = "Dividieren";
+
+/* What the multiply control is called */
+"multiply.accessibilityLabel" = "Multiplizieren";
+
+/* What the subtract control is called */
+"subtract.accessibilityLabel" = "Subtrahieren";
+
+/* What the add control is called */
+"add.accessibilityLabel" = "Addieren";
+
+/* What the point control is called */
+"point.accessibilityLabel" = "Komma";
+
+/* What the equals control is called */
+"equals.accessibilityLabel" = "Gleich";
+
+/* What the digit 0 control is called */
+"digit 0.accessibilityLabel" = "Null";
+
+/* What the digit 1 control is called */
+"digit 1.accessibilityLabel" = "Eins";
+
+/* What the digit 2 control is called */
+"digit 2.accessibilityLabel" = "Zwei";
+
+/* What the digit 3 control is called */
+"digit 3.accessibilityLabel" = "Drei";
+
+/* What the digit 4 control is called */
+"digit 4.accessibilityLabel" = "Vier";
+
+/* What the digit 5 control is called */
+"digit 5.accessibilityLabel" = "Fünf";
+
+/* What the digit 6 control is called */
+"digit 6.accessibilityLabel" = "Sechs";
+
+/* What the digit 7 control is called */
+"digit 7.accessibilityLabel" = "Sieben";
+
+/* What the digit 8 control is called */
+"digit 8.accessibilityLabel" = "Acht";
+
+/* What the digit 9 control is called */
+"digit 9.accessibilityLabel" = "Neun";
+
+/* The name of a menu in the bar. Mac OS X calls the File menu Ablage in German. */
+"menu File.title" = "Ablage";
+
+/* A command in the File menu */
+"menu File.close.title" = "Schließen";
+
+/* The name of a menu in the bar */
+"menu Edit.title" = "Bearbeiten";
+
+/* A command in the Edit menu */
+"menu Edit.copy.title" = "Kopieren";
+
+/* A command in the Edit menu */
+"menu Edit.clear.title" = "Löschen";
+
+/* The name of a menu in the bar */
+"menu View.title" = "Darstellung";
+
+/* A command in the View menu */
+"menu View.basic.title" = "Einfach";

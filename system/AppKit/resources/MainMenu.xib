@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0">
+    <objects>
+        <window title="Menu bar" id="window" resizable="NO">
+            <rect key="contentRect" x="0" y="0" width="1" height="1"/>
+            <view key="contentView" id="content">
+                <subviews/>
+            </view>
+        </window>
+        <mainMenu id="menu bar">
+            <menu title="Fractal" id="menu Fractal">
+                <items>
+                    <menuItem title="About This Computer">
+                        <connections><action selector="aboutThisComputer"/></connections>
+                    </menuItem>
+                    <menuItem title="Software Update…">
+                        <connections><action selector="softwareUpdate"/></connections>
+                    </menuItem>
+                    <menuItem title="FractalJDE Software…">
+                        <connections><action selector="fractalSoftware"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="System Preferences…">
+                        <connections><action selector="systemPreferences"/></connections>
+                    </menuItem>
+                    <menuItem title="Dock">
+                        <menu title="Dock" id="menu Dock">
+                            <items>
+                                <menuItem title="Turn Magnification On" state="off">
+                                    <connections><action selector="dockMagnification"/></connections>
+                                </menuItem>
+                                <menuItem title="Dock Preferences…">
+                                    <connections><action selector="dockPreferences"/></connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Force Quit…" keyEquivalent="escape">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" option="YES"/>
+                        <connections><action selector="forceQuit"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Sleep">
+                        <connections><action selector="sleep"/></connections>
+                    </menuItem>
+                    <menuItem title="Lock Screen" keyEquivalent="l">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" control="YES"/>
+                        <connections><action selector="lockScreen"/></connections>
+                    </menuItem>
+                    <menuItem title="Restart…">
+                        <connections><action selector="restart"/></connections>
+                    </menuItem>
+                    <menuItem title="Shut Down…">
+                        <connections><action selector="shutDown"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Log Out…" keyEquivalent="q">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="logOut"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Window" id="menu Window">
+                <items>
+                    <menuItem title="Minimize" keyEquivalent="m">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="minimize"/></connections>
+                    </menuItem>
+                    <menuItem title="Zoom">
+                        <connections><action selector="zoom"/></connections>
+                    </menuItem>
+                    <menuItem title="Cycle Through Windows" keyEquivalent="`">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        <connections><action selector="cycleWindows"/></connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES"/>
+                    <menuItem title="Bring All to Front">
+                        <connections><action selector="bringAllToFront"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+            <menu title="Help" id="menu Help">
+                <items>
+                    <menuItem title="Fractal Help" keyEquivalent="/">
+                        <keyEquivalentModifierMask key="keyEquivalentModifierMask" command="YES" shift="YES"/>
+                        <connections><action selector="help"/></connections>
+                    </menuItem>
+                    <menuItem title="Keyboard Shortcuts">
+                        <connections><action selector="keyboardShortcuts"/></connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </mainMenu>
+    </objects>
+</document>

@@ -1,0 +1,216 @@
+/* What each kind of file is called. The Finder shows these in Get Info and a
+   screen reader says them, so they are words rather than type names: somebody
+   hears "Microsoft Word document", not "docx". */
+
+"kind.plainTextDocument" = "plain text document";
+
+"kind.richTextDocument" = "rich text document";
+
+"kind.htmlText" = "HTML text";
+
+"kind.xmlText" = "XML text";
+
+"kind.jsonText" = "JSON text";
+
+"kind.yamlText" = "YAML text";
+
+"kind.markdownText" = "Markdown text";
+
+"kind.propertyList" = "property list";
+
+"kind.configurationSettings" = "configuration settings";
+
+"kind.commaSeparatedValues" = "comma separated values";
+
+"kind.javaSource" = "Java source";
+
+"kind.cSource" = "C source";
+
+"kind.c++Source" = "C++ source";
+
+"kind.pythonScript" = "Python script";
+
+"kind.rubyScript" = "Ruby script";
+
+"kind.shellScript" = "shell script";
+
+"kind.batchFile" = "batch file";
+
+"kind.powerShellScript" = "PowerShell script";
+
+"kind.javaScriptSource" = "JavaScript source";
+
+"kind.typeScriptSource" = "TypeScript source";
+
+"kind.rustSource" = "Rust source";
+
+"kind.goSource" = "Go source";
+
+"kind.patchFile" = "patch file";
+
+"kind.pdfDocument" = "Portable Document Format (PDF)";
+
+"kind.microsoftWordDocument" = "Microsoft Word document";
+
+"kind.microsoftExcelWorkbook" = "Microsoft Excel workbook";
+
+"kind.microsoftPowerPointPresentation" = "Microsoft PowerPoint presentation";
+
+"kind.openDocumentText" = "OpenDocument text";
+
+"kind.openDocumentSpreadsheet" = "OpenDocument spreadsheet";
+
+"kind.openDocumentPresentation" = "OpenDocument presentation";
+
+"kind.pagesDocument" = "Pages document";
+
+"kind.numbersSpreadsheet" = "Numbers spreadsheet";
+
+"kind.keynotePresentation" = "Keynote presentation";
+
+"kind.epubPublication" = "EPUB publication";
+
+"kind.portableNetworkGraphicsImage" = "Portable Network Graphics image";
+
+"kind.jpegImage" = "JPEG image";
+
+"kind.gifImage" = "GIF image";
+
+"kind.tiffImage" = "TIFF image";
+
+"kind.windowsBitmapImage" = "Windows bitmap image";
+
+"kind.webpImage" = "WebP image";
+
+"kind.scalableVectorGraphicsImage" = "Scalable Vector Graphics image";
+
+"kind.iconImage" = "icon image";
+
+"kind.windowsIconImage" = "Windows icon image";
+
+"kind.photoshopDocument" = "Photoshop document";
+
+"kind.rawCameraImage" = "RAW camera image";
+
+"kind.heifImage" = "HEIF image";
+
+"kind.mp3Audio" = "MP3 audio";
+
+"kind.mpeg4Audio" = "MPEG-4 audio";
+
+"kind.aacAudio" = "AAC audio";
+
+"kind.waveformAudio" = "Waveform audio";
+
+"kind.aiffAudio" = "AIFF audio";
+
+"kind.flacAudio" = "FLAC audio";
+
+"kind.oggVorbisAudio" = "Ogg Vorbis audio";
+
+"kind.opusAudio" = "Opus audio";
+
+"kind.midiSequence" = "MIDI sequence";
+
+"kind.quickTimeMovie" = "QuickTime movie";
+
+"kind.mpeg4Movie" = "MPEG-4 movie";
+
+"kind.matroskaMovie" = "Matroska movie";
+
+"kind.aviMovie" = "AVI movie";
+
+"kind.windowsMediaVideo" = "Windows Media video";
+
+"kind.mpegMovie" = "MPEG movie";
+
+"kind.webmMovie" = "WebM movie";
+
+"kind.playlist" = "playlist";
+
+"kind.zipArchive" = "ZIP archive";
+
+"kind.gzipArchive" = "gzip archive";
+
+"kind.bzip2Archive" = "bzip2 archive";
+
+"kind.xzArchive" = "XZ archive";
+
+"kind.zstandardArchive" = "Zstandard archive";
+
+"kind.tarArchive" = "tar archive";
+
+"kind.7ZipArchive" = "7-Zip archive";
+
+"kind.rarArchive" = "RAR archive";
+
+"kind.javaArchive" = "Java archive";
+
+"kind.diskImage" = "disk image";
+
+"kind.windowsInstallerPackage" = "Windows installer package";
+
+"kind.androidPackage" = "Android package";
+
+"kind.debianPackage" = "Debian package";
+
+"kind.rpmPackage" = "RPM package";
+
+"kind.application" = "application";
+
+"kind.dynamicLibrary" = "dynamic library";
+
+"kind.kernelExtension" = "kernel extension";
+
+"kind.font" = "font";
+
+"kind.databaseFile" = "database file";
+
+"kind.certificate" = "certificate";
+
+"kind.bundle" = "bundle";
+
+"kind.alias" = "alias";
+
+"kind.clipping" = "clipping";
+
+"kind.smartFolder" = "smart folder";
+
+"kind.virtualMachine" = "virtual machine";
+
+"kind.torrentFile" = "torrent file";
+
+"kind.subtitleFile" = "subtitle file";
+
+"kind.gpxTrack" = "GPX track";
+
+"kind.calendarFile" = "calendar file";
+
+"kind.contactCard" = "contact card";
+
+"kind.emailMessage" = "email message";
+
+"kind.document" = "document";
+
+"kind.folder" = "folder";
+
+"kind.computer" = "computer";
+
+"kind.network" = "network";
+
+"kind.volume" = "volume";
+
+"kind.selected" = "selected %1$@";
+
+
+/* The headings a sidebar groups its places under, in small capitals as Mac OS X has them. */
+"sidebar.devices" = "DEVICES";
+"sidebar.shared" = "SHARED";
+"sidebar.places" = "PLACES";
+"sidebar.searchFor" = "SEARCH FOR";
+
+/* The columns of a list view. */
+"browser.name" = "Name";
+"browser.dateModified" = "Date Modified";
+"browser.size" = "Size";
+"browser.kind" = "Kind";

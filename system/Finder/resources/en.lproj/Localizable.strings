@@ -1,0 +1,107 @@
+/* The Finder's own words: everything it says that is not written in an interface file.
+   A menu item's title is in the table beside the description it came from; what is here
+   is the text the program puts together while it is running. */
+
+/* File menu. The command reads differently once something is selected, and a translator
+   needs both: the plain form and the one naming what would happen to. %1$@ is the name of
+   the selected item. */
+"finder.quickLook" = "Quick Look";
+"finder.quickLookNamed" = "Quick Look “%1$@”";
+"finder.compress" = "Compress";
+"finder.compressNamed" = "Compress “%1$@”";
+
+/* %1$@ is how many things are selected, which is always more than one here. */
+"finder.compressMany" = "Compress %1$@ Items";
+
+/* View menu. Each of these four is one command whose name says what it would do next,
+   so it reads Hide while the thing is showing and Show once it is hidden. */
+"finder.hideToolbar" = "Hide Toolbar";
+"finder.showToolbar" = "Show Toolbar";
+"finder.hidePathBar" = "Hide Path Bar";
+"finder.showPathBar" = "Show Path Bar";
+"finder.hideStatusBar" = "Hide Status Bar";
+"finder.showStatusBar" = "Show Status Bar";
+"finder.hideSidebar" = "Hide Sidebar";
+"finder.showSidebar" = "Show Sidebar";
+
+/* Said when a command needs a window and there is not one open. */
+"finder.noWindowOpen" = "No Finder window is open.";
+
+/* Said when a command exists in the menus but this Finder does not do it. */
+"finder.noBurning" = "Burning discs is not supported.";
+"finder.noCustomToolbar" = "The toolbar in this Finder is not customisable.";
+"finder.noClipboard" = "The clipboard viewer is not implemented.";
+"finder.nothingToUndo" = "There is nothing to undo.";
+"finder.nothingToRedo" = "There is nothing to redo.";
+
+/* The Finder copies and pastes rather than cutting, the way it always has. */
+"finder.noCutting" = "The Finder copies rather than cuts; use Copy then Paste.";
+
+/* Said after Clean Up has rearranged the icons. */
+"finder.tidiedUp" = "Tidied up.";
+
+/* Go to Folder. The prompt above the field, the window's title, and the button that does
+   it, which is named for what it does rather than saying OK. */
+"finder.goToFolderPrompt" = "Go to the folder:";
+"finder.goToFolderTitle" = "Folder";
+"finder.goToFolderButton" = "Go";
+
+/* Shown when what was typed is not a folder. %1$@ is what was typed. */
+"finder.noSuchFolder" = "The folder “%1$@” can’t be found.";
+"finder.checkSpelling" = "Check the spelling and try again.";
+
+/* What the Finder says when a command cannot be carried out. Each names what was
+   asked for rather than what failed inside, because the person reading it chose the
+   command and did not choose the implementation. */
+
+"finder.noDisc" = "There is no disc in the drive.";
+
+"finder.notAPackage" = "That is not a package.";
+
+"finder.nothingToOpen" = "There is nothing to open.";
+
+"finder.noFolderOpen" = "No folder is open.";
+
+"finder.selectToRename" = "Select an item to rename.";
+
+"finder.noVolumeRename" = "Volumes cannot be renamed here.";
+
+"finder.renameFailed" = "The item could not be renamed.";
+
+"finder.selectAnAlias" = "Select an alias.";
+
+"finder.noVolumeTrash" = "Volumes cannot be moved to the Trash.";
+
+"finder.nothingSelected" = "Nothing is selected.";
+
+"finder.noTrash" = "This system will not move items to the Trash.";
+
+"finder.someNotTrashed" = "Some items could not be moved to the Trash.";
+
+"finder.trashEmpty" = "The Trash is empty.";
+
+"finder.nothingToPaste" = "There is nothing to paste.";
+
+"finder.archiveFailed" = "The archive could not be created.";
+
+"finder.onlyFolders" = "Only folders can be added to the sidebar.";
+
+"finder.selectSomething" = "Select an item first.";
+
+"finder.selectToPrint" = "Select a document to print.";
+
+"finder.noPrinter" = "There is no printer set up for this kind of document.";
+
+"finder.printFailed" = "The document could not be printed.";
+
+"finder.selectToEject" = "Select a disk to eject.";
+
+"finder.duplicateFailed" = "Could not duplicate “%1$@”.";
+
+"finder.aliasFailed" = "The alias could not be made: %1$@";
+
+"finder.noOriginal" = "The original for “%1$@” could not be found.";
+
+"finder.pasteFailed" = "Could not paste “%1$@”.";
+
+"finder.ejectFailed" = "The disk “%1$@” could not be ejected.";

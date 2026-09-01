@@ -1,0 +1,33 @@
+/* In the Find panel */
+"window.title" = "Find";
+
+/* In the Find panel */
+"find label.accessibilityLabel" = "Find";
+
+/* In the Find panel */
+"find label.title" = "Find:";
+
+/* In the Find panel */
+"find.accessibilityLabel" = "Find";
+
+/* In the Find panel */
+"replace label.accessibilityLabel" = "Replace with";
+
+/* In the Find panel */
+"replace label.title" = "Replace:";
+
+/* In the Find panel */
+"replace.accessibilityLabel" = "Replace with";
+
+/* In the Find panel */
+"find next.accessibilityLabel" = "Find the next one";
+
+/* In the Find panel */
+"find next.title" = "Next";
+
+/* In the Find panel */
+"replace all.accessibilityLabel" = "Replace every one";
+
+/* In the Find panel */
+"replace all.title" = "Replace All";
+

@@ -1,0 +1,94 @@
+/* AppKit's own words: what the desktop says rather than what a program in it says.
+   Every program on the volume shows these, so a translation of them belongs here and not
+   copied into each program that happens to display one. */
+
+/* The Fractal menu. */
+"system.upToDate" = "Your software is up to date.";
+"system.noSoftwarePage" = "The software page is not reachable from here.";
+
+/* The Dock item says which way it would turn magnification, so it reads the other way
+   round once magnification is on. */
+"system.turnMagnificationOn" = "Turn Magnification On";
+"system.turnMagnificationOff" = "Turn Magnification Off";
+
+/* Log Out names whoever is logged in. %1$@ is the account name, which goes in a different
+   place in some languages, so it is numbered rather than appended. */
+"system.logOutNamed" = "Log Out %1$@…";
+
+/* The three commands that end a session. Each has a question, and a button named for what
+   it does rather than saying OK: somebody who reads only the buttons still knows which one
+   shuts the machine down. */
+"system.restartQuestion" = "Are you sure you want to restart your computer now?";
+"system.restart" = "Restart";
+"system.shutDownQuestion" = "Are you sure you want to shut down your computer now?";
+"system.shutDown" = "Shut Down";
+"system.logOutQuestion" = "Are you sure you want to quit all applications and log out now?";
+"system.logOut" = "Log Out";
+
+/* What those three would do, said plainly. The second is for when this desktop is running
+   alongside the host's own shell rather than in place of it. */
+"system.closesEverything" = "Every open application will close.";
+"system.closesEverythingToo" = "Every open application will close, not only this desktop.";
+
+/* The smaller option offered beside them: leave the machine alone and close this instead. */
+"system.quitDesktop" = "Quit FractalJDE";
+
+/* Said when the host system refuses. %1$@ is the command that was asked for. */
+"system.hostWouldNot" = "Windows would not %1$@.";
+"system.hostRefused" = "The system refused the request.";
+
+/* The Window menu, when nothing is open. */
+"system.noWindows" = "No Windows";
+
+/* Lists in the Fractal menu, when there is nothing in them yet. */
+"system.none" = "None";
+"system.clearMenu" = "Clear Menu";
+
+/* The save and open panels. These belong to the system rather than to any program: every
+   program that saves shows the same panel, so the words for it are here and not copied
+   into each of them. The labels are the ones Mac OS X uses. */
+"panel.saveAs" = "Save As:";
+"panel.where" = "Where:";
+"panel.open" = "Open";
+"panel.save" = "Save";
+"panel.cancel" = "Cancel";
+"panel.newFolder" = "New Folder";
+"panel.fileFormat" = "File Format:";
+
+/* The triangle beside the name, which moves between the small panel and the browser.
+   Named for what pressing it would do, so somebody hearing it knows which way it goes. */
+"panel.expand" = "Show the browser";
+"panel.collapse" = "Hide the browser";
+
+/* What the two lists are called, for anything reading the panel out. */
+"panel.places" = "Places";
+"panel.files" = "Files";
+
+/* Saving over something that is already there is the one thing this panel does that
+   cannot be undone, so it is asked about. %1$@ is the name of the file that would go. */
+"panel.replaceQuestion" = "“%1$@” already exists. Do you want to replace it?";
+"panel.replaceWarning" = "Replacing it will overwrite its current contents.";
+"panel.replace" = "Replace";
+
+/* What a new folder is called before it is renamed. */
+"panel.untitledFolder" = "untitled folder";
+
+/* The two arrows above the columns, which walk the folders already visited. */
+"panel.back" = "Back";
+"panel.forward" = "Forward";
+
+/* The field that narrows the listing to what is being looked for. */
+"panel.search" = "Search";
+
+/* The three ways of drawing a folder, named for the view rather than for the picture on
+   the button: four squares tells nothing to anybody not looking at it. */
+"panel.asIcons" = "as Icons";
+"panel.asList" = "as List";
+"panel.asColumns" = "as Columns";
+
+/* Going straight to a folder by typing its path, for somebody who already knows it. */
+"panel.goToPrompt" = "Go to the folder:";
+"panel.goToLabel" = "Folder";
+"panel.goToButton" = "Go";
+"panel.noSuchFolder" = "The folder “%1$@” can’t be found.";
+"panel.checkSpelling" = "Check the spelling and try again.";
