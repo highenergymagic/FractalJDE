@@ -278,7 +278,13 @@ public final class Main {
             org.fractalmicro.windowserver.SystemUIServer.start(desktop.mainMenu());
             // The window server is the desktop: this is the process that owns the screen,
             // so this is the process programs elsewhere send their descriptions to.
-            if (!offscreen || doSelfTest) org.fractalmicro.windowserver.WindowServer.get().start();
+            // The window server runs whenever a program might want a window, which
+            // includes drawing a picture with a program open in it. Without it an
+            // application in its own process has nowhere to draw and the picture comes
+            // out as an empty desktop, with nothing having failed.
+            if (!offscreen || doSelfTest || appToOpen != null) {
+                org.fractalmicro.windowserver.WindowServer.get().start();
+            }
             if (doProbe) {
                 // A real, laid-out, showing window that cannot be seen or take the
                 // keyboard: fully transparent and not focusable. It exists only long

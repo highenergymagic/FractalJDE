@@ -78,6 +78,26 @@ jobs:
           test -f build/fresh/sbin/launchd
           test -s build/fresh-desktop.png
 
+      - name: Draw the desktop for the README
+        shell: bash
+        timeout-minutes: 5
+        # Taken here rather than on somebody's own machine. A screenshot of a desktop is a
+        # screenshot of whoever's desktop it is: their account name, their drives, their
+        # Dock full of what they happen to have installed. A runner has none of that, so
+        # the picture shows the system and nothing else.
+        #
+        # The size is asked for rather than taken from the runner, whose screen is whatever
+        # it happens to be and is not a size anybody chose.
+        run: |
+          version=$(sed -n 's/^version=//p' version.properties)
+          java --enable-preview --enable-native-access=ALL-UNNAMED \
+               -Dorg.fractalmicro.volume="$PWD/build/fresh" \
+               -Dorg.fractalmicro.screen=1440x900 \
+               -cp "build/FractalJDE-$version/FractalJDE.jar" org.fractalmicro.Kernel \
+               --open-app org.fractalmicro.systemprofiler \
+               --screenshot "$PWD/build/desktop.png"
+          test -s build/desktop.png
+
       - name: Keep what the checks said
         if: always()
         uses: actions/upload-artifact@v4
@@ -88,6 +108,7 @@ jobs:
             release.txt
             boot.txt
             build/fresh-desktop.png
+            build/desktop.png
 
       - name: Keep the release
         uses: actions/upload-artifact@v4

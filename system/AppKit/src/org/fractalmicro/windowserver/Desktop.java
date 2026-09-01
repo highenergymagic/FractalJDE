@@ -44,6 +44,35 @@ public class Desktop extends JFrame {
     public static Desktop get() { return instance; }
 
     /**
+     * How big the screen is, or how big it is being asked to pretend to be.
+     *
+     * Normally the screen. A build drawing the desktop into a picture has no screen worth
+     * the name and every reason to choose a size: the machine that runs the checks is
+     * whatever the runner happened to be, and a picture of the desktop at whatever
+     * resolution that machine had is not a picture of the desktop.
+     */
+    public static final String SCREEN_PROPERTY = "org.fractalmicro.screen";
+
+    private static Rectangle screenBounds() {
+        String asked = System.getProperty(SCREEN_PROPERTY, "");
+        if (!asked.isBlank()) {
+            int by = asked.indexOf('x');
+            try {
+                if (by > 0) {
+                    int width = Integer.parseInt(asked.substring(0, by).trim());
+                    int height = Integer.parseInt(asked.substring(by + 1).trim());
+                    if (width > 0 && height > 0) return new Rectangle(0, 0, width, height);
+                }
+            } catch (NumberFormatException notASize) {
+                // Said wrong, so not said. The real screen is the honest answer.
+            }
+            org.fractalmicro.core.Log.info("could not read " + SCREEN_PROPERTY
+                                           + "=" + asked + "; using the screen");
+        }
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+    }
+
+    /**
      * Ends a running program, by name.
      *
      * Everything with the same executable goes, because one program is usually several
@@ -122,8 +151,7 @@ public class Desktop extends JFrame {
             setJMenuBar(menu);
         }
 
-        Rectangle bounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-        setBounds(bounds);
+        setBounds(screenBounds());
 
         if (separateWindows) {
             // Back of the screen: wallpaper and icons, everything else in front of it.
