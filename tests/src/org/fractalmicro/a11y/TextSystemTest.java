@@ -110,6 +110,11 @@ public final class TextSystemTest {
                     typed[0] = support.spelling().mistakes().size());
                 if (typed[0] == 0) Thread.sleep(50);
             }
+            out.println("      the checker is "
+                + (org.fractalmicro.win.SpellChecker.available() ? "here" : "not here")
+                + ", " + org.fractalmicro.win.SpellChecker.describe()
+                + "; from a worker " + support.spelling().mistakes().size()
+                + ", from the event thread " + typed[0]);
             failures += check(out, "and finds the same mistakes when typing starts the check",
                 !org.fractalmicro.win.SpellChecker.available() || typed[0] > 0);
 
