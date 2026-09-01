@@ -110,10 +110,18 @@ public final class AliasTest {
             File movedFile = new File(sub, "Renamed.txt");
             boolean movedAway = renamed.renameTo(movedFile);
             Alias.Resolution afterMove = Alias.resolve(alias);
+            // Compared as the file system itself would resolve them. Following a file by
+            // its identity asks Windows where that file is now, and Windows answers with
+            // the real path; the path this test built came from java.io.tmpdir, which on a
+            // machine with 8.3 names turned on is the short form. C:\Users\RUNNER~1 and
+            // C:\Users\runneradmin are the same directory and not the same string.
             failures += check(out, "an alias follows a file that was moved",
                 !movedAway || !forks
-                || (afterMove.ok() && afterMove.target().getAbsolutePath()
-                        .equals(movedFile.getAbsolutePath())));
+                || (afterMove.ok() && sameFile(afterMove.target(), movedFile)));
+            if (movedAway && forks && afterMove.ok()
+                    && !sameFile(afterMove.target(), movedFile)) {
+                out.println("      wanted " + movedFile + " and found " + afterMove.target());
+            }
 
             // A symbolic link is the thing being improved on, so say what it does here:
             // it holds the path it was given and nothing else.
@@ -178,6 +186,22 @@ public final class AliasTest {
         out.println("      " + (failures == 0 ? "aliases follow what they point at"
                                               : failures + " failed"));
         return failures;
+    }
+
+    /**
+     * Whether two names are the same file.
+     *
+     * Asked of the file system rather than of the two strings, because one path can be
+     * written several ways: a short name, a long one, a link on the way through. Comparing
+     * the text is comparing how somebody happened to spell it.
+     */
+    private static boolean sameFile(File one, File other) {
+        if (one == null || other == null) return false;
+        try {
+            return one.getCanonicalFile().equals(other.getCanonicalFile());
+        } catch (java.io.IOException cannotResolve) {
+            return one.getAbsolutePath().equals(other.getAbsolutePath());
+        }
     }
 
     private static void deleteTree(File file) {

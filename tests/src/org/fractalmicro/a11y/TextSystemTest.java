@@ -49,7 +49,7 @@ import java.util.List;
 public final class TextSystemTest {
     private TextSystemTest() {}
 
-    public static int count() { return 14; }
+    public static int count() { return 15; }
 
     public static int run(Desktop desktop, PrintStream out) {
         int failures = 0;
@@ -96,6 +96,22 @@ public final class TextSystemTest {
             boolean spelling = !org.fractalmicro.win.SpellChecker.available()
                 || !support.spelling().mistakes().isEmpty();
             failures += check(out, "a field checks its own spelling", spelling);
+
+            // The same check started from the event thread, which is where typing starts
+            // it. The host's checker answers on a worker and returns nothing at all on the
+            // event thread, so a check that ran there came back empty every time: nothing
+            // failed, and no mistake was ever underlined. Asking only from a test thread
+            // is what let that stand.
+            support.spelling().checkNow();
+            final int[] typed = new int[1];
+            javax.swing.SwingUtilities.invokeAndWait(() -> support.spelling().checkNow());
+            for (int i = 0; i < 40 && typed[0] == 0; i++) {
+                javax.swing.SwingUtilities.invokeAndWait(() ->
+                    typed[0] = support.spelling().mistakes().size());
+                if (typed[0] == 0) Thread.sleep(50);
+            }
+            failures += check(out, "and finds the same mistakes when typing starts the check",
+                !org.fractalmicro.win.SpellChecker.available() || typed[0] > 0);
 
             /* ------------------------------------------------------------ services */
             field.setText("some words to work on");

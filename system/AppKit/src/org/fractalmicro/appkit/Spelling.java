@@ -83,20 +83,70 @@ public final class Spelling {
         settle.restart();
     }
 
-    /** Checks the whole document now and marks what it finds. */
+    /**
+     * Checks the whole document now and marks what it finds.
+     *
+     * Three steps on two threads, because the two halves of this want different ones.
+     * Reading the document and marking it are Swing, and Swing is the event thread's. The
+     * checker underneath is the host's spelling service, and that one answers on a worker
+     * and returns nothing at all on the event thread: the same words come back with one
+     * mistake off it and none on it.
+     *
+     * That is why as-you-type checking found nothing for as long as it existed. Typing
+     * restarts a timer, a Swing timer fires on the event thread, and the check it ran there
+     * always came back empty. Nothing failed and no mistake was ever underlined.
+     *
+     * Called off the event thread this waits and answers. Called on it, the check is sent
+     * to a worker and the marks appear when it comes back, because the alternative is
+     * stopping the screen while the host looks up every word.
+     */
     public List<SpellChecker.Mistake> checkNow() {
-        clearMarks();
-        mistakes.clear();
-        if (!available()) return mistakes;
-        String contents;
-        try {
-            contents = text.getDocument().getText(0, text.getDocument().getLength());
-        } catch (BadLocationException e) {
+        if (!available()) {
+            onEventThread(() -> { clearMarks(); mistakes.clear(); });
             return mistakes;
         }
-        mistakes.addAll(SpellChecker.check(contents));
+        String contents = contents();
+        if (contents == null) return mistakes;
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            org.fractalmicro.core.Shell.async(() -> {
+                List<SpellChecker.Mistake> found = SpellChecker.check(contents);
+                onEventThread(() -> apply(found));
+            });
+            return mistakes;
+        }
+        List<SpellChecker.Mistake> found = SpellChecker.check(contents);
+        onEventThread(() -> apply(found));
+        return mistakes;
+    }
+
+    /** The text as it stands, read where a document is allowed to be read. */
+    private String contents() {
+        String[] held = new String[1];
+        onEventThread(() -> {
+            try {
+                held[0] = text.getDocument().getText(0, text.getDocument().getLength());
+            } catch (BadLocationException e) {
+                held[0] = null;
+            }
+        });
+        return held[0];
+    }
+
+    /**
+     * Puts what was found in place and underlines it.
+     *
+     * The list is replaced rather than emptied and refilled, and the marking walks what was
+     * found rather than the field it was put in. A list being walked is not a list to be
+     * emptying, and that was the other half of this: two callers at once, one part way
+     * through the loop when the other cleared it.
+     */
+    private void apply(List<SpellChecker.Mistake> found) {
+        clearMarks();
+        mistakes.clear();
+        mistakes.addAll(found);
         Highlighter highlighter = text.getHighlighter();
-        for (SpellChecker.Mistake mistake : mistakes) {
+        for (SpellChecker.Mistake mistake : found) {
             try {
                 marks.add(highlighter.addHighlight(mistake.start(),
                     mistake.start() + mistake.length(), SQUIGGLE));
@@ -105,7 +155,21 @@ public final class Spelling {
                 // find; there is nothing to mark.
             }
         }
-        return mistakes;
+    }
+
+    private static void onEventThread(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+            return;
+        }
+        try {
+            SwingUtilities.invokeAndWait(task);
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException failed) {
+            org.fractalmicro.core.Log.info("the spelling check did not finish: "
+                                           + failed.getCause());
+        }
     }
 
     public List<SpellChecker.Mistake> mistakes() { return mistakes; }
