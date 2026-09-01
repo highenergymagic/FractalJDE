@@ -6,6 +6,9 @@ and it can take over from it.
 
 ![The desktop, with System Profiler open](docs/desktop.png)
 
+*Drawn by the build on a clean machine, which is why the drives are called Windows
+and the account is called runneradmin.*
+
 It is written in Java, and it is built like the system it imitates rather than painted to
 resemble it. Programs are Mach-O bundles installed on a volume of their own. A dynamic
 linker maps them and binds their symbols. An init process starts everything else and keeps
