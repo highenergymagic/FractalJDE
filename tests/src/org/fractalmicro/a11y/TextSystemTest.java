@@ -98,25 +98,29 @@ public final class TextSystemTest {
             failures += check(out, "a field checks its own spelling", spelling);
 
             // The same check started from the event thread, which is where typing starts
-            // it. The host's checker answers on a worker and returns nothing at all on the
-            // event thread, so a check that ran there came back empty every time: nothing
-            // failed, and no mistake was ever underlined. Asking only from a test thread
-            // is what let that stand.
-            support.spelling().checkNow();
-            final int[] typed = new int[1];
+            // it. The host's checker answers on a worker and returned nothing at all on
+            // the event thread, so a check that ran there came back empty every time:
+            // nothing failed, and no mistake was ever underlined.
+            //
+            // What is checked is that the two agree, not what either of them finds. Which
+            // words a host calls mistakes is the host's business and differs between
+            // machines; that typing finds what a menu command finds is this program's.
+            int fromWorker = support.spelling().mistakes().size();
+            final int[] fromTyping = new int[1];
             javax.swing.SwingUtilities.invokeAndWait(() -> support.spelling().checkNow());
-            for (int i = 0; i < 40 && typed[0] == 0; i++) {
+            for (int i = 0; i < 40; i++) {
                 javax.swing.SwingUtilities.invokeAndWait(() ->
-                    typed[0] = support.spelling().mistakes().size());
-                if (typed[0] == 0) Thread.sleep(50);
+                    fromTyping[0] = support.spelling().mistakes().size());
+                if (fromTyping[0] == fromWorker) break;
+                Thread.sleep(50);
             }
             out.println("      the checker is "
                 + (org.fractalmicro.win.SpellChecker.available() ? "here" : "not here")
                 + ", " + org.fractalmicro.win.SpellChecker.describe()
-                + "; from a worker " + support.spelling().mistakes().size()
-                + ", from the event thread " + typed[0]);
-            failures += check(out, "and finds the same mistakes when typing starts the check",
-                !org.fractalmicro.win.SpellChecker.available() || typed[0] > 0);
+                + "; asked directly it found " + fromWorker
+                + ", asked the way typing asks, " + fromTyping[0]);
+            failures += check(out, "and typing finds what asking directly finds",
+                fromTyping[0] == fromWorker);
 
             /* ------------------------------------------------------------ services */
             field.setText("some words to work on");
