@@ -92,13 +92,91 @@ public final class SpellChecker {
 
     /* -------------------------------------------------------------- starting */
 
-    public static synchronized boolean available() {
+
+    /* ------------------------------------------------------- one thread owns it */
+
+    /**
+     * The thread the checking service belongs to.
+     *
+     * COM was started here as an apartment, which is what the spelling service wants, and
+     * an apartment object may only be touched by the thread that made it. Which thread
+     * that was is otherwise whichever one happened to ask first: on one machine the checks
+     * ran on it and everything worked, and on another they did not and the service quietly
+     * answered nothing at all.
+     *
+     * So it is not left to chance. One thread starts COM, makes the checker and does every
+     * call to it, and everybody else asks that thread. Callers no longer have to know
+     * which thread they are on, which they had no way of knowing anyway.
+     */
+    private static Thread ownerThread;
+
+    private static final java.util.concurrent.ExecutorService OWNER =
+        java.util.concurrent.Executors.newSingleThreadExecutor(task -> {
+            Thread t = new Thread(task, "spelling");
+            t.setDaemon(true);
+            ownerThread = t;
+            return t;
+        });
+
+    /**
+     * Does the work on the thread that owns the service, and waits for it.
+     *
+     * Already on that thread, it is done here. Handing work to a single thread from that
+     * same thread and then waiting for it is a wait that never ends, and the calls inside
+     * this class ask each other questions.
+     */
+    private static <T> T onOwner(java.util.concurrent.Callable<T> work, T ifItCannot) {
+        if (Thread.currentThread() == ownerThread) {
+            try {
+                return work.call();
+            } catch (Exception failed) {
+                Log.info("the spelling service could not answer: " + failed);
+                return ifItCannot;
+            }
+        }
+        try {
+            return OWNER.submit(work).get();
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+            return ifItCannot;
+        } catch (java.util.concurrent.ExecutionException failed) {
+            Log.info("the spelling service could not answer: " + failed.getCause());
+            return ifItCannot;
+        }
+    }
+
+    public static boolean available() {
+        return onOwner(SpellChecker::availableHere, false);
+    }
+
+    public static String language() {
+        return onOwner(SpellChecker::languageHere, "");
+    }
+
+    /** What is misspelled in this text, as the service on this machine sees it. */
+    public static List<Mistake> check(String text) {
+        return onOwner(() -> checkHere(text), new ArrayList<>());
+    }
+
+    public static List<String> suggest(String word) {
+        return onOwner(() -> suggestHere(word), new ArrayList<>());
+    }
+
+    public static boolean learn(String word) {
+        return onOwner(() -> learnHere(word), false);
+    }
+
+    public static boolean ignore(String word) {
+        return onOwner(() -> ignoreHere(word), false);
+    }
+
+    private static boolean availableHere() {
         start();
         return usable;
     }
 
     /** The language being checked against, once there is one. */
-    public static synchronized String language() {
+    private static String languageHere() {
         start();
         return language;
     }
@@ -174,7 +252,7 @@ public final class SpellChecker {
     /* -------------------------------------------------------------- checking */
 
     /** Every misspelling in a piece of text, in the order they appear. */
-    public static synchronized List<Mistake> check(String text) {
+    private static List<Mistake> checkHere(String text) {
         List<Mistake> mistakes = new ArrayList<>();
         if (text == null || text.isBlank() || !available()) return mistakes;
         try (Arena arena = Arena.ofConfined()) {
@@ -215,7 +293,7 @@ public final class SpellChecker {
     }
 
     /** What the service would put in place of a word. */
-    public static synchronized List<String> suggest(String word) {
+    private static List<String> suggestHere(String word) {
         List<String> out = new ArrayList<>();
         if (word == null || word.isBlank() || !available()) return out;
         try (Arena arena = Arena.ofConfined()) {
@@ -252,13 +330,13 @@ public final class SpellChecker {
     }
 
     /** Adds a word to the person's own dictionary, where it stays for everything. */
-    public static synchronized boolean learn(String word) {
+    private static boolean learnHere(String word) {
         if (word == null || word.isBlank() || !available()) return false;
         return wordCall(word, 6);
     }
 
     /** Passes over a word for the rest of this session. */
-    public static synchronized boolean ignore(String word) {
+    private static boolean ignoreHere(String word) {
         if (word == null || word.isBlank() || !available()) return false;
         return wordCall(word, 7);
     }
