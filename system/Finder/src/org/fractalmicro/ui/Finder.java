@@ -23,6 +23,7 @@ import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.appkit.FMAlert;
+import org.fractalmicro.appkit.FMDragOperation;
 import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.core.Recent;
@@ -34,8 +35,6 @@ import org.fractalmicro.os.FinderSettings;
 import org.fractalmicro.win.Kernel32;
 
 import javax.swing.*;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -183,6 +182,8 @@ public final class Finder {
     private static final FMString UNDO_NEW_FOLDER = FMString.of("finder.undoNewFolder");
     private static final FMString UNDO_DUPLICATE = FMString.of("finder.undoDuplicate");
     private static final FMString UNDO_MAKE_ALIAS = FMString.of("finder.undoMakeAlias");
+    private static final FMString UNDO_MOVE = FMString.of("finder.undoMove");
+    private static final FMString UNDO_COPY = FMString.of("finder.undoCopy");
     private static final FMString UNDO_LABEL = FMString.of("finder.undoLabel");
 
     public static void rename(Node n) {
@@ -364,10 +365,15 @@ public final class Finder {
 
     public static void copy(List<Node> nodes) {
         clipboard.clear();
-        for (Node n : nodes) if (n.file != null) clipboard.add(n.file);
+        org.fractalmicro.foundation.FMMutableArray<org.fractalmicro.foundation.FMURL> urls =
+            org.fractalmicro.foundation.FMMutableArray.empty();
+        for (Node n : nodes) {
+            if (n.file == null) continue;
+            clipboard.add(n.file);
+            urls.add(org.fractalmicro.foundation.FMURL.of(n.file));
+        }
         if (clipboard.isEmpty()) { beep(); return; }
-        Toolkit.getDefaultToolkit().getSystemClipboard()
-               .setContents(new FileTransfer(new ArrayList<>(clipboard)), null);
+        org.fractalmicro.appkit.FMPasteboard.general().setFiles(urls.asArray());
     }
 
     public static void paste(File destination) {
@@ -388,15 +394,132 @@ public final class Finder {
         refreshAll();
     }
 
-    @SuppressWarnings("unchecked")
-    private static List<File> clipboardFromSystem() {
-        try {
-            Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-            if (t != null && t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                return new ArrayList<>((List<File>) t.getTransferData(DataFlavor.javaFileListFlavor));
+    /* ---------------------------------------------------------------- dropping */
+
+    /**
+     * What letting go of a drag does.
+     *
+     * One way in for every view and for the desktop, because a drop means the same thing
+     * wherever it lands: these files, into that folder, doing this. The view worked out
+     * which folder and which of the three it was while the mouse was still down; by here
+     * the decision is made and what is left is doing it and remembering how to take it back.
+     *
+     * The way back is registered for the whole drop rather than for each file. A person
+     * dropped one thing, however many files were in their hand, and one Undo should put all
+     * of it where it was.
+     */
+    public static boolean receiveDrop(List<File> files, File into, FMDragOperation how) {
+        if (files == null || files.isEmpty() || into == null || how == FMDragOperation.NONE) {
+            return false;
+        }
+        return switch (how) {
+            case MOVE -> moveInto(files, into);
+            case COPY -> copyInto(files, into);
+            case LINK -> aliasInto(files, into);
+            case NONE -> false;
+        };
+    }
+
+    /** Moves files into a folder, remembering where each came from. */
+    private static boolean moveInto(List<File> files, File into) {
+        List<File[]> moved = new ArrayList<>();
+        for (File f : files) {
+            if (f == null || !f.exists()) continue;
+            File dest = new File(into, f.getName());
+            if (dest.exists()) {
+                if (!replace(dest)) return finish(moved, UNDO_MOVE);
+                // The one being replaced goes to the Trash rather than being written over.
+                // Mac OS X writes over it, and that was always the sharpest edge in the
+                // Finder: the one action in the whole program that destroyed a file with a
+                // single click and no way back. There is no reason to copy that.
+                Trash.moveToTrash(List.of(dest));
             }
-        } catch (Exception ignored) { }
-        return new ArrayList<>();
+            try {
+                FS.moveTo(f, dest);
+                moved.add(new File[]{dest, f});
+            } catch (IOException e) {
+                tell(FMLocalized.filled(MOVE_FAILED, FMString.of(f.getName())));
+                return finish(moved, UNDO_MOVE);
+            }
+        }
+        return finish(moved, UNDO_MOVE);
+    }
+
+    private static boolean replace(File existing) {
+        return FMAlert.confirm(FMAlert.Kind.CAUTION,
+            FMLocalized.filled(ALREADY_THERE, FMString.of(existing.getName())),
+            FMLocalized.of(REPLACED_TO_TRASH),
+            FMLocalized.of(REPLACE));
+    }
+
+    private static boolean finish(List<File[]> moved, FMString name) {
+        if (!moved.isEmpty()) {
+            List<File[]> what = new ArrayList<>(moved);
+            wayBack(name, () -> {
+                for (File[] pair : what) {
+                    try {
+                        if (pair[0].exists()) FS.moveTo(pair[0], pair[1]);
+                    } catch (IOException e) {
+                        tell(FMLocalized.filled(MOVE_FAILED, FMString.of(pair[0].getName())));
+                    }
+                }
+                refreshAll();
+            });
+        }
+        refreshAll();
+        return !moved.isEmpty();
+    }
+
+    /**
+     * Copies files into a folder.
+     *
+     * Into the folder they are already in as well, which is what Option-dragging something
+     * onto its own window means and is the same thing Duplicate does. That is why the name
+     * is asked for rather than assumed: a copy landing beside the original has to be called
+     * something else.
+     */
+    private static boolean copyInto(List<File> files, File into) {
+        List<File> made = new ArrayList<>();
+        for (File f : files) {
+            if (f == null || !f.exists()) continue;
+            try {
+                File dest = FS.freeNameIn(f, into);
+                FS.copyTo(f, dest);
+                made.add(dest);
+            } catch (IOException e) {
+                tell(FMLocalized.filled(PASTE_FAILED, FMString.of(f.getName())));
+            }
+        }
+        if (!made.isEmpty()) wayBack(UNDO_COPY, () -> removeAll(made));
+        refreshAll();
+        return !made.isEmpty();
+    }
+
+    /** Makes an alias to each in a folder, which is what dragging with both keys means. */
+    private static boolean aliasInto(List<File> files, File into) {
+        List<File> made = new ArrayList<>();
+        for (File f : files) {
+            if (f == null || !f.exists()) continue;
+            try {
+                made.add(org.fractalmicro.alias.Alias.create(f, into));
+            } catch (IOException e) {
+                tell(FMLocalized.filled(ALIAS_FAILED, FMString.of(e.getMessage())));
+                break;
+            }
+        }
+        if (!made.isEmpty()) wayBack(UNDO_MAKE_ALIAS, () -> removeAll(made));
+        refreshAll();
+        return !made.isEmpty();
+    }
+
+    /** Files somebody copied in another program, which paste here as they would there. */
+    private static List<File> clipboardFromSystem() {
+        List<File> out = new ArrayList<>();
+        for (org.fractalmicro.foundation.FMURL url
+                : org.fractalmicro.appkit.FMPasteboard.general().files()) {
+            out.add(url.asFile());
+        }
+        return out;
     }
 
     /** Compress: a zip archive beside the selection. */
@@ -677,21 +800,6 @@ public final class Finder {
         return mi;
     }
 
-    /** File list transfer for the system clipboard. */
-    private static class FileTransfer implements Transferable {
-        private final List<File> files;
-        FileTransfer(List<File> files) { this.files = files; }
-        @Override public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DataFlavor.javaFileListFlavor};
-        }
-        @Override public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return DataFlavor.javaFileListFlavor.equals(flavor);
-        }
-        @Override public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-            if (!isDataFlavorSupported(flavor)) throw new UnsupportedFlavorException(flavor);
-            return files;
-        }
-    }
     /* ------------------------------------------------- what the Finder says */
 
     private static final FMString NO_DISC = FMString.of("finder.noDisc");
@@ -708,6 +816,10 @@ public final class Finder {
     private static final FMString ALIAS_FAILED = FMString.of("finder.aliasFailed");
     private static final FMString NO_ORIGINAL = FMString.of("finder.noOriginal");
     private static final FMString PASTE_FAILED = FMString.of("finder.pasteFailed");
+    private static final FMString MOVE_FAILED = FMString.of("finder.moveFailed");
+    private static final FMString ALREADY_THERE = FMString.of("finder.alreadyThere");
+    private static final FMString REPLACED_TO_TRASH = FMString.of("finder.replacedToTrash");
+    private static final FMString REPLACE = FMString.of("finder.replace");
     private static final FMString EJECT_FAILED = FMString.of("finder.ejectFailed");
 
 }

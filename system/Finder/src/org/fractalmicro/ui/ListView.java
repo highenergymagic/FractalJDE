@@ -92,6 +92,11 @@ public class ListView extends JScrollPane implements FileView {
         NameEditor.begin(table, name, selected.get(0), table::repaint);
     }
 
+    @Override public void allowDragging(java.util.function.Supplier<java.io.File> showing) {
+        FileDrops.install(table, row -> row < 0 || row >= model.rows.size() ? null : model.rows.get(row),
+                          showing);
+    }
+
     @Override public JComponent component() { return this; }
 
     @Override public void setContents(List<Node> nodes) {
@@ -166,6 +171,16 @@ public class ListView extends JScrollPane implements FileView {
                 getAccessibleContext().setAccessibleDescription("selected " + n.kindPhrase());
             }
             setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+            // The row a drag would drop into, drawn behind the name so it does not look
+            // like a second selection while the first one is what is being dragged.
+            JTable.DropLocation drop = t.getDropLocation();
+            boolean aimedAt = drop != null && drop.getRow() == row && n != null
+                && (n.isContainer() || n.kind == Node.Kind.TRASH);
+            setBackground(aimedAt
+                ? new Color(Aqua.SELECTION.getRed(), Aqua.SELECTION.getGreen(),
+                            Aqua.SELECTION.getBlue(), 90)
+                : selected ? t.getSelectionBackground() : t.getBackground());
+            setOpaque(true);
             return this;
         }
     }

@@ -19,7 +19,9 @@
  */
 package org.fractalmicro.appkit;
 
+import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMURL;
 
 /**
  * What Copy puts things on and Paste takes them off.
@@ -46,6 +48,93 @@ public final class FMPasteboard {
             return true;
         } catch (Exception nothingDoing) {
             return false;
+        }
+    }
+
+    /**
+     * Puts files on the board, answering whether they went.
+     *
+     * Files rather than their names. What goes on the board is the list itself, so the
+     * program that takes it off gets somewhere to look rather than a line of text it would
+     * have to guess the meaning of. On this host that is CF_HDROP, which is what every
+     * other program on the machine copies files as, so a copy here pastes into Explorer.
+     */
+    public boolean setFiles(FMArray<FMURL> files) {
+        if (files == null || files.count() == 0) return false;
+        java.util.List<java.io.File> list = new java.util.ArrayList<>();
+        for (FMURL url : files) if (url != null) list.add(url.asFile());
+        try {
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new FileList(list), null);
+            return true;
+        } catch (Exception nothingDoing) {
+            return false;
+        }
+    }
+
+    /** The files on the board, which is an empty list when there are none. */
+    public FMArray<FMURL> files() {
+        try {
+            return filesIn(java.awt.Toolkit.getDefaultToolkit()
+                .getSystemClipboard().getContents(null));
+        } catch (Exception nothingThere) {
+            return FMArray.empty();
+        }
+    }
+
+    /** Whether there is anything on it that could be pasted as files. */
+    public boolean hasFiles() {
+        try {
+            return java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                .isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
+        } catch (Exception nothingThere) {
+            return false;
+        }
+    }
+
+    /**
+     * The files in something being pasted or dropped, which is the same question either
+     * way: a drag carries what a copy carries, and the answer is read the same.
+     */
+    @SuppressWarnings("unchecked")
+    public static FMArray<FMURL> filesIn(java.awt.datatransfer.Transferable what) {
+        if (what == null) return FMArray.empty();
+        try {
+            if (!what.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.javaFileListFlavor)) {
+                return FMArray.empty();
+            }
+            java.util.List<java.io.File> given = (java.util.List<java.io.File>)
+                what.getTransferData(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
+            org.fractalmicro.foundation.FMMutableArray<FMURL> out =
+                org.fractalmicro.foundation.FMMutableArray.empty();
+            for (java.io.File file : given) if (file != null) out.add(FMURL.of(file));
+            return out.asArray();
+        } catch (Exception nothingUsable) {
+            return FMArray.empty();
+        }
+    }
+
+    /** Files on their way somewhere, as the host wants them. */
+    public static java.awt.datatransfer.Transferable carrying(
+            java.util.List<java.io.File> files) {
+        return new FileList(new java.util.ArrayList<>(files));
+    }
+
+    private record FileList(java.util.List<java.io.File> files)
+            implements java.awt.datatransfer.Transferable {
+        @Override public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
+            return new java.awt.datatransfer.DataFlavor[]{
+                java.awt.datatransfer.DataFlavor.javaFileListFlavor};
+        }
+        @Override public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor flavor) {
+            return java.awt.datatransfer.DataFlavor.javaFileListFlavor.equals(flavor);
+        }
+        @Override public Object getTransferData(java.awt.datatransfer.DataFlavor flavor)
+                throws java.awt.datatransfer.UnsupportedFlavorException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new java.awt.datatransfer.UnsupportedFlavorException(flavor);
+            }
+            return files;
         }
     }
 

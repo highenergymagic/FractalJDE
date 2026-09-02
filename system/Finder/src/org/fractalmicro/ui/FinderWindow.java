@@ -107,6 +107,13 @@ public class FinderWindow extends JInternalFrame
         listView.onSelectionChange(onSel);
         columnView.onSelectionChange(onSel);
         coverView.onSelectionChange(onSel);
+        // Dragging, in every view and both ways. The folder is asked for at the moment of
+        // the drop rather than now, since this window shows a different one every time
+        // somebody opens a folder in it.
+        iconView.allowDragging(this::currentFolder);
+        listView.allowDragging(this::currentFolder);
+        columnView.allowDragging(this::currentFolder);
+        coverView.allowDragging(this::currentFolder);
 
         content.add(iconView.component(), "Icon");
         content.add(listView.component(), "List");

@@ -58,6 +58,10 @@ public class CoverFlowView extends JPanel implements FileView {
         flow.setAll(nodes);
     }
 
+    @Override public void allowDragging(java.util.function.Supplier<java.io.File> showing) {
+        list.allowDragging(showing);
+    }
+
     @Override public List<Node> selection() { return list.selection(); }
     @Override public void selectAll() { list.selectAll(); }
     @Override public void focusView() { list.focusView(); }

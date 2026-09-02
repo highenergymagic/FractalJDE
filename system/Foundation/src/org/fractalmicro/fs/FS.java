@@ -269,6 +269,64 @@ public final class FS {
         return f;
     }
 
+    /**
+     * Where a file would go inside a folder without treading on anything.
+     *
+     * The name it already has, when nothing there has it. Otherwise the name a Mac gives a
+     * second one: "Report copy", then "Report copy 2". The extension is kept on the end
+     * where it belongs, so a copy of a document is still a document of that kind, and a
+     * folder with a dot in its name does not have half of it treated as an extension.
+     */
+    public static File freeNameIn(File src, File folder) {
+        File plain = new File(folder, src.getName());
+        if (!plain.exists()) return plain;
+
+        String base = src.getName();
+        String ext = "";
+        int dot = base.lastIndexOf('.');
+        if (dot > 0 && !src.isDirectory()) {
+            ext = base.substring(dot);
+            base = base.substring(0, dot);
+        }
+        File dest = new File(folder, base + " copy" + ext);
+        int i = 2;
+        while (dest.exists()) dest = new File(folder, base + " copy " + (i++) + ext);
+        return dest;
+    }
+
+    /** Copies a file or a whole folder to an exact place, which must not be there yet. */
+    public static void copyTo(File src, File dest) throws IOException {
+        if (src.isDirectory()) copyTree(src.toPath(), dest.toPath());
+        else Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+    }
+
+    /**
+     * Moves a file or a whole folder to an exact place.
+     *
+     * A rename where the two are on one disk, which is instant and cannot half happen. Where
+     * they are not, there is no such thing as moving: it is a copy and then a delete, and the
+     * delete only after the copy has finished, so an interrupted move across disks leaves the
+     * file where it started rather than nowhere.
+     */
+    public static void moveTo(File src, File dest) throws IOException {
+        try {
+            Files.move(src.toPath(), dest.toPath());
+            return;
+        } catch (IOException notARename) {
+            // Across two disks, and for a folder the runtime will not move whole.
+        }
+        copyTo(src, dest);
+        if (src.isDirectory()) deleteTree(src); else Files.delete(src.toPath());
+    }
+
+    private static void deleteTree(File file) throws IOException {
+        File[] children = file.listFiles();
+        if (children != null) for (File child : children) deleteTree(child);
+        if (!file.delete() && file.exists()) {
+            throw new IOException("could not remove " + file.getName());
+        }
+    }
+
     public static File duplicate(File src) throws IOException {
         String base = src.getName();
         String ext = "";

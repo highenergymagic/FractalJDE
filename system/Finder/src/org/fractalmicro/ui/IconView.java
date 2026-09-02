@@ -101,6 +101,10 @@ public class IconView extends JScrollPane implements FileView {
         NameEditor.begin(list, name, list.getSelectedValue(), list::repaint);
     }
 
+    @Override public void allowDragging(java.util.function.Supplier<java.io.File> showing) {
+        FileDrops.install(list, showing);
+    }
+
     @Override public JComponent component() { return this; }
 
     @Override public void setContents(List<Node> nodes) {

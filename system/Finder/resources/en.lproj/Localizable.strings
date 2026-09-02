@@ -106,3 +106,12 @@
 /* A heading in the gallery of controls, which is opened with --controls to look at how
    things are drawn. */
 "gallery.splitView" = "Split view, and a folder in it";
+
+/* Dropping files somewhere. The words a person sees when what they dragged would land on
+   top of something already there, and when it will not go at all. */
+"finder.alreadyThere" = "An item named “%1$@” already exists in this location.";
+"finder.replacedToTrash" = "The item that is there will be moved to the Trash, so you can put it back if this was not what you meant.";
+"finder.replace" = "Replace";
+"finder.moveFailed" = "Could not move “%1$@”.";
+"finder.undoMove" = "Move";
+"finder.undoCopy" = "Copy";

@@ -35,3 +35,10 @@
 "finder.redoPlain" = "Wiederholen";
 
 "gallery.splitView" = "Geteilte Ansicht mit einem Ordner darin";
+
+"finder.alreadyThere" = "Ein Objekt namens „%1$@“ existiert hier bereits.";
+"finder.replacedToTrash" = "Das vorhandene Objekt wird in den Papierkorb gelegt, sodass Sie es zurücklegen können.";
+"finder.replace" = "Ersetzen";
+"finder.moveFailed" = "„%1$@“ konnte nicht bewegt werden.";
+"finder.undoMove" = "Bewegen";
+"finder.undoCopy" = "Kopieren";

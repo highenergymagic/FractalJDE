@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.appkit.FMDragOperation;
+import org.fractalmicro.appkit.FMFileDragging;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.fs.FS;
@@ -82,7 +84,21 @@ public class Sidebar extends JScrollPane {
 
     private final List<Row> rows = new ArrayList<>();
     private final Model model = new Model();
-    private final JTable table = new JTable(model);
+    private final JTable table = new JTable(model) {
+        @Override public void paint(Graphics g) {
+            super.paint(g);
+            if (!insertingHere || insertAbove < 0) return;
+            int y = insertAbove >= getRowCount()
+                ? getRowCount() * getRowHeight()
+                : getCellRect(insertAbove, 0, true).y;
+            Graphics2D line = (Graphics2D) g.create();
+            Aqua.antialias(line);
+            line.setColor(Aqua.SELECTION);
+            line.fillRect(2, Math.max(0, y - 1), getWidth() - 4, 2);
+            line.fillOval(0, Math.max(0, y - 3), 6, 6);
+            line.dispose();
+        }
+    };
     private final Consumer<Target> onSelect;
 
     public Sidebar(Consumer<Target> onSelect) {
@@ -120,6 +136,8 @@ public class Sidebar extends JScrollPane {
             @Override public void actionPerformed(java.awt.event.ActionEvent e) { move(-1); }
         });
 
+        allowDrops();
+
         setViewportView(table);
         setBorder(BorderFactory.createEmptyBorder());
         getViewport().setBackground(Aqua.SIDEBAR_BG);
@@ -132,6 +150,81 @@ public class Sidebar extends JScrollPane {
 
     /** The table itself, for anything that needs the control rather than the pane. */
     public JTable table() { return table; }
+
+    /**
+     * Dropping onto the sidebar, which means one of two things depending on where in it.
+     *
+     * Onto a place: the files go into that folder, the same as dropping onto its icon in a
+     * window. This is what the sidebar is for. Somebody filing a download into Documents
+     * should not have to open Documents first.
+     *
+     * Between two places: the folder joins the list. A shortcut rather than a copy of
+     * anything, so it is not a file operation at all and none of the move-or-copy rules
+     * apply to it.
+     *
+     * Which one is meant is read from where in the row the pointer is, the same way every
+     * list that can be both dropped on and inserted into reads it: near an edge means
+     * between, the middle means on. It has to be a quarter of a twenty pixel row, so the
+     * answer is five pixels either way, which is why the highlight showing which it will be
+     * is not a nicety.
+     */
+    private void allowDrops() {
+        FMFileDragging.install(table, null, new FMFileDragging.IntoFolders() {
+            @Override public void aimedAt(boolean yes) {
+                if (!yes) showInsertion(null);
+            }
+
+            @Override public FMDragOperation operationAt(Point where, List<File> files, int keys) {
+                if (files.isEmpty()) return FMDragOperation.NONE;
+                showInsertion(where);
+                if (wouldJoinTheList(where)) {
+                    for (File f : files) if (f.isDirectory()) return FMDragOperation.LINK;
+                    return FMDragOperation.NONE;
+                }
+                return super.operationAt(where, files, keys);
+            }
+
+            @Override public boolean take(Point where, List<File> files, FMDragOperation how) {
+                boolean joining = wouldJoinTheList(where);
+                showInsertion(null);
+                if (!joining) return super.take(where, files, how);
+                List<Node> folders = new ArrayList<>();
+                for (File f : files) if (f.isDirectory()) folders.add(FS.node(f));
+                if (folders.isEmpty()) return false;
+                Finder.addToSidebar(folders);
+                return true;
+            }
+
+            @Override protected File folderAt(Point where) {
+                Row row = rowAt(table.rowAtPoint(where));
+                if (row == null || row.isHeading()) return null;
+                File file = row.target().file;
+                return file != null && file.isDirectory() ? file : null;
+            }
+
+            @Override protected boolean receive(List<File> files, File into, FMDragOperation how) {
+                return Finder.receiveDrop(files, into, how);
+            }
+        });
+        table.setDropMode(javax.swing.DropMode.ON);
+    }
+
+    /**
+     * Whether a drop here would add to the list rather than file something into a place.
+     *
+     * True near the top or bottom edge of a row, and true anywhere below the last one,
+     * which is the empty part of the sidebar and the easiest place to aim for.
+     */
+    private boolean wouldJoinTheList(Point where) {
+        int row = table.rowAtPoint(where);
+        if (row < 0) return true;
+        Rectangle bounds = table.getCellRect(row, 0, true);
+        int edge = Math.max(3, bounds.height / 4);
+        boolean nearEdge = where.y - bounds.y < edge
+                        || bounds.y + bounds.height - where.y < edge;
+        Row here = rowAt(row);
+        return nearEdge || here == null || here.isHeading();
+    }
 
     private Row rowAt(int index) {
         return index < 0 || index >= rows.size() ? null : rows.get(index);
@@ -258,7 +351,38 @@ public class Sidebar extends JScrollPane {
                 getAccessibleContext().setAccessibleDescription(
                     selected ? "selected" : null);
             }
+            // The place a drop would go into. Only shown when the drop would file something
+            // there rather than add to the list, since those two are told apart by five
+            // pixels and a person aiming at one has to be able to see which they have.
+            JTable.DropLocation drop = t.getDropLocation();
+            if (drop != null && drop.getRow() == row && entry != null && !entry.isHeading()
+                    && !insertingHere) {
+                setBackground(new Color(Aqua.SELECTION.getRed(), Aqua.SELECTION.getGreen(),
+                                        Aqua.SELECTION.getBlue(), 90));
+            }
             return this;
         }
+    }
+
+    /**
+     * The line drawn between two places while a drag over the sidebar would add to the list.
+     *
+     * Painted over the table rather than by the renderer, because it belongs between two
+     * rows and a renderer only ever draws inside one. It is the same line every list that
+     * can be inserted into draws, and it is here for the same reason: without it, whether a
+     * folder is about to be filed into Documents or added below Documents is a guess.
+     */
+    private boolean insertingHere;
+    private int insertAbove = -1;
+
+    private void showInsertion(Point where) {
+        boolean inserting = where != null && wouldJoinTheList(where);
+        int row = where == null ? -1 : table.rowAtPoint(where);
+        if (row < 0 && where != null) row = table.getRowCount();
+        int above = inserting ? row : -1;
+        if (inserting == insertingHere && above == insertAbove) return;
+        insertingHere = inserting;
+        insertAbove = above;
+        table.repaint();
     }
 }

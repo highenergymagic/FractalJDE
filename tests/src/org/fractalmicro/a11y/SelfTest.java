@@ -209,6 +209,10 @@ public final class SelfTest {
         int undoFailures = UndoTest.run(System.out);
         if (undoFailures > 0) failures.add(undoFailures + " undo checks failed");
 
+        steps += DragTest.count();
+        int dragFailures = DragTest.run(System.out);
+        if (dragFailures > 0) failures.add(dragFailures + " dragging checks failed");
+
         steps += PlatformTest.count();
         int platformFailures = PlatformTest.run(System.out);
         if (platformFailures > 0) failures.add(platformFailures + " platform checks failed");

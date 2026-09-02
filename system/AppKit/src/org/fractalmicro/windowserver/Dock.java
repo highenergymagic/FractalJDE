@@ -22,6 +22,8 @@ package org.fractalmicro.windowserver;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.bundle.LaunchServices;
 
+import org.fractalmicro.appkit.FMDragOperation;
+import org.fractalmicro.appkit.FMFileDragging;
 import org.fractalmicro.appkit.FocusGroup;
 
 import org.fractalmicro.core.Running;
@@ -260,6 +262,7 @@ public class Dock extends JPanel {
                     Trash.isEmpty() ? "Empty" : Trash.count() + " items");
             }
 
+            takesDrops();
             setComponentPopupMenu(menu());
             getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "dockMenu");
             getActionMap().put("dockMenu", new AbstractAction() {
@@ -347,12 +350,77 @@ public class Dock extends JPanel {
             return m;
         }
 
+        /**
+         * What dropping files on this tile does.
+         *
+         * Two answers, and both of them are ones a person tries without being told. Files on
+         * the Trash are thrown away. Files on a program are opened by that program, whether
+         * or not it is running and whether or not it would have opened them by itself, which
+         * is how somebody opens a text file in an editor that is not the one the system
+         * would have picked.
+         *
+         * A tile that is neither takes nothing, and says so by refusing the pointer.
+         */
+        private void takesDrops() {
+            if (node.kind != Node.Kind.TRASH && node.file == null) return;
+            FMFileDragging.install(this, null, new FMFileDragging.Destination() {
+                @Override public FMDragOperation operationAt(Point where, List<File> files, int keys) {
+                    boolean willing = node.kind == Node.Kind.TRASH
+                        ? Trash.canMoveToTrash() : node.file != null;
+                    if (files.isEmpty() || !willing) return FMDragOperation.NONE;
+                    // Opening is not a file operation. Copy is the nearest of the three and
+                    // is what the pointer shows for it, because nothing is being moved.
+                    return node.kind == Node.Kind.TRASH
+                        ? FMDragOperation.MOVE : FMDragOperation.COPY;
+                }
+
+                @Override public void aimedAt(boolean yes) {
+                    aimedAt = yes;
+                    repaint();
+                }
+
+                @Override public boolean take(Point where, List<File> files, FMDragOperation how) {
+                    if (node.kind == Node.Kind.TRASH) {
+                        boolean any = Trash.moveToTrash(files) > 0;
+                        LaunchServices.tellFileBrowser(LaunchServices.REFRESH);
+                        return any;
+                    }
+                    return openWith(node.file, files);
+                }
+            });
+        }
+
+        /**
+         * Hands files to a program.
+         *
+         * One of this system's own programs is asked by name, which reaches it whether it is
+         * running or not and opens the documents in the copy already up rather than a second
+         * one. Anything else is one of the host's, and the way to hand a file to one of those
+         * is the way everything does it: put the names on its command line.
+         */
+        private boolean openWith(File program, List<File> files) {
+            org.fractalmicro.bundle.Bundle bundle =
+                org.fractalmicro.bundle.Bundle.looksLikeBundle(program)
+                    ? Bundles.byFolder(program) : null;
+            if (bundle != null) {
+                return Bundles.openFiles(bundle.identifier().toString(), files);
+            }
+            List<String> command = new ArrayList<>();
+            command.add(program.getPath());
+            for (File f : files) command.add(f.getPath());
+            org.fractalmicro.core.Shell.launch(command.toArray(new String[0]));
+            return true;
+        }
+
+        /** Whether a drag is over this tile, so it can show that letting go would do something. */
+        private boolean aimedAt;
+
         @Override
         protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Aqua.antialias(g);
             int size = DockSettings.tileSize();
-            if (hover && DockSettings.magnification()) {
+            if ((hover || aimedAt) && DockSettings.magnification()) {
                 size = Math.min(DockSettings.largeSize(), (int) (size * 1.25));
             }
             int x = (getWidth() - size) / 2;

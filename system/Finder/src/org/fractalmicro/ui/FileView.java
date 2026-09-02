@@ -40,4 +40,14 @@ public interface FileView {
     void arrangeBy(String key);
 
     void setIconSize(int px);
+
+    /**
+     * Lets files be dragged out of this view and dropped into it.
+     *
+     * The folder is asked for rather than handed over, because a view outlives any one of
+     * them: the same icon view shows a different folder every time somebody opens one, and
+     * a destination that remembered which folder it was when the window opened would file
+     * things in the wrong place from the second folder onwards.
+     */
+    void allowDragging(java.util.function.Supplier<java.io.File> showing);
 }

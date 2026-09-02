@@ -55,6 +55,16 @@ public class IconCellRenderer extends JLabel implements ListCellRenderer<Node> {
     /** The label of the item being drawn, so the pill behind the name is its colour. */
     private int label;
 
+    /**
+     * Whether a drag is over this one and would drop into it.
+     *
+     * A Mac draws the destination folder with a rounded wash behind the whole icon, and it
+     * has to look different from a selection: during a drag the files being carried are the
+     * selected ones and the folder they are going into is not one of them. Two things on the
+     * screen at once meaning opposite things, drawn the same, would be unreadable.
+     */
+    private boolean aimedAt;
+
     /** Where this label puts its text, from the same layout the label itself uses. */
     private Rectangle textBounds(FontMetrics fm) {
         Rectangle view = new Rectangle();
@@ -102,6 +112,11 @@ public class IconCellRenderer extends JLabel implements ListCellRenderer<Node> {
         if (value.label > 0) description = description + ", " + label + " label";
         getAccessibleContext().setAccessibleDescription(description);
         this.label = value.label;
+        // Whether letting go here would put the files into this one. The list knows: Swing
+        // keeps where a drag currently is on the control being dragged over.
+        javax.swing.JList.DropLocation drop = list.getDropLocation();
+        aimedAt = drop != null && drop.getIndex() == index
+            && (value.isContainer() || value.kind == Node.Kind.TRASH);
         return this;
     }
 
@@ -122,6 +137,13 @@ public class IconCellRenderer extends JLabel implements ListCellRenderer<Node> {
         // of the selection and shows its label as a ring around it, so both can be seen.
         java.awt.Color labelColor = org.fractalmicro.fs.Labels.showing()
             ? org.fractalmicro.fs.Labels.colorOf(label) : null;
+
+        if (aimedAt) {
+            g.setColor(Aqua.highContrast() ? Color.BLACK
+                : new Color(Aqua.SELECTION.getRed(), Aqua.SELECTION.getGreen(),
+                            Aqua.SELECTION.getBlue(), 90));
+            g.fill(new RoundRectangle2D.Float(4, 1, getWidth() - 8, getHeight() - 6, 10, 10));
+        }
 
         if (selected) {
             g.setColor(Aqua.highContrast() ? Color.WHITE : new Color(255, 255, 255, 60));

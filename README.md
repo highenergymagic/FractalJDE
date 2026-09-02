@@ -66,6 +66,7 @@ The rest is in `docs/`, roughly in the order it makes sense to read.
 | [panels.md](docs/panels.md) | the save and open panels, and the file browser |
 | [programs.md](docs/programs.md) | TextEdit, Calculator, the rest |
 | [finder.md](docs/finder.md) | aliases, labels, renaming, shortcuts |
+| [dragging.md](docs/dragging.md) | what a drop does, where it can land, what it refuses |
 | [text.md](docs/text.md) | the text system, spelling, services |
 | [keyboard.md](docs/keyboard.md) | the keys, and what announces itself |
 | [aqua.md](docs/aqua.md) | the look, and where it came from |

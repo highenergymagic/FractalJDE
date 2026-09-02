@@ -44,6 +44,7 @@ public class ColumnView extends JScrollPane implements FileView {
     private final Consumer<Node> onOpen;
     private final PreviewPane preview = new PreviewPane();
     private String sortKey = "name";
+    private java.util.function.Supplier<java.io.File> showing;
     private JPopupMenu popup;
     private Runnable selectionListener = () -> {};
 
@@ -58,18 +59,22 @@ public class ColumnView extends JScrollPane implements FileView {
         getAccessibleContext().setAccessibleName("Column view");
     }
 
+    @Override public void allowDragging(java.util.function.Supplier<java.io.File> showing) {
+        this.showing = showing;
+    }
+
     @Override public JComponent component() { return this; }
 
     @Override public void setContents(List<Node> nodes) {
         strip.removeAll();
         columns.clear();
-        addColumn(nodes, 0);
+        addColumn(nodes, 0, showing == null ? null : showing.get());
         strip.add(preview);
         strip.revalidate();
         strip.repaint();
     }
 
-    private void addColumn(List<Node> nodes, int level) {
+    private void addColumn(List<Node> nodes, int level, java.io.File folder) {
         List<Node> sorted = new ArrayList<>(nodes);
         FS.sort(sorted, sortKey);
         DefaultListModel<Node> model = new DefaultListModel<>();
@@ -88,7 +93,7 @@ public class ColumnView extends JScrollPane implements FileView {
             trimTo(level);
             Node sel = list.getSelectedValue();
             if (sel != null && sel.isContainer() && sel.file != null) {
-                addColumn(FS.list(sel.file), level + 1);
+                addColumn(FS.list(sel.file), level + 1, sel.file);
             } else {
                 preview.show(sel);
             }
@@ -134,6 +139,10 @@ public class ColumnView extends JScrollPane implements FileView {
         strip.add(sp);
         strip.add(preview);
         columns.add(list);
+        // Each column shows a different folder, so each one is its own destination. A single
+        // one for the view would file everything into whichever folder the leftmost column
+        // happened to be showing.
+        if (showing != null) FileDrops.install(list, () -> folder);
     }
 
     private void trimTo(int level) {
@@ -184,6 +193,17 @@ public class ColumnView extends JScrollPane implements FileView {
             setFont(Aqua.viewFont());
             getAccessibleContext().setAccessibleName(n.accessibleName());
             getAccessibleContext().setAccessibleDescription("selected " + n.kindPhrase());
+            // The folder a drag would drop into. It matters more here than in the other
+            // views: the columns are narrow, the rows are close together, and every row in
+            // a column but the last is a folder, so aiming at the wrong one is easy.
+            JList.DropLocation drop = list.getDropLocation();
+            boolean aimedAt = drop != null && drop.getIndex() == index
+                && (n.isContainer() || n.kind == Node.Kind.TRASH);
+            if (aimedAt) {
+                setBackground(new Color(Aqua.SELECTION.getRed(), Aqua.SELECTION.getGreen(),
+                                        Aqua.SELECTION.getBlue(), 90));
+                setOpaque(true);
+            }
             return this;
         }
     }

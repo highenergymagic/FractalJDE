@@ -64,6 +64,11 @@ public class DesktopIcons extends JList<Node> {
 
         installBehaviour();
 
+        // The desktop is a folder like any other, and the one people drop onto most: it is
+        // the only view that is always open. What is behind the icons is the desktop
+        // folder, so a file dropped on the wallpaper lands there.
+        FileDrops.install(this, FS::desktopFolder);
+
         Timer poll = new Timer(4000, e -> refreshIfChanged());
         poll.start();
 
