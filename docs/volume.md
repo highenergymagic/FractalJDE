@@ -154,9 +154,36 @@ loader would give it.
 `Info.plist` carries the keys Apple's does: `CFBundleIdentifier`, `CFBundleName`,
 `CFBundleExecutable`, `CFBundleIconFile`, `CFBundlePackageType`,
 `CFBundleShortVersionString` and `LSMinimumSystemVersion`, plus `NSPrincipalClass`, which
-names the Java class that runs when the bundle is opened. That is what NSPrincipalClass
+names the class that runs when the bundle is opened. That is what NSPrincipalClass
 means where the format comes from, and it means the same here. The four-byte creator
 code is `FMI `, for Fractal Microsystems, so `PkgInfo` reads `APPLFMI `.
+
+There is one more, `FMRunsInOwnProcess`, and it is this system's own. Cocoa has no such
+key because on a Mac every application is a process; here most are hosted by the desktop
+and a few are not, and the bundle is the honest place to say which. The day they have all
+moved out it goes with them.
+
+### Where a program starts
+
+Not in the program. The loader maps the image and calls its entry point, and the entry
+point named in an application's image is `org.fractalmicro.appkit.FMApplicationMain`,
+which is in the framework it links rather than in the program at all.
+
+That is what a Mac does. The entry point of a Cocoa application is `main`, and what every
+application writes in it is one line handing over to `NSApplicationMain`, which reads
+`NSPrincipalClass` out of the bundle, makes one, and runs the loop. Nobody writes anything
+else there, because at that moment the program knows nothing its bundle has not said.
+
+So the programs here have no `main`. Each is a class answering `open`, which is what a
+delegate is. What went with the `main` was the same fifteen lines in every one of them:
+check that there is a window server, make itself, show its window, register its handlers,
+read events until told to stop, close. Two of those are the program's business and the
+rest are the framework's.
+
+It also collapsed two keys into one. There used to be a second class key naming a class
+with a Java `main` in it, which existed only because the entry point was a Java `main`
+rather than the thing Cocoa puts there. Two answers to one question, and the question was
+already answered by `NSPrincipalClass`.
 
 Six ship, installed on first run and identified under `org.fractalmicro`:
 

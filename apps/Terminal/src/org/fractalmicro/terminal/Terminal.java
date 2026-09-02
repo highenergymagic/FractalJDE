@@ -35,16 +35,18 @@ import org.fractalmicro.foundation.FMURL;
  * as an argument, which is what opening a program on a folder has always meant, and the
  * Finder passes the one you are looking at. With nothing given, it opens at home.
  */
-public final class Terminal {
+public final class Terminal implements org.fractalmicro.appkit.FMApplicationDelegate {
     private Terminal() {}
 
     public static final FMString NAME = FMString.of("Terminal");
 
-    public static void main(String[] arguments) {
-        FMURL where = arguments.length > 0 && !arguments[0].isBlank()
-            ? FMURL.ofPath(arguments[0])
-            : FMFileManager.defaultManager().home();
-        open(where);
+    /** Opened with nothing, which means a command line at home. */
+    @Override public void open() { openAt(FMFileManager.defaultManager().home()); }
+
+    /** Opened on something, which means a command line where that something is. */
+    @Override public void openURLs(org.fractalmicro.foundation.FMArray<FMURL> urls) {
+        openAt(urls == null || urls.count() == 0
+               ? FMFileManager.defaultManager().home() : urls.at(0));
     }
 
     /**
@@ -53,7 +55,7 @@ public final class Terminal {
      * Being given a file rather than a folder is the ordinary case: somebody drops a
      * document on the icon meaning "here", and here is where the document is.
      */
-    public static void open(FMURL where) {
+    public static void openAt(FMURL where) {
         FMURL folder = where.isDirectory() ? where : where.deletingLastComponent();
         if (!folder.isDirectory()) folder = FMFileManager.defaultManager().home();
         org.fractalmicro.appkit.FMWorkspace.sharedWorkspace().openTerminal(folder);

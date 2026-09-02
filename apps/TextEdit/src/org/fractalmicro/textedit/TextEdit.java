@@ -47,7 +47,7 @@ import org.fractalmicro.foundation.FMURL;
  * files, remembering what was opened, deciding what a document is called and whether it
  * has been edited, and finding text in it.
  */
-public final class TextEdit {
+public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDelegate {
 
     public static final FMString NAME = FMString.of("TextEdit");
 
@@ -123,21 +123,19 @@ public final class TextEdit {
 
     /* ---------------------------------------------------------------- the document */
 
-    private final FMApplication app = FMApplication.named(NAME);
+    private final FMApplication app = FMApplication.sharedApplication();
 
     /** Where the document came from, and whether it has been changed since. */
     private FMURL file;
     private FMString saved = FMString.EMPTY;
     private FMApplication.FMWindow findPanel = new FMApplication.FMWindow(-1);
 
-    public static void main(String[] arguments) {
-        if (!FMApplication.serverAvailable()) {
-            FMLog.say(FMString.of("there is no window server to draw a window on"));
-            return;
-        }
-        FMURL opening = arguments.length > 0 && !arguments[0].isBlank()
-            ? FMURL.ofPath(arguments[0]) : null;
-        new TextEdit().run(opening);
+    /** Opened with nothing, which is a new untitled document. */
+    @Override public void open() { run(null); }
+
+    /** Opened on a document, which is what dropping one on the icon means. */
+    @Override public void openURLs(org.fractalmicro.foundation.FMArray<FMURL> urls) {
+        run(urls == null || urls.count() == 0 ? null : urls.at(0));
     }
 
     private void run(FMURL opening) {
@@ -146,7 +144,6 @@ public final class TextEdit {
                               .appending(app.lastError().description()));
             return;
         }
-        app.onClose(app::stop);
 
         for (Command one : EDITING) app.on(one.sends(), e -> app.perform(BODY, one.action()));
         for (Command one : FORMATTING) app.on(one.sends(), e -> app.perform(BODY, one.action()));
@@ -168,8 +165,6 @@ public final class TextEdit {
         app.on(FMString.of("quit"), e -> closeDocument());
 
         if (opening != null) open(opening);
-        app.run();
-        app.close();
     }
 
     /* ------------------------------------------------------------------ documents */

@@ -40,7 +40,7 @@ import org.fractalmicro.os.FinderSettings;
  * The panes are all in one window, in the same place, and one is shown. A pane is not a
  * window and should not close and reopen when somebody clicks a name in the list.
  */
-public final class SystemPreferences {
+public final class SystemPreferences implements org.fractalmicro.appkit.FMApplicationDelegate {
 
     public static final FMString NAME = FMString.of("System Preferences");
 
@@ -112,16 +112,13 @@ public final class SystemPreferences {
     /** The one control that is not a switch: how big the Dock's tiles are. */
     private static final FMString DOCK_SIZE = FMString.of("dock size");
 
-    private final FMApplication app = FMApplication.named(NAME);
+    private final FMApplication app = FMApplication.sharedApplication();
 
-    public static void main(String[] arguments) {
-        if (!FMApplication.serverAvailable()) {
-            FMLog.say(FMString.of("there is no window server to draw a window on"));
-            return;
-        }
-        new SystemPreferences().run(arguments.length > 0
-            ? FMString.of(arguments[0]) : DESKTOP);
-    }
+    /** Opened with no pane named, which means the one a person sees first. */
+    @Override public void open() { run(DESKTOP); }
+
+    /** Opened straight onto one pane, which is what a menu item that names one asks for. */
+    @Override public void openPart(FMString pane) { run(pane.isBlank() ? DESKTOP : pane); }
 
     private void run(FMString opening) {
         if (!app.showWindow(INTERFACE)) {
@@ -129,7 +126,6 @@ public final class SystemPreferences {
                               .appending(app.lastError().description()));
             return;
         }
-        app.onClose(app::stop);
 
         for (Switch one : SWITCHES) {
             app.setValue(one.id(), FMNumber.of(one.reads().getAsBoolean()));
@@ -148,8 +144,6 @@ public final class SystemPreferences {
         app.on(FMString.of("close"), event -> app.stop());
 
         showPane(PANE_NAMES.contains(opening) ? opening : DESKTOP);
-        app.run();
-        app.close();
     }
 
     /** Shows one pane's controls and hides the rest. */

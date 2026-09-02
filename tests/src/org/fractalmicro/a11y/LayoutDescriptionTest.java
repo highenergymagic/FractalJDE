@@ -88,39 +88,21 @@ public final class LayoutDescriptionTest {
     private static Nib shaped() {
         return new Nib.Builder()
             .title(FMString.of("Shaped")).size(600, 400)
-            .add(new Control(ControlClass.FMToolbar, BAR, FMString.of("Toolbar"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 0, 600, 34, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false))
-            .add(new Control(ControlClass.FMButton, BACK, FMString.of("Back"),
-                             FMString.EMPTY, FMString.of("Back"), FMString.of("goBack"),
-                             0, 0, 60, 24, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false)
-                 .within(BAR))
-            .add(new Control(ControlClass.FMSeparator, GAP, FMString.of("Space"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 0, 1, 1, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false)
-                 .within(BAR))
-            .add(new Control(ControlClass.FMTextField, SEARCH, FMString.of("Search"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 0, 140, 24, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false)
-                 .within(BAR))
-            .add(new Control(ControlClass.FMSplitView, SPLIT, FMString.of("Panes"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 40, 600, 350, FMString.of("horizontal"),
-                             org.fractalmicro.foundation.FMArray.empty(), false))
-            .add(new Control(ControlClass.FMTableView, SIDEBAR, FMString.of("Places"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 0, 170, 350, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false)
-                 .within(SPLIT))
-            .add(new Control(ControlClass.FMBrowser, FILES, FMString.of("Files"),
-                             FMString.EMPTY, FMString.EMPTY, FMString.EMPTY,
-                             0, 0, 420, 350, null,
-                             org.fractalmicro.foundation.FMArray.empty(), false)
-                 .within(SPLIT))
+            .add(Control.of(ControlClass.FMToolbar, BAR).named(FMString.of("Toolbar"))
+                        .at(0, 0, 600, 34))
+            .add(Control.of(ControlClass.FMButton, BACK).named(FMString.of("Back"))
+                        .showing(FMString.of("Back")).sending(FMString.of("goBack"))
+                        .at(0, 0, 60, 24).within(BAR))
+            .add(Control.of(ControlClass.FMSeparator, GAP).named(FMString.of("Space"))
+                        .at(0, 0, 1, 1).within(BAR))
+            .add(Control.of(ControlClass.FMTextField, SEARCH).named(FMString.of("Search"))
+                        .at(0, 0, 140, 24).within(BAR))
+            .add(Control.of(ControlClass.FMSplitView, SPLIT).named(FMString.of("Panes"))
+                        .holding(FMString.of("horizontal")).at(0, 40, 600, 350))
+            .add(Control.of(ControlClass.FMTableView, SIDEBAR).named(FMString.of("Places"))
+                        .at(0, 0, 170, 350).within(SPLIT))
+            .add(Control.of(ControlClass.FMBrowser, FILES).named(FMString.of("Files"))
+                        .at(0, 0, 420, 350).within(SPLIT))
             .build();
     }
 

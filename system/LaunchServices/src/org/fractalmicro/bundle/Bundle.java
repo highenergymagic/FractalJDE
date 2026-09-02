@@ -87,6 +87,15 @@ public final class Bundle {
     public static final FMString VERSION = FMString.of("CFBundleVersion");
     public static final FMString INFO_DICTIONARY_VERSION = FMString.of("CFBundleInfoDictionaryVersion");
     public static final FMString PRINCIPAL_CLASS = FMString.of("NSPrincipalClass");
+
+    /**
+     * The class the loader calls when a program has a process of its own.
+     *
+     * Named as a string rather than linked, because this layer is below the one it names
+     * and has no business knowing what a window is. It is a name in a manifest, which is
+     * what an entry point has always been.
+     */
+    private static final String APPLICATION_MAIN = "org.fractalmicro.appkit.FMApplicationMain";
     public static final FMString MINIMUM_SYSTEM = FMString.of("LSMinimumSystemVersion");
     public static final FMString BACKGROUND_ONLY = FMString.of("LSBackgroundOnly");
     public static final FMString CATEGORY = FMString.of("LSApplicationCategoryType");
@@ -398,13 +407,20 @@ public final class Bundle {
                     (PACKAGE_APPLICATION + CREATOR).getBytes(StandardCharsets.US_ASCII));
 
         byte[] plistBytes = Files.readAllBytes(new File(contents, "Info.plist").toPath());
-        String entry = plist.get(PRINCIPAL_CLASS.toString()) instanceof String named
+        String principal = plist.get(PRINCIPAL_CLASS.toString()) instanceof String named
             ? named : "";
-        if (entry.isBlank() && plist.get(Bundles.MAIN_CLASS.toString()) instanceof String ownProcess) {
-            entry = ownProcess;
-        }
+
+        // What the loader calls, which for a program with a process of its own is not the
+        // program. On a Mac the entry point is main, and what every application writes in
+        // it is one line handing over to NSApplicationMain, which reads NSPrincipalClass
+        // out of the bundle and takes it from there. That line is the same in every
+        // program, so it lives in the framework they all link and the image names it.
+        boolean ownProcess = Boolean.TRUE.equals(plist.get(Bundles.OWN_PROCESS.toString()));
+        String entry = ownProcess ? APPLICATION_MAIN : principal;
+
         byte[] code = codeResource(name, (String) plist.getOrDefault(IDENTIFIER.toString(), ""),
-                                   entry, (String) plist.getOrDefault(SHORT_VERSION.toString(), "1.0"),
+                                   entry, principal,
+                                   (String) plist.getOrDefault(SHORT_VERSION.toString(), "1.0"),
                                    plistBytes, ownPackages);
         // The same link every library gets: what this defines, and for everything it uses
         // and does not define, which of the libraries it links will be supplying it.
@@ -433,6 +449,7 @@ public final class Bundle {
      * The loader unpacks this and puts it on the class path ahead of the framework.
      */
     private static byte[] codeResource(String name, String identifier, String entry,
+                                       String principal,
                                        String version, byte[] infoPlist,
                                        List<String> ownPackages) throws IOException {
         Manifest manifest = new Manifest();
@@ -450,7 +467,7 @@ public final class Bundle {
             jar.putNextEntry(info);
             jar.write(infoPlist);
             jar.closeEntry();
-            writeOwnCode(jar, entry, ownPackages);
+            writeOwnCode(jar, principal, ownPackages);
         }
         return bytes.toByteArray();
     }

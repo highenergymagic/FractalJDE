@@ -49,7 +49,7 @@ import java.util.List;
 public final class FMApplicationMain implements Bundles.Launcher {
 
     /** The Info.plist key that says a program wants a process of its own. */
-    public static final FMString MAIN_CLASS = Bundles.MAIN_CLASS;
+    public static final FMString OWN_PROCESS = Bundles.OWN_PROCESS;
 
     private FMApplicationMain() {}
 
@@ -58,8 +58,101 @@ public final class FMApplicationMain implements Bundles.Launcher {
         Bundles.setLauncher(new FMApplicationMain());
     }
 
+    /**
+     * Where a program in a process of its own starts, which is not in the program.
+     *
+     * The loader maps the image and calls its entry point. On a Mac that entry point is
+     * main, and what every Cocoa application writes in it is one line: return
+     * NSApplicationMain(argc, argv). Nobody writes anything else there, because there is
+     * nothing an application knows at that moment that its bundle has not already said.
+     *
+     * So the entry point of a program here is this, and not the program. It finds the
+     * bundle the loader just opened, reads NSPrincipalClass out of it, makes one, and
+     * sends it the messages an application expects. The program has no main at all: it has
+     * a class that answers open, which is what a delegate is.
+     *
+     * What that removed was the same fifteen lines in every program: check that there is a
+     * window server, make itself, show its window, register its handlers, read events until
+     * told to stop, close. Only two of those are the program's business.
+     */
+    public static void main(String[] arguments) {
+        Bundle bundle = openingBundle();
+        if (bundle == null) {
+            org.fractalmicro.core.Log.info("no bundle to start; nothing said which program this is");
+            return;
+        }
+        install();
+
+        FMApplication app = FMApplication.named(bundle.displayName());
+        FMApplication.becomeShared(app);
+        if (!FMApplication.serverAvailable()) {
+            org.fractalmicro.foundation.FMLog.say(
+                FMString.of("there is no window server to draw a window on"));
+            return;
+        }
+
+        Object instance;
+        try {
+            instance = Dyld.load(bundle);
+        } catch (Exception notLoadable) {
+            org.fractalmicro.core.Log.error("could not start " + bundle.displayName(),
+                                            notLoadable);
+            return;
+        }
+        if (!(instance instanceof FMApplicationDelegate program)) {
+            org.fractalmicro.core.Log.info(bundle.displayName() + " is not an application");
+            return;
+        }
+
+        // Opened on nothing, or on whatever it was started with, which is how a program in
+        // a process of its own is handed a document: it cannot be passed an object.
+        if (arguments == null || arguments.length == 0) program.open();
+        else program.openURLs(locations(filesNamed(arguments)));
+
+        // The run loop, which is the entry point's and not the program's. A program that
+        // owned it would have to remember to close afterwards, and one that forgot would
+        // leave its connection open until the process ended.
+        //
+        // Unless it opened no window, which some programs do not: Terminal hands a folder
+        // to the host's command line and is finished. Waiting for events on a connection
+        // with no window is waiting for something that cannot arrive.
+        if (app.windowId() < 0) {
+            app.close();
+            return;
+        }
+        app.onClose(app::stop);
+        app.run();
+        app.close();
+    }
+
+    /**
+     * The bundle this process was started for.
+     *
+     * The loader says where the executable is, because a process cannot find that out by
+     * looking at itself. The bundle is the directory that executable lives inside, which is
+     * what a bundle is.
+     */
+    private static Bundle openingBundle() {
+        String executable = System.getProperty(
+            org.fractalmicro.dyld.Start.EXECUTABLE_PROPERTY, "");
+        if (executable.isBlank()) return null;
+        // Contents/Fractal/<name>, so the bundle is three levels up from the executable.
+        File at = new File(executable).getParentFile();
+        for (int up = 0; up < 3 && at != null; up++, at = at.getParentFile()) {
+            Bundle found = Bundle.read(at);
+            if (found != null && !found.identifier().isEmpty()) return found;
+        }
+        return null;
+    }
+
+    private static List<File> filesNamed(String[] arguments) {
+        List<File> out = new java.util.ArrayList<>();
+        for (String one : arguments) out.add(new File(one));
+        return out;
+    }
+
     @Override public boolean open(Bundle bundle, List<File> files) {
-        if (!bundle.string(MAIN_CLASS).isBlank()) return spawn(bundle, files);
+        if (bundle.flag(OWN_PROCESS)) return spawn(bundle, files);
         return deliver(bundle, app -> {
             if (files == null || files.isEmpty()) app.open();
             else app.openURLs(locations(files));

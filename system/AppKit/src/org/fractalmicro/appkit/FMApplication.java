@@ -105,8 +105,34 @@ public final class FMApplication implements AutoCloseable {
     }
 
     public static FMApplication named(FMString name) {
-        return new FMApplication(name);
+        FMApplication made = new FMApplication(name);
+        if (SHARED == null) SHARED = made;
+        return made;
     }
+
+    private static volatile FMApplication SHARED;
+
+    /**
+     * The one this program is, which is NSApp.
+     *
+     * A program has one connection to the window server for the same reason a Cocoa
+     * program has one NSApplication: it is the program, as the screen sees it. The first
+     * one made is it, and what makes the first one is normally FMApplicationMain, before
+     * any of the program's own code has run.
+     */
+    public static FMApplication sharedApplication() {
+        FMApplication one = SHARED;
+        if (one == null) {
+            synchronized (FMApplication.class) {
+                if (SHARED == null) SHARED = new FMApplication(FMString.of("Program"));
+                one = SHARED;
+            }
+        }
+        return one;
+    }
+
+    /** Names the shared one before anything asks for it, which the entry point does. */
+    static synchronized void becomeShared(FMApplication one) { SHARED = one; }
 
     /** Whether there is a window server to talk to at all. */
     public static boolean serverAvailable() {

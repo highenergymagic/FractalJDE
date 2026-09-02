@@ -288,6 +288,75 @@ public final class Nib {
                  value, choices, defaultButton, FMString.EMPTY);
         }
 
+        /**
+         * A control being described a piece at a time.
+         *
+         * Fourteen things make up a control and most of them are nothing most of the time,
+         * so writing one out in full is fourteen arguments in an order nobody remembers
+         * with six of them holding a blank. Objective-C does not have that problem, because
+         * every argument of a message is labelled where it is passed; Java has no such
+         * thing and this is the nearest it gets. Each piece is named where it is given, and
+         * the ones not mentioned are the ones that are nothing.
+         *
+         * <pre>
+         *   Control.of(FMBrowser, FILES).named("Files").showing(folder)
+         *          .at(8, 8, 540, 300).within(SPLIT)
+         * </pre>
+         */
+        public static Control of(ControlClass kind, FMString identifier) {
+            return new Control(kind, identifier, FMString.EMPTY, FMString.EMPTY,
+                               FMString.EMPTY, FMString.EMPTY, 0, 0, 100, 22,
+                               null, FMArray.empty(), false, FMString.EMPTY);
+        }
+
+        /** What a screen reader says it is, which every control has to have. */
+        public Control named(FMString name) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** And the longer sentence, for a control whose name is not the whole story. */
+        public Control describedAs(FMString description) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** What is written on it, or in it: a button's label, a field's contents. */
+        public Control showing(FMString text) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** What it sends back when somebody uses it. */
+        public Control sending(FMString action) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** Where it goes and how big it is. */
+        public Control at(int x, int y, int width, int height) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** What it holds, for the controls that hold something other than words. */
+        public Control holding(Object value) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** What is in it, for the ones that are a list of things. */
+        public Control choosingFrom(FMArray<FMString> choices) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, in);
+        }
+
+        /** The one Return presses. A window has at most one. */
+        public Control asDefault() {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, true, in);
+        }
+
         /** The same control, inside the one named. */
         public Control within(FMString parent) {
             return new Control(kind, identifier, name, description, text, action,

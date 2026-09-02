@@ -44,7 +44,7 @@ import java.util.zip.ZipFile;
 public final class MachOTest {
     private MachOTest() {}
 
-    public static int count() { return 18; }
+    public static int count() { return 19; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -136,6 +136,12 @@ public final class MachOTest {
 
         // Nothing is unpacked. The entry point is read out of the image where it lies,
         // and there is no working copy anywhere for it to be read out of instead.
+        //
+        // What it names is not the program. On a Mac the entry point is main and every
+        // application writes one line in it, handing over to NSApplicationMain, which reads
+        // NSPrincipalClass out of the bundle. That line is the same in every program, so it
+        // lives in the framework they all link and the image names it there. The program
+        // itself is named by the bundle, which is the only place it needs saying.
         String entryClass = "";
         boolean nothingUnpacked = !Files.isDirectory(Dyld.workingRoot())
             || isEmptyDirectory(Dyld.workingRoot());
@@ -144,8 +150,16 @@ public final class MachOTest {
         } catch (Exception e) {
             out.println("      " + e);
         }
+        out.println("      the image starts at " + entryClass);
         failures += check(out, "the entry class is read out of the image, with nothing unpacked",
-            nothingUnpacked && "org.fractalmicro.textedit.TextEdit".equals(entryClass));
+            nothingUnpacked
+            && "org.fractalmicro.appkit.FMApplicationMain".equals(entryClass));
+
+        failures += check(out, "and the program itself is named by the bundle, once",
+            textEdit != null
+            && "org.fractalmicro.textedit.TextEdit"
+                   .equals(textEdit.principalClass().toString())
+            && textEdit.flag(org.fractalmicro.bundle.Bundles.OWN_PROCESS));
 
         /* ------------------------------------------- the program is in the program */
 

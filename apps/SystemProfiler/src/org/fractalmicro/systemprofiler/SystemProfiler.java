@@ -40,7 +40,7 @@ import org.fractalmicro.os.OSPaths;
  * the window it opened is still a real window: the controls are real controls, they are
  * simply somewhere else.
  */
-public final class SystemProfiler {
+public final class SystemProfiler implements org.fractalmicro.appkit.FMApplicationDelegate {
 
     public static final FMString NAME = FMString.of("System Profiler");
 
@@ -56,30 +56,27 @@ public final class SystemProfiler {
     private static final FMString VOLUMES = FMString.of("Volumes");
     private static final FMString LOCATIONS = FMString.of("Locations");
 
-    private final FMApplication app = FMApplication.named(NAME);
+    private final FMApplication app = FMApplication.sharedApplication();
 
-    public static void main(String[] arguments) {
-        if (!FMApplication.serverAvailable()) {
-            FMLog.say(FMString.of("there is no window server to draw a window on"));
-            return;
-        }
-        new SystemProfiler().run();
-    }
-
-    private void run() {
+    /**
+     * Opened, which is the whole of this program's start-up.
+     *
+     * There is no main. The bundle names this class and the loader calls the framework's
+     * application main, which reads that name, makes one, and sends it this. Checking for a
+     * window server, reading events until told to stop, and closing afterwards were the
+     * same lines in every program here and are now in none of them.
+     */
+    @Override public void open() {
         if (!app.showWindow(INTERFACE)) {
             FMLog.say(FMString.of("the window would not open: ")
                               .appending(app.lastError().description()));
             return;
         }
-        app.onClose(app::stop);
         app.on(SECTIONS, event -> show(event.text()));
         app.on(FMString.of("quit"), event -> app.stop());
         app.on(FMString.of("close"), event -> app.stop());
 
         show(HARDWARE);
-        app.run();
-        app.close();
     }
 
     /* ------------------------------------------------------------------ the facts */

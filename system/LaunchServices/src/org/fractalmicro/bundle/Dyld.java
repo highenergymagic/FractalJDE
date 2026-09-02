@@ -219,8 +219,13 @@ public final class Dyld {
         if (binary == null) throw new IOException("no executable in " + bundle.root());
         MachO program = MachO.read(binary.toPath());
 
-        String entry = org.fractalmicro.dyld.Start.entryClass(program);
-        if (entry.isEmpty()) entry = bundle.principalClass().toString();
+        // The bundle first, because the bundle is where a program says which class it is.
+        // The image's entry point is a different question: for a program with a process of
+        // its own that is the framework's application main, which is what the loader calls
+        // and not what the program is. Making that would make an entry point rather than a
+        // program.
+        String entry = bundle.principalClass().toString();
+        if (entry.isEmpty()) entry = org.fractalmicro.dyld.Start.entryClass(program);
         if (entry.isEmpty()) throw new IOException(bundle.displayName() + " names no entry class");
 
         // The loader builds the graph: this program, then the libraries it named in its

@@ -66,31 +66,31 @@ public final class Bundles {
         new Spec("Finder", PREFIX + "finder", "org.fractalmicro.app.FinderApp",
                  Where.CORE_SERVICES, "The file manager", true,
                  java.util.List.of("org.fractalmicro.ui", "org.fractalmicro.app"),
-                 Frameworks.COCOA_AND_SERVICES, ""),
-        new Spec("System Preferences", PREFIX + "systempreferences", "",
+                 Frameworks.COCOA_AND_SERVICES, false),
+        new Spec("System Preferences", PREFIX + "systempreferences", "org.fractalmicro.systempreferences.SystemPreferences",
                  Where.SYSTEM_APPLICATIONS, "Settings", false,
                  java.util.List.of("org.fractalmicro.systempreferences"), Frameworks.COCOA,
-                 "org.fractalmicro.systempreferences.SystemPreferences"),
-        new Spec("System Profiler", PREFIX + "systemprofiler", "",
+                 true),
+        new Spec("System Profiler", PREFIX + "systemprofiler", "org.fractalmicro.systemprofiler.SystemProfiler",
                  Where.SYSTEM_UTILITIES, "What this machine is", false,
                  java.util.List.of("org.fractalmicro.systemprofiler"), Frameworks.COCOA,
-                 "org.fractalmicro.systemprofiler.SystemProfiler"),
-        new Spec("Activity Monitor", PREFIX + "activitymonitor", "",
+                 true),
+        new Spec("Activity Monitor", PREFIX + "activitymonitor", "org.fractalmicro.activitymonitor.ActivityMonitor",
                  Where.SYSTEM_UTILITIES, "What is running", false,
                  java.util.List.of("org.fractalmicro.activitymonitor"), Frameworks.COCOA,
-                 "org.fractalmicro.activitymonitor.ActivityMonitor"),
-        new Spec("TextEdit", PREFIX + "textedit", "",
+                 true),
+        new Spec("TextEdit", PREFIX + "textedit", "org.fractalmicro.textedit.TextEdit",
                  Where.SYSTEM_APPLICATIONS, "A text editor", false,
                  java.util.List.of("org.fractalmicro.textedit"), Frameworks.COCOA,
-                 "org.fractalmicro.textedit.TextEdit"),
-        new Spec("Terminal", PREFIX + "terminal", "",
+                 true),
+        new Spec("Terminal", PREFIX + "terminal", "org.fractalmicro.terminal.Terminal",
                  Where.SYSTEM_UTILITIES, "A command line", false,
                  java.util.List.of("org.fractalmicro.terminal"), Frameworks.COCOA,
-                 "org.fractalmicro.terminal.Terminal"),
-        new Spec("Calculator", PREFIX + "calculator", "",
+                 true),
+        new Spec("Calculator", PREFIX + "calculator", "org.fractalmicro.calculator.Calculator",
                  Where.SYSTEM_APPLICATIONS, "Arithmetic, in a process of its own", false,
                  java.util.List.of("org.fractalmicro.calculator"), Frameworks.COCOA,
-                 "org.fractalmicro.calculator.Calculator"),
+                 true),
         new Spec("Clock", PREFIX + "menuextra.clock",
                  "org.fractalmicro.menuextras.ClockExtra", Where.MENU_EXTRAS,
                  "The date and time", true),
@@ -129,18 +129,18 @@ public final class Bundles {
     private record Spec(String name, String identifier, String principalClass,
                         Where where, String description, boolean background,
                         java.util.List<String> own, java.util.List<String> linked,
-                        String mainClass) {
+                        boolean ownProcess) {
         Spec(String name, String identifier, String principalClass,
              Where where, String description, boolean background) {
             this(name, identifier, principalClass, where, description, background,
-                 java.util.List.of(), Frameworks.COCOA, "");
+                 java.util.List.of(), Frameworks.COCOA, false);
         }
 
         Spec(String name, String identifier, String principalClass,
              Where where, String description, boolean background,
              java.util.List<String> own) {
             this(name, identifier, principalClass, where, description, background,
-                 own, Frameworks.COCOA, "");
+                 own, Frameworks.COCOA, false);
         }
     }
 
@@ -199,7 +199,7 @@ public final class Bundles {
                 info.set(Bundle.VERSION, Version.build());
                 info.set(Bundle.MINIMUM_SYSTEM, "10.6");
                 info.set(Bundle.CATEGORY, "public.app-category.utilities");
-                if (!spec.mainClass().isEmpty()) info.set(MAIN_CLASS, spec.mainClass());
+                if (spec.ownProcess()) info.set(OWN_PROCESS, Boolean.TRUE);
                 if (spec.background()) info.set(Bundle.BACKGROUND_ONLY, Boolean.TRUE);
 
                 Bundle bundle = spec.where() == Where.MENU_EXTRAS
@@ -368,8 +368,19 @@ public final class Bundles {
         return Bundle.read(folder);
     }
 
-    /** The Info.plist key naming the class a program's own process starts at. */
-    public static final FMString MAIN_CLASS = FMString.of("FMProcessMainClass");
+    /**
+     * Whether this program runs in a process of its own.
+     *
+     * Cocoa has no such key, because on a Mac every application is its own process and the
+     * question does not arise. Here most are hosted by the desktop and a few are not, and
+     * the bundle is the honest place to say which. The day they have all moved out this key
+     * goes with them.
+     *
+     * There used to be a second class key instead of this, naming a class with a Java main
+     * in it. That was two answers to one question, and the second one existed only because
+     * the entry point of a program was a Java main rather than the thing Cocoa puts there.
+     */
+    public static final FMString OWN_PROCESS = FMString.of("FMRunsInOwnProcess");
 
     /**
      * What opening a program actually means, which is not this layer's business.
@@ -401,8 +412,7 @@ public final class Bundles {
     public static boolean open(Bundle bundle, List<File> files) {
         if (bundle == null) return false;
         Launcher who = launcher;
-        boolean isProgram = !bundle.principalClass().isEmpty()
-                         || !bundle.string(MAIN_CLASS).isEmpty();
+        boolean isProgram = !bundle.principalClass().isEmpty();
         if (who != null && isProgram && who.open(bundle, files)) return true;
         File executable = bundle.executable();
         if (executable != null) {

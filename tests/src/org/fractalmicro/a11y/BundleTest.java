@@ -69,7 +69,7 @@ public final class BundleTest {
             // process begins. A bundle with neither is a folder nothing can open.
             failures += check(out, identifier + " says how it starts",
                 !bundle.principalClass().isEmpty()
-                || !bundle.string(org.fractalmicro.bundle.Bundles.MAIN_CLASS).isEmpty());
+                || bundle.flag(org.fractalmicro.bundle.Bundles.OWN_PROCESS));
             failures += check(out, identifier + " has an Info.plist that reads back",
                               new File(bundle.root(), "Contents/Info.plist").isFile()
                               && Bundle.read(bundle.root()) != null);

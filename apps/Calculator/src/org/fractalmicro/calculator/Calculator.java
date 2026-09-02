@@ -44,7 +44,7 @@ import org.fractalmicro.foundation.FMString;
  * The arithmetic is decimal on purpose. A calculator that answers 0.30000000000000004 to a
  * tenth plus two tenths is wrong in the way a person notices first.
  */
-public final class Calculator {
+public final class Calculator implements org.fractalmicro.appkit.FMApplicationDelegate {
 
     public static final FMString NAME = FMString.of("Calculator");
 
@@ -78,7 +78,7 @@ public final class Calculator {
         }
     }
 
-    private final FMApplication app = FMApplication.named(NAME);
+    private final FMApplication app = FMApplication.sharedApplication();
 
     /** What is showing, what is waiting, and what is to be done with the two. */
     private FMDecimal showing = FMDecimal.ZERO;
@@ -86,21 +86,20 @@ public final class Calculator {
     private Operation pending = Operation.NONE;
     private boolean typing;
 
-    public static void main(String[] arguments) {
-        if (!FMApplication.serverAvailable()) {
-            FMLog.say(FMString.of("there is no window server to draw a window on"));
-            return;
-        }
-        new Calculator().run();
-    }
-
-    private void run() {
+    /**
+     * Opened, which is the whole of this program's start-up.
+     *
+     * There is no main. The bundle names this class and the loader calls the framework's
+     * application main, which reads that name, makes one, and sends it this. That is what
+     * NSApplicationMain does and what every Cocoa program's main hands straight over to,
+     * and none of it is anything this program knows better than its own bundle does.
+     */
+    @Override public void open() {
         if (!app.showWindow(INTERFACE)) {
             FMLog.say(FMString.of("the window would not open: ")
                               .appending(app.lastError().description()));
             return;
         }
-        app.onClose(app::stop);
 
         for (int digit = 0; digit <= 9; digit++) {
             FMString typed = FMString.describing(digit);
@@ -120,8 +119,6 @@ public final class Calculator {
         app.on(FMString.of("close"), event -> app.stop());
 
         show(showing);
-        app.run();
-        app.close();
     }
 
     /** What the key for one digit sends back, which is also what its control is called. */

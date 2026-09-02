@@ -40,7 +40,7 @@ import org.fractalmicro.appkit.FMWorkspace;
  * can, because a listing that jumps back to the top every few seconds is one nobody can
  * read a line of.
  */
-public final class ActivityMonitor {
+public final class ActivityMonitor implements org.fractalmicro.appkit.FMApplicationDelegate {
 
     public static final FMString NAME = FMString.of("Activity Monitor");
 
@@ -58,26 +58,25 @@ public final class ActivityMonitor {
     /** How often the listing catches up, in seconds. */
     private static final int REFRESH_SECONDS = 3;
 
-    private final FMApplication app = FMApplication.named(NAME);
+    private final FMApplication app = FMApplication.sharedApplication();
 
     /** What is on each row, in the order the rows are shown, so a choice can be acted on. */
     private FMArray<FMRunningApplication> showing = FMArray.empty();
 
-    public static void main(String[] arguments) {
-        if (!FMApplication.serverAvailable()) {
-            FMLog.say(FMString.of("there is no window server to draw a window on"));
-            return;
-        }
-        new ActivityMonitor().run();
-    }
-
-    private void run() {
+    /**
+     * Opened, which is the whole of this program's start-up.
+     *
+     * There is no main. The bundle names this class and the loader calls the framework's
+     * application main, which reads that name, makes one, and sends it this. Checking for a
+     * window server, reading events until told to stop, and closing afterwards were the
+     * same lines in every program here and are now in none of them.
+     */
+    @Override public void open() {
         if (!app.showWindow(INTERFACE)) {
             FMLog.say(FMString.of("the window would not open: ")
                               .appending(app.lastError().description()));
             return;
         }
-        app.onClose(app::stop);
         app.on(QUIT_PROCESS, event -> quitChosen());
         app.on(REFRESH, event -> reload());
         app.on(FMString.of("quit"), event -> app.stop());
@@ -85,8 +84,6 @@ public final class ActivityMonitor {
 
         reload();
         catchUpEvery(REFRESH_SECONDS);
-        app.run();
-        app.close();
     }
 
     /**
