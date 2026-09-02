@@ -201,6 +201,10 @@ public final class SelfTest {
         int vocabularyFailures = VocabularyTest.run(System.out);
         if (vocabularyFailures > 0) failures.add(vocabularyFailures + " vocabulary checks failed");
 
+        steps += DocumentTest.count();
+        int documentFailures = DocumentTest.run(desktop, System.out);
+        if (documentFailures > 0) failures.add(documentFailures + " document checks failed");
+
         steps += UndoTest.count();
         int undoFailures = UndoTest.run(System.out);
         if (undoFailures > 0) failures.add(undoFailures + " undo checks failed");

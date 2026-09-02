@@ -96,3 +96,12 @@
 /* Spotlight, when the thing that was found cannot be opened: a disk with nothing in the
    drive, or a file that has gone since the index last looked at it. */
 "spotlight.nothingOpensThat" = "Nothing opens that.";
+
+/* A document, and what is asked before one is closed with changes in it. Three answers
+   rather than two, because one of them loses work and cancelling is not discarding. */
+"document.untitled" = "Untitled";
+"document.saveChanges" = "Do you want to save the changes you made in this document?";
+"document.saveChangesTo" = "Do you want to save the changes you made to “%1$@”?";
+"document.changesWillBeLost" = "Your changes will be lost if you don’t save them.";
+"document.save" = "Save";
+"document.dontSave" = "Don’t Save";

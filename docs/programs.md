@@ -84,3 +84,40 @@ The picture itself is drawn from the icon handle, which is shared across process
 While Explorer is running it owns the class and this hears nothing, so the decoding is
 checked instead: `--selftest` builds the messages a program would send, byte for byte,
 in both shapes, and feeds them to the same code the system would reach.
+
+## Documents
+
+`FMDocument` is NSDocument, and the whole of it is two facts: where the thing being edited
+came from, and whether it has changed since. Five things follow, and every program that
+keeps the two facts for itself gets four of them slightly wrong.
+
+The window is titled after it. The close button shows a dot rather than a cross while there
+are changes. Closing asks a question, the question names the document, and it is not asked
+when there is nothing to lose. Opening or saving puts the file in the recent items.
+
+Whether it has changed is **worked out rather than remembered**. A flag set by whatever
+changes the text is a flag something forgets to set, and it fails in the direction that
+loses work: a document that believes it is unchanged closes without asking. So the document
+keeps what was last written and compares.
+
+The dot is the one traffic light that draws without the pointer over it. A cross, a minus
+and a plus appear only on hover, which is what Mac OS X does; a warning nobody sees until
+they reach for the button is not a warning. It shows on an inactive window too, which is
+where somebody is most likely to have forgotten.
+
+## Opening a document in a program that is already running
+
+It goes to that program. Before this it started a second one: two TextEdits, two Dock
+tiles, two of everything either had open, and no way for a person to tell which was which.
+The comment in the code admitted it, and said why, which was that a program with a process
+of its own cannot be handed an object.
+
+That was true and it was not the whole truth. The program is already reading events from
+the window server and has been since it opened its window, so being opened again is one
+more of those. `NSApplication` calls it `application:openFiles:`; here it is one event kind
+and one hook, and the entry point sets that hook to the delegate's `openURLs` before any of
+the program's own code runs.
+
+**So a program handles being opened on a second document by having already said what
+opening one means.** A program that has put no window up yet has nothing listening, and one
+is started as before.

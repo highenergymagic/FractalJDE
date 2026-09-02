@@ -126,8 +126,16 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
     private final FMApplication app = FMApplication.sharedApplication();
 
     /** Where the document came from, and whether it has been changed since. */
-    private FMURL file;
-    private FMString saved = FMString.EMPTY;
+    /**
+     * What is being edited: where it came from, and whether it has changed since.
+     *
+     * The two facts this program used to keep in two fields of its own, and the five things
+     * that follow from them, which it used to arrange for itself and now does not: the
+     * title, the dot in the close button, the question when it is closed, and the entry in
+     * the recent items.
+     */
+    private final org.fractalmicro.appkit.FMDocument document =
+        new org.fractalmicro.appkit.FMDocument(FMApplication.sharedApplication());
     private FMApplication.FMWindow findPanel = new FMApplication.FMWindow(-1);
 
     /** Opened with nothing, which is a new untitled document. */
@@ -170,10 +178,8 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
     /* ------------------------------------------------------------------ documents */
 
     private void newDocument() {
-        file = null;
-        saved = FMString.EMPTY;
         app.setValue(BODY, FMString.EMPTY);
-        app.setTitle(FMString.of("Untitled"));
+        document.noteNew();
     }
 
     /**
@@ -197,16 +203,14 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
             app.tell(FMLocalized.of(OPEN_FAILED), FMLocalized.of(OPEN_FAILED_WHY));
             return;
         }
-        file = where;
-        saved = held.asString();
-        app.setValue(BODY, saved);
-        app.setTitle(where.lastComponent());
+        app.setValue(BODY, held.asString());
+        document.noteWritten(where, held.asString());
         Settings.rememberRecent(where);
     }
 
     private boolean save() {
-        if (file == null) return saveAs();
-        return writeTo(file);
+        if (document.fileURL() == null) return saveAs();
+        return writeTo(document.fileURL());
     }
 
     /**
@@ -218,8 +222,9 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
      */
     private boolean saveAs() {
         FMSavePanel panel = FMSavePanel.savePanel()
-            .nameFieldStringValue(file != null ? file.lastComponent()
-                                               : FMLocalized.of(UNTITLED_DOCUMENT))
+            .nameFieldStringValue(document.fileURL() != null
+                                  ? document.fileURL().lastComponent()
+                                  : FMLocalized.of(UNTITLED_DOCUMENT))
             .directoryURL(lastPlace())
             .formats(FORMAT_NAMES, FMString.EMPTY)
             .chosenFormat(format)
@@ -275,6 +280,7 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
      * were.
      */
     private FMURL lastPlace() {
+        FMURL file = document.fileURL();
         if (file != null) {
             FMURL folder = file.deletingLastComponent();
             if (folder.isDirectory()) return folder;
@@ -288,14 +294,13 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
             app.tell(FMLocalized.of(SAVE_FAILED), FMLocalized.of(SAVE_FAILED_WHY));
             return false;
         }
-        file = where;
-        saved = text;
-        app.setTitle(where.lastComponent());
+        document.noteWritten(where, text);
         Settings.rememberRecent(where);
         return true;
     }
 
     private void revert() {
+        FMURL file = document.fileURL();
         if (file == null) return;
         boolean go = app.confirm(FMLocalized.filled(REVERT_QUESTION, file.lastComponent()),
                                  FMLocalized.of(REVERT_WARNING),
@@ -310,14 +315,10 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
      * that asked every time would train somebody to say yes without reading it.
      */
     private void closeDocument() {
-        if (!app.valueOf(BODY).sameAs(saved)) {
-            int choice = app.choose(
-                file == null ? FMLocalized.of(SAVE_CHANGES)
-                             : FMLocalized.filled(SAVE_CHANGES_TO, file.lastComponent()),
-                FMLocalized.of(CHANGES_LOST),
-                FMLocalized.of(SAVE_BUTTON), FMLocalized.of(DONT_SAVE_BUTTON));
-            if (choice == FMApplication.CANCELLED) return;
-            if (choice == 0 && !save()) return;
+        switch (document.shouldClose(app.valueOf(BODY))) {
+            case CANCEL -> { return; }
+            case SAVE -> { if (!save()) return; }
+            case DISCARD -> { }
         }
         app.stop();
     }
@@ -364,10 +365,11 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
      */
     private void duplicate() {
         FMString text = app.valueOf(BODY);
-        file = null;
-        saved = FMString.EMPTY;
+        document.noteNew();
         app.setValue(BODY, text);
-        app.setTitle(FMString.of("Untitled copy"));
+        // A copy nobody has saved is a copy with changes in it, and its close button
+        // says so from the moment it exists.
+        document.showEdited(text);
     }
 
     /* ---------------------------------------------------------------- finding */

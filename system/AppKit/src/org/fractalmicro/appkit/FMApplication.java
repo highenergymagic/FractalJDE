@@ -72,10 +72,21 @@ public final class FMApplication implements AutoCloseable {
     private final Map<FMString, Handler> handlers = new LinkedHashMap<>();
     private volatile boolean running;
     private Runnable onClose;
+    private java.util.function.Consumer<FMArray<FMURL>> onOpenFiles;
+
+    /**
+     * What to do when the program is opened again on some files while it is running.
+     *
+     * Set by the entry point to the delegate's openURLs, so a program that has said what
+     * opening a document means has already said what this means too.
+     */
+    public void onOpenFiles(java.util.function.Consumer<FMArray<FMURL>> what) {
+        this.onOpenFiles = what;
+    }
 
     /** One thing that happened: which control or command, and what it was for. */
     public record Event(FMString kind, int window, FMString control, FMString action,
-                        Object value, FMString where) {
+                        Object value, FMString where, FMArray<FMURL> urls) {
 
         /** What the control held, as text, which is what most handlers want. */
         public FMString text() {
@@ -97,6 +108,16 @@ public final class FMApplication implements AutoCloseable {
          */
         public boolean isOpen() {
             return kind.sameAs(FMString.of(WindowServer.EVENT_OPEN));
+        }
+
+        /**
+         * Whether this is the program being opened again, on the files it carries.
+         *
+         * Nothing in the window was used and there may not be a window: this is the system
+         * saying somebody double-clicked a document while the program was already running.
+         */
+        public boolean isOpenFiles() {
+            return kind.sameAs(FMString.of(WindowServer.EVENT_OPEN_FILES));
         }
     }
 
@@ -534,6 +555,24 @@ public final class FMApplication implements AutoCloseable {
         return out.asArray();
     }
 
+    /**
+     * Says this program's window is holding changes that have not been written.
+     *
+     * The window server draws a dot in the close button. A program says this rather than
+     * being asked, because whether a document has changed is the one thing about it that
+     * nothing outside the program can work out.
+     */
+    public boolean setDocumentEdited(boolean edited) {
+        try {
+            Message reply = connection().send(Message.of(WindowServer.SET_EDITED)
+                .put("window", (long) window).put("edited", edited));
+            if (reply.isError()) throw new IOException(reply.errorText());
+            return true;
+        } catch (IOException e) {
+            return failed(e);
+        }
+    }
+
     /** Where a control's selection starts and ends, and what is in it. */
     public record Selection(int from, int to, FMString text) {
         public boolean isEmpty() { return from >= to; }
@@ -739,10 +778,14 @@ public final class FMApplication implements AutoCloseable {
             ? reply.string("item", "") : reply.string("control", "");
         // What comes off the wire is the runtime's text; what a program handles is this
         // system's. The message boundary is where one becomes the other.
+        org.fractalmicro.foundation.FMMutableArray<FMURL> files =
+            org.fractalmicro.foundation.FMMutableArray.empty();
+        for (String one : reply.strings("files")) files.add(FMURL.ofPath(one));
         return new Event(FMString.of(kind), (int) reply.integer("window", -1),
                          FMString.of(from), FMString.of(reply.string("action", "")),
                          reply.get("value"),
-                         FMString.of(reply.string("folder", "")));
+                         FMString.of(reply.string("folder", "")),
+                         files.asArray());
     }
 
     /** Hands one event to whatever said it wanted it. */
@@ -751,6 +794,14 @@ public final class FMApplication implements AutoCloseable {
         if (event.isClosed()) {
             if (onClose != null) onClose.run();
             else running = false;
+            return;
+        }
+        // Being opened again is the system's message rather than a control's, so it goes to
+        // the one thing that speaks for the whole program. The entry point sets this to the
+        // delegate before any of the program's own code runs, so a program handles being
+        // opened on a second document by having already said what opening one means.
+        if (event.isOpenFiles()) {
+            if (onOpenFiles != null) onOpenFiles.accept(event.urls());
             return;
         }
         Handler handler = handlers.get(event.action());

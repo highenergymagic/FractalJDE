@@ -32,6 +32,14 @@ import java.awt.event.MouseEvent;
  */
 public class AquaInternalFrameUI extends BasicInternalFrameUI {
 
+    /**
+     * The mark on a window that is holding unsaved changes.
+     *
+     * A property on the window rather than a field, because the window is made by the
+     * window server and the thing that knows about the changes is a program somewhere else.
+     */
+    public static final String DOCUMENT_EDITED = "org.fractalmicro.documentEdited";
+
     public AquaInternalFrameUI(JInternalFrame f) { super(f); }
 
     public static ComponentUI createUI(JComponent c) {
@@ -90,12 +98,36 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             });
         }
 
+        /**
+         * Whether the window is holding changes that have not been written.
+         *
+         * Kept on the window rather than passed in, because whoever knows it is the program
+         * and the program is usually somewhere else. It sets it through the window server,
+         * the same way it sets a title.
+         */
+        static boolean edited(JInternalFrame frame) {
+            return Boolean.TRUE.equals(frame.getClientProperty(DOCUMENT_EDITED));
+        }
+
         private JButton light(int x, Color colour, String name, String glyph,
                               java.awt.event.ActionListener action) {
+            // The close button of a window holding unsaved changes shows a dot rather than
+            // a cross. It is the smallest thing on the screen and the only warning a person
+            // gets before pressing it, which is why Mac OS X put it there rather than in the
+            // title: the mark belongs on the control that would lose the work.
+            boolean closes = "Close".equals(name);
             JButton b = new JButton() {
                 @Override protected void paintComponent(Graphics g) {
+                    // The cross, the minus and the plus appear only while the pointer is
+                    // over the three of them, which is what a Mac does. The dot is the
+                    // exception and has to be: it is a warning, and a warning nobody sees
+                    // until they reach for the button is not one. It shows on an inactive
+                    // window too, which is where somebody is most likely to have forgotten.
+                    boolean marked = closes && edited(frame);
                     Aqua.paintTrafficLight((Graphics2D) g, 0, 0, 13, colour,
-                        frame.isSelected(), getModel().isRollover() || hasFocus(), glyph);
+                        frame.isSelected(),
+                        marked || getModel().isRollover() || hasFocus(),
+                        marked ? "•" : glyph);
                 }
             };
             b.setBounds(x, 5, 13, 13);

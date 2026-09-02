@@ -120,6 +120,10 @@ public final class FMApplicationMain implements Bundles.Launcher {
             app.close();
             return;
         }
+        // Being opened again on a document is the same question as being opened on one, so
+        // it goes to the same method. The program does not have to know it was already
+        // running, which is the whole of what it had to know before.
+        app.onOpenFiles(program::openURLs);
         app.onClose(app::stop);
         app.run();
         app.close();
@@ -229,12 +233,24 @@ public final class FMApplicationMain implements Bundles.Launcher {
      */
     private static boolean spawn(Bundle bundle, List<File> files) {
         FMString label = bundle.identifier();
-        // Already running and opened on nothing is already open. Opened on something, it
-        // is started again: a program with a process of its own has no way to be handed a
-        // document once it is going, so a second one is what opens it.
+        // Already running and opened on nothing is already open.
+        //
+        // Opened on something, the one that is running is told, which is what a Mac does
+        // and what this could not do until the window server would carry the message. It
+        // used to start a second copy: two TextEdits, two Dock tiles, two of everything
+        // either had open, and no way for a person to tell which was which.
+        //
+        // A program that is running but has put no window up has nothing listening yet, and
+        // that answers false, so one is started as before.
         FMTask already = FMTask.running(label);
-        if (already != null && already.isRunning() && (files == null || files.isEmpty())) {
-            return true;
+        if (already != null && already.isRunning()) {
+            if (files == null || files.isEmpty()) return true;
+            List<String> paths = new java.util.ArrayList<>();
+            for (File one : files) paths.add(one.getAbsolutePath());
+            if (org.fractalmicro.windowserver.WindowServer.sharedServer()
+                    .reopen(bundle.displayName().toString(), paths)) {
+                return true;
+            }
         }
 
         // The process starts with the loader and the program, which is what the kernel

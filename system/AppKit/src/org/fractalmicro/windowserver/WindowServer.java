@@ -118,6 +118,16 @@ public final class WindowServer {
     public static final String SELECTION = "selection";
     public static final String GET = "getValue";
     public static final String SET_TITLE = "setTitle";
+
+    /**
+     * Says the window is holding changes that have not been written.
+     *
+     * A window property rather than something in the title, because that is where Mac OS X
+     * puts it: a dot in the close button, on the control that would lose the work. A
+     * program elsewhere knows whether its document has changed and nothing here does, so it
+     * says, the same way it says what the title is.
+     */
+    public static final String SET_EDITED = "setDocumentEdited";
     public static final String SET_ENABLED = "setEnabled";
     public static final String NEXT_EVENT = "nextEvent";
     public static final String LIST = "listWindows";
@@ -184,6 +194,15 @@ public final class WindowServer {
      * every time somebody looked at one.
      */
     public static final String EVENT_OPEN = "open";
+
+    /**
+     * The program has been opened again, on some files.
+     *
+     * Not a control doing anything, which is why it is its own kind: nothing in the window
+     * was used, and there may not be a window yet. It is the system telling a program that
+     * somebody double-clicked a document it handles while it was already running.
+     */
+    public static final String EVENT_OPEN_FILES = "openFiles";
     public static final String EVENT_NONE = "none";
 
     private static WindowServer instance;
@@ -365,6 +384,7 @@ public final class WindowServer {
                 case SELECTION -> selection(request);
                 case GET -> getValue(request);
                 case SET_TITLE -> setTitle(request);
+                case SET_EDITED -> setEdited(request);
                 case SET_ENABLED -> setEnabled(request);
                 case NEXT_EVENT -> nextEvent(request);
                 case LIST -> listWindows();
@@ -738,12 +758,37 @@ public final class WindowServer {
     }
 
     private void post(String application, Message event) {
+        deliver(application, event);
+    }
+
+    /** The same, saying whether there was anybody listening. */
+    private boolean deliver(String application, Message event) {
         LinkedBlockingQueue<Message> queue = events.get(key(application));
-        if (queue == null) return;              // no window open for it; nothing to tell
+        if (queue == null) return false;        // no window open for it; nothing to tell
         if (!queue.offer(event)) {
             queue.poll();                       // drop the oldest and keep the newest
             queue.offer(event);
         }
+        return true;
+    }
+
+    /**
+     * Tells a program that is already running that it has been opened on something.
+     *
+     * This is NSApplication's application:openFiles:, and it exists because a program with
+     * a process of its own cannot be handed an object. Before it, opening a second document
+     * started a second copy of the program: two TextEdits, two Dock tiles, two of everything
+     * it had open. A Mac has never done that.
+     *
+     * It needs no new channel. The program is already reading events from here and has been
+     * since it opened its window, so being opened again is one more of those. Answers
+     * whether there was anybody there to tell, which is how the caller knows whether to
+     * start one instead.
+     */
+    public boolean reopen(String application, List<String> paths) {
+        return deliver(application, Message.of(EVENT)
+            .put("event", EVENT_OPEN_FILES)
+            .put("files", paths == null ? new ArrayList<String>() : paths));
     }
 
     /**
@@ -1038,6 +1083,24 @@ public final class WindowServer {
             window.frame.getAccessibleContext().setAccessibleName(title);
         });
         return Message.of(SET_TITLE).put("ok", Boolean.TRUE);
+    }
+
+    /**
+     * Marks a window as holding changes, or as not.
+     *
+     * The close button reads it and draws a dot instead of a cross. Nothing else changes,
+     * which is the point: it is a warning on the control that would lose the work and not
+     * an announcement.
+     */
+    private Message setEdited(Message request) throws Exception {
+        Window window = windowOf(request);
+        boolean edited = request.bool("edited", false);
+        onSwing(() -> {
+            window.frame.putClientProperty(
+                org.fractalmicro.theme.AquaInternalFrameUI.DOCUMENT_EDITED, edited);
+            window.frame.repaint();
+        });
+        return Message.of(SET_EDITED).put("ok", Boolean.TRUE);
     }
 
     private Message setEnabled(Message request) throws Exception {
