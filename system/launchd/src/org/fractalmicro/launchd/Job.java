@@ -124,16 +124,12 @@ public final class Job {
     /**
      * Fills in the things a job cannot know when it is written.
      *
-     * A job file ships inside a system image. It is written on one machine and unpacked on
-     * another: under a different home directory, for an account with a different name,
-     * against a runtime installed somewhere else entirely. Everything else in a job is the
-     * same everywhere; these are not, and a job that spelled any of them out would start
-     * nothing anywhere but where it was written.
+     * A job file ships inside an image, written on one machine and unpacked on another
+     * under a different home directory, account and runtime. A job that spelled any of
+     * those out would start nothing anywhere but where it was written.
      *
-     * Mac OS X does not need this because its volume is / and its runtime is at a fixed
-     * path. Here the volume is wherever somebody's home directory is, so the job says what
-     * it means and launchd, which is running from that volume under that runtime, is the
-     * one that knows.
+     * Mac OS X does not need this: its volume is / and its runtime is at a fixed path.
+     * Here the job says what it means and launchd, running from that volume, knows.
      */
     private static String resolved(String argument) {
         if (!argument.contains("${")) return argument;

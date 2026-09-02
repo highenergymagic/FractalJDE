@@ -55,10 +55,9 @@ public final class Install {
     /**
      * Lays the system out on the volume, and answers whether anything was written.
      *
-     * This once installed the whole system as one framework. The images replaced that:
-     * each library is its own file with its own code and symbol table, and a program is
-     * given the ones it linked. One framework holding all of them would be a way around
-     * that, so it is taken out when found.
+     * This once installed the whole system as one framework. The images replaced that, and
+     * one framework holding all of them would be a way around the division, so it is taken
+     * out when found.
      */
     public static synchronized boolean ensureInstalled() {
         int written = Images.installAll();
@@ -193,8 +192,8 @@ public final class Install {
      * image or from loose classes.
      *
      * The parts that write bundles ask, and copy a program's classes out of the answer.
-     * Started from an image there is nothing to copy: the code is already where it
-     * belongs, and a bundle written from nothing would replace a program with a plist.
+     * Started from an image there is nothing to copy and a bundle written from nothing
+     * would replace a program with a plist.
      */
     public static File runningCode() {
         try {
@@ -211,10 +210,9 @@ public final class Install {
     /**
      * Tells the loader that the framework this process is running is already loaded.
      *
-     * Everything the desktop is made of was loaded before the loader existed, by whatever
-     * started the virtual machine. Registering it means a program that links the framework
-     * is given these classes rather than a second copy of them, so an object made in a
-     * program is the same kind of thing when the desktop is handed it.
+     * Everything the desktop is made of was loaded before the loader existed. Registering
+     * it hands a program that links the framework these classes rather than a second copy,
+     * so an object it makes is the same kind of thing when the desktop is given it.
      */
     public static void registerRunningFramework() {
         // Every library, each with what belongs to it, so that linking one does not hand

@@ -46,9 +46,8 @@ public class Desktop extends JFrame {
      * How big the screen is, or how big it is being asked to pretend to be.
      *
      * Normally the screen. A build drawing the desktop into a picture has no screen worth
-     * the name and every reason to choose a size: the machine that runs the checks is
-     * whatever the runner happened to be, and a picture of the desktop at whatever
-     * resolution that machine had is not a picture of the desktop.
+     * the name and every reason to choose a size, since a picture at whatever resolution
+     * the runner happened to have is not a picture of the desktop.
      */
     public static final String SCREEN_PROPERTY = "org.fractalmicro.screen";
 
@@ -109,12 +108,10 @@ public class Desktop extends JFrame {
     /**
      * The system beep, and nothing else.
      *
-     * NSBeep takes no argument and says nothing, because a beep is what a Mac makes when a
-     * key means nothing where it was pressed. It is a full stop, not a sentence.
-     *
-     * There are three answers rather than one. A command that cannot apply is drawn grey
-     * and cannot be chosen. Something that went wrong puts up an alert, which is a thing a
-     * person dismisses. And a key that means nothing here beeps.
+     * NSBeep takes no argument and says nothing: a beep is a full stop, not a sentence.
+     * There are three answers rather than one. A command that cannot apply is grey and
+     * cannot be chosen, something that went wrong puts up an alert, and a key that means
+     * nothing here beeps.
      */
     public static void beep() {
         java.awt.Toolkit.getDefaultToolkit().beep();
@@ -125,10 +122,9 @@ public class Desktop extends JFrame {
     /**
      * What is shown on the desktop, once something has put something there.
      *
-     * Nothing here, on purpose. The desktop is a folder and the icons on it are a view of
-     * it drawn by the Finder, which is a program like any other. The screen provides the
-     * back of itself and does not know what goes on it. Null until {@link #setIcons} is
-     * called, which is the honest state of a machine whose file manager is not running.
+     * Nothing here, on purpose. The desktop is a folder and its icons are a view of it
+     * drawn by the Finder. Null until {@link #setIcons} is called, which is the honest
+     * state of a machine whose file manager is not running.
      */
     private JComponent icons;
     private final Dock dock = new Dock();

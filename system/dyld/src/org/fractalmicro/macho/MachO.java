@@ -239,11 +239,10 @@ public final class MachO {
     /**
      * The whole of it, with the symbol table that makes linking mean something.
      *
-     * Without this an image says which libraries it links and no more, and the loader has
-     * to guess which one a class came from by asking each in turn. With it the image says,
-     * for every class it uses and does not define, exactly which of its load commands
-     * supplies it. The loader looks there and stops. That is the two level namespace, and
-     * it is why two libraries may export the same name without either shadowing the other.
+     * Without it an image says which libraries it links and no more, and the loader guesses
+     * which one a class came from by asking each in turn. With it the image says which load
+     * command supplies each class it uses, so the loader looks there and stops. That is the
+     * two level namespace, and why two libraries may export the same name.
      *
      * @param exports what this image defines, which anything linking it may use
      * @param imports what it expects to be given, and the install name of the library it
@@ -744,15 +743,13 @@ public final class MachO {
     /**
      * Reads the symbol table into what this image defines and what it expects.
      *
-     * Nothing here trusts the counts in the load command. They are four numbers in a file
+     * Nothing here trusts the counts in the load command: they are four numbers in a file
      * that may have been written by anything, and multiplying two of them is how a reader
-     * ends up allocating whatever the file asks for. Each entry is checked against the
-     * length of the file before it is read.
+     * allocates whatever the file asks for. Each entry is checked against the length first.
      *
-     * An undefined symbol carries the ordinal of the library meant to supply it in the
-     * high byte of its description. Ordinal 254 means it was not pinned to a library and
-     * should be searched for; anything past the end of the load commands is a file
-     * disagreeing with itself and is skipped.
+     * An undefined symbol carries the ordinal of the library meant to supply it. Ordinal
+     * 254 means it was not pinned to one; past the end of the load commands is a file
+     * disagreeing with itself, and is skipped.
      */
     private void readSymbols(byte[] bytes, int symbolOffset, int symbolCount,
                              int stringOffset, int stringSize) {

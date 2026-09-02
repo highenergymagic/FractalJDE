@@ -252,10 +252,9 @@ public class MainMenu extends JMenuBar {
     /**
      * Asks before restarting, shutting down or logging out.
      *
-     * These do the real thing to the machine, so the dialog says so plainly and offers the
-     * smaller option of closing this program instead. The action button is named for what
-     * it does and sits rightmost; Cancel is beside it; quitting only this desktop is the
-     * third choice, kept away from the other two.
+     * These do the real thing to the machine, so the dialog says so and offers the smaller
+     * option of closing this program instead. The action button is named for what it does
+     * and sits rightmost, Cancel beside it, and quitting only this desktop kept apart.
      */
     private void confirmSession(FMString question, FMString verb,
                                 java.util.function.BooleanSupplier action) {
@@ -525,10 +524,9 @@ public class MainMenu extends JMenuBar {
     /**
      * Puts the indicators at the right of the bar.
      *
-     * The bar does not make these and does not know what they are. They come from
-     * {@link SystemUIServer}, which loads them out of their own bundles, and the bar only
-     * has to know that they go at the right and that the keyboard reaches them after
-     * everything else.
+     * The bar does not make these and does not know what they are. {@link SystemUIServer}
+     * loads them out of their own bundles; the bar knows only that they go at the right
+     * and that the keyboard reaches them last.
      */
     public void setStatusItems(java.util.List<JMenu> items) {
         statusMenus.clear();

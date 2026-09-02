@@ -353,13 +353,10 @@ public class Dock extends JPanel {
         /**
          * What dropping files on this tile does.
          *
-         * Two answers, and both of them are ones a person tries without being told. Files on
-         * the Trash are thrown away. Files on a program are opened by that program, whether
-         * or not it is running and whether or not it would have opened them by itself, which
-         * is how somebody opens a text file in an editor that is not the one the system
-         * would have picked.
-         *
-         * A tile that is neither takes nothing, and says so by refusing the pointer.
+         * Both are things a person tries without being told. Files on the Trash are thrown
+         * away. Files on a program are opened by it whether or not it is running and
+         * whether or not it would have opened them by itself, which is how somebody opens
+         * a text file in an editor the system would not have picked.
          */
         private void takesDrops() {
             if (node.kind != Node.Kind.TRASH && node.file == null) return;

@@ -61,15 +61,11 @@ public final class FMApplicationMain implements Bundles.Launcher {
     /**
      * Where a program in a process of its own starts, which is not in the program.
      *
-     * The loader maps the image and calls its entry point. On a Mac that is main, and what
-     * every Cocoa application writes there is one line: return NSApplicationMain. There is
-     * nothing an application knows at that moment its bundle has not already said.
-     *
-     * So the entry point here is this and not the program. It finds the bundle the loader
-     * opened, reads NSPrincipalClass, makes one and sends it the messages an application
-     * expects. The program has no main: it has a class that answers open, which is what a
-     * delegate is. That removed the same fifteen lines from every program, of which only
-     * two were ever the program's business.
+     * On a Mac the entry point is main, and every Cocoa application writes one line there:
+     * return NSApplicationMain. So the entry point here is this and not the program. It
+     * finds the bundle the loader opened, reads NSPrincipalClass, makes one and sends it
+     * the messages an application expects. The program has no main: it has a class that
+     * answers open, which is what a delegate is.
      */
     public static void main(String[] arguments) {
         Bundle bundle = openingBundle();
@@ -171,13 +167,9 @@ public final class FMApplicationMain implements Bundles.Launcher {
      * Makes the principal class and says something to it on the main thread.
      *
      * Through the loader, so opening a program from the desktop happens the same way as
-     * from outside: the code comes out of the bundle with the libraries it links behind it.
-     *
-     * Unless this process is already the program, which is what a hosted one is. Its code
-     * is here, and a second copy out of the bundle would be two of every class: two of
-     * each static field, two of each type, and a desktop holding a control made by one
-     * while everything else asks the other. A program with its own process has no copy
-     * here and gets the bundle's.
+     * from outside. Unless this process is already the program, which is what a hosted one
+     * is: a second copy out of the bundle would be two of every class, two of each static
+     * field, and a desktop holding a control made by one while everything asks the other.
      */
     private static boolean deliver(Bundle bundle, java.util.function.Consumer<FMApplicationDelegate> what) {
         if (bundle == null) return false;
@@ -220,9 +212,8 @@ public final class FMApplicationMain implements Bundles.Launcher {
      * Starts a program in a process of its own, or brings back the one already running.
      *
      * Nothing here is particular to any program: the class path is the closure of what the
-     * executable links, the label is the bundle identifier, and what the program writes
-     * goes beside every other program's log. A program does not have to carry code that
-     * knows how to start itself.
+     * executable links and the label is the bundle identifier, so a program does not have
+     * to carry code that knows how to start itself.
      */
     private static boolean spawn(Bundle bundle, List<File> files) {
         FMString label = bundle.identifier();

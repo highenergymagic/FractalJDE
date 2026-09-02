@@ -153,15 +153,10 @@ public final class MenuValidationTest {
     /**
      * A program this system actually ships, started for real and asked about its own menus.
      *
-     * The rest of this is a program written to be asked. This is the one that would catch
-     * the change going wrong in the direction that matters: the new default greys a command
-     * the program has never said it can do, so a program whose menus name one set of commands
-     * and whose code answers to another would come up with everything grey, and every check
-     * above would still pass.
-     *
-     * TextEdit because it has the most commands and the most that depend on the moment. A
-     * machine where it will not start says so and checks nothing, rather than failing for a
-     * reason that is not about menus.
+     * The rest of this is a program written to be asked. This catches the change failing in
+     * the direction that matters: a program whose menus name one set of commands and whose
+     * code answers to another comes up entirely grey, and every check above still passes.
+     * A machine where TextEdit will not start says so and checks nothing.
      */
     private static int checkAShippedProgram(Desktop desktop, PrintStream out) {
         if (!org.fractalmicro.bundle.Bundles.openIdentifier("org.fractalmicro.textedit")) {

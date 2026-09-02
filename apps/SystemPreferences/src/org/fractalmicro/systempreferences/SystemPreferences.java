@@ -52,11 +52,9 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
     /**
      * One switch: which control it is, which pane it is on, and what it reads and writes.
      *
-     * No words. The words are in the interface file, which is the one place they can be
-     * read by somebody translating and the one place a person looking for them would think
-     * to look. They used to be here as well, in a field nothing ever read, which is worse
-     * than either: two copies of a label that can disagree, and no way to tell which of
-     * them is the one on the screen.
+     * No words. Those are in the interface file, which is where somebody translating reads
+     * them. They used to be here as well, in a field nothing ever read: two copies of a
+     * label that can disagree, with no way to tell which is on the screen.
      */
     private record Switch(FMString id, FMString pane,
                           java.util.function.BooleanSupplier reads,
@@ -119,10 +117,9 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
     /**
      * How long a drag rests on a folder before it opens.
      *
-     * A slider rather than a number, because nobody knows what they want this to be in
-     * milliseconds and everybody knows whether folders are opening too eagerly. It is set
-     * in tenths of a second, so what the slider is holding is the setting and not a
-     * position that has to be turned into one.
+     * A slider rather than a number, because nobody knows what they want in milliseconds
+     * and everybody knows whether folders open too eagerly. Set in tenths of a second, so
+     * the slider holds the setting rather than a position.
      */
     private static final FMString SPRING_DELAY = FMString.of("spring delay");
     private static final FMString SPRING_DELAY_LABEL = FMString.of("spring delay label");
@@ -171,16 +168,10 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
     /**
      * The pane a name asks for.
      *
-     * Matched without regard for case, because every other part name in this system is
-     * written in lower case and a pane is a part like any other: the file manager asks for
-     * "desktop" and the list here says "Desktop", and those are the same pane.
-     *
-     * A name that is nothing at all opens the first pane, which is what opening the
-     * settings with nothing more to say means. A name that is something and is not a pane
-     * says so and then opens the first one, because silently showing somebody a different
-     * pane from the one they asked for is how a wrong name goes unnoticed: it was doing
-     * exactly that for the file manager's own Preferences item, which asked for a pane
-     * called "finder" and got the desktop without a word.
+     * Matched without regard for case, since every other part name here is lower case: the
+     * file manager asks for "desktop" and the list says "Desktop". No name opens the first
+     * pane. A name that is not a pane says so first, because showing somebody a different
+     * pane silently is how a wrong name goes unnoticed, which it had been doing.
      */
     private static FMString paneNamed(FMString asked) {
         if (asked == null || asked.isBlank()) return DESKTOP;

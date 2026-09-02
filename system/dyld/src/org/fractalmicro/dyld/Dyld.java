@@ -95,13 +95,10 @@ public final class Dyld {
     /**
      * Records an image that is already loaded, and what belongs to it.
      *
-     * A development build runs everything out of one jar, so every class is in one loader
-     * and nothing keeps one image's classes apart from its neighbour's. Saying which
-     * packages are this image's restores that, and a program linking Foundation that
-     * reaches for AppKit is still told there is no such symbol.
-     *
-     * What it answers for is its export list, read from the image on disk, so nothing
-     * about the division is written down twice.
+     * A development build runs everything out of one jar, so nothing keeps one image's
+     * classes apart from its neighbour's. Saying which packages are this image's restores
+     * that. What it answers for is its export list, read from the image on disk, so
+     * nothing about the division is written down twice.
      *
      * @param exports the classes this image offers, or empty to mean everything the
      *                loader has

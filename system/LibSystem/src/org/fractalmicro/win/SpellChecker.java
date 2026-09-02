@@ -95,15 +95,13 @@ public final class SpellChecker {
     /**
      * The thread the checking service belongs to.
      *
-     * COM was started here as an apartment, which is what the spelling service wants, and
-     * an apartment object may only be touched by the thread that made it. Which thread
-     * that was is otherwise whichever one happened to ask first: on one machine the checks
-     * ran on it and everything worked, and on another they did not and the service quietly
-     * answered nothing at all.
+     * COM is started here as an apartment, which is what the spelling service wants, and an
+     * apartment object may only be touched by the thread that made it. Left to chance that
+     * is whichever thread asked first: on one machine the checks ran on it and worked, on
+     * another they did not and the service quietly answered nothing.
      *
-     * So it is not left to chance. One thread starts COM, makes the checker and does every
-     * call to it, and everybody else asks that thread. Callers no longer have to know
-     * which thread they are on, which they had no way of knowing anyway.
+     * So one thread starts COM, makes the checker and does every call to it, and callers
+     * no longer have to know which thread they are on.
      */
     private static Thread ownerThread;
 
