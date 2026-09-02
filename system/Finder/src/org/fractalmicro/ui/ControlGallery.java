@@ -42,7 +42,7 @@ public class ControlGallery extends JInternalFrame {
     public ControlGallery() {
         super("Controls", true, true, true, true);
         setFrameIcon(new ImageIcon(Icons.forKind(Node.Kind.APPLICATION, 16)));
-        setSize(460, 900);
+        setSize(480, 640);
 
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -146,6 +146,48 @@ public class ControlGallery extends JInternalFrame {
         p.add(spinner);
         p.add(gap());
 
+        // The three that arrived with the description protocol, which the gallery predates.
+        // A control a program can name and this cannot show is a control nobody can look at
+        // before they use it, which is the one thing a gallery is for.
+        p.add(heading("Toolbar"));
+        JPanel toolbar = new JPanel(new BorderLayout());
+        toolbar.setOpaque(false);
+        JPanel toolbarLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        toolbarLeft.setOpaque(false);
+        toolbarLeft.add(named(new JButton("◀"), "Back"));
+        toolbarLeft.add(named(new JButton("▶"), "Forward"));
+        JPanel toolbarRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
+        toolbarRight.setOpaque(false);
+        FMTextField search = new FMTextField(12);
+        search.getAccessibleContext().setAccessibleName("Search");
+        toolbarRight.add(search);
+        toolbar.add(toolbarLeft, BorderLayout.WEST);
+        toolbar.add(toolbarRight, BorderLayout.EAST);
+        toolbar.setAlignmentX(Component.LEFT_ALIGNMENT);
+        toolbar.setMaximumSize(new Dimension(400, 34));
+        p.add(toolbar);
+        p.add(gap());
+
+        p.add(heading(org.fractalmicro.foundation.FMLocalized.of(
+            org.fractalmicro.foundation.FMString.of("gallery.splitView")).toString()));
+        JList<String> places = new JList<>(new String[]{
+            "DEVICES", "Startup", "PLACES", "Desktop", "Documents"});
+        places.getAccessibleContext().setAccessibleName("Places");
+        places.setFont(Aqua.viewFont());
+        org.fractalmicro.appkit.FMBrowser browser = new org.fractalmicro.appkit.FMBrowser();
+        browser.setRoot(org.fractalmicro.fs.FS.home());
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                                          new JScrollPane(places), browser);
+        split.getAccessibleContext().setAccessibleName("Sidebar and folder");
+        split.setDividerLocation(120);
+        split.setDividerSize(6);
+        split.setBorder(null);
+        split.setAlignmentX(Component.LEFT_ALIGNMENT);
+        split.setMaximumSize(new Dimension(400, 160));
+        split.setPreferredSize(new Dimension(400, 160));
+        p.add(split);
+        p.add(gap());
+
         p.add(heading("Tabs"));
         JTabbedPane tabs = new JTabbedPane();
         tabs.getAccessibleContext().setAccessibleName("Panes");
@@ -173,7 +215,16 @@ public class ControlGallery extends JInternalFrame {
         tableScroll.setMaximumSize(new Dimension(400, 80));
         p.add(tableScroll);
 
-        setContentPane(p);
+        // Down the side, because there is more here than fits and a box layout given too
+        // little room does not clip, it squeezes: every control shrinks towards nothing
+        // together. A gallery whose specimens are the wrong height is worse than no
+        // gallery, since the whole point of it is looking at how tall things are.
+        JScrollPane all = new JScrollPane(p);
+        all.setBorder(null);
+        all.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        all.getVerticalScrollBar().setUnitIncrement(16);
+        all.getViewport().setBackground(Aqua.WINDOW_BG);
+        setContentPane(all);
         getAccessibleContext().setAccessibleName("Controls");
 
         // The action button is the default, so its pulse can be seen.
@@ -184,6 +235,12 @@ public class ControlGallery extends JInternalFrame {
 
     public static void open() {
         Desktop.sharedDesktop().addWindow(new ControlGallery());
+    }
+
+    /** A control with the name a screen reader will read, since every one here needs one. */
+    private static <T extends JComponent> T named(T control, String name) {
+        control.getAccessibleContext().setAccessibleName(name);
+        return control;
     }
 
     private JLabel heading(String text) {

@@ -102,3 +102,7 @@
 "finder.redoNamed" = "Redo %1$@";
 "finder.undoPlain" = "Undo";
 "finder.redoPlain" = "Redo";
+
+/* A heading in the gallery of controls, which is opened with --controls to look at how
+   things are drawn. */
+"gallery.splitView" = "Split view, and a folder in it";

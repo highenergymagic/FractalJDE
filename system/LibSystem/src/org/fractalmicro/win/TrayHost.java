@@ -125,12 +125,25 @@ public final class TrayHost {
         if (started) return;
         started = true;
 
+        // Only when nothing else is the shell. A window class belongs to the process that
+        // registered it, not to the machine, so a second Shell_TrayWnd can always be made
+        // and Explorer's carries on existing beside it. Both then answer to FindWindow, and
+        // whichever is nearer the front of the window list is the one everybody reaches:
+        // the icons programs send, and the edge reservations sent by SHAppBarMessage, which
+        // finds the shell that same way. A decoy standing in front of a running Explorer
+        // swallows both, so the menu bar and the Dock quietly stop reserving their strips.
+        long theirs = User32.findWindowByClass("Shell_TrayWnd");
+        if (theirs != 0 && User32.processOf(theirs) != ProcessHandle.current().pid()) {
+            Log.info("the notification area belongs to something else, probably Explorer");
+            return;
+        }
+
         MessageWindow window = MessageWindow.sharedWindow();
         window.addHandler(TrayHost::handle);
 
         trayWindow = window.createWindow("Shell_TrayWnd", null, WS_POPUP, 0);
         if (trayWindow == 0) {
-            Log.info("the notification area belongs to something else, probably Explorer");
+            Log.info("the notification area could not be taken over");
             return;
         }
         notifyWindow = window.createWindow("TrayNotifyWnd", null, WS_CHILD, trayWindow);

@@ -49,7 +49,7 @@ import java.util.List;
 public final class UndoTest {
     private UndoTest() {}
 
-    public static int count() { return 11; }
+    public static int count() { return 12; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -158,6 +158,12 @@ public final class UndoTest {
                 && !menus.canPerform(FMString.of("duplicate"))
                 && !menus.canPerform(FMString.of("cut"))
                 && menus.canPerform(FMString.of("newWindow")));
+
+            // The Label submenu is built at run time and so is not in the interface file
+            // with the rest, which is exactly why it was the one still offering to colour
+            // nothing. It answers the same question now.
+            failures += check(out, "and the same about labelling, which has its own menu",
+                !menus.canPerform(FMString.of("label")));
         } catch (Exception e) {
             out.println("FAIL  the Finder registers a way back: " + e);
             failures++;

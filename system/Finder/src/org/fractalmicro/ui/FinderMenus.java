@@ -129,10 +129,21 @@ public final class FinderMenus implements NibLoader.Commands {
      * was last in. Neither is a list a description could hold: it would be a list of what
      * happened to be true on the machine the file was written on.
      */
+    /**
+     * The Label submenu, kept because nothing else can validate it.
+     *
+     * Its items are made at run time from the labels somebody has used, so they carry no
+     * command name and the menu machinery has nothing to ask about. Every other item in the
+     * bar greys itself out with nothing selected; this one stayed black until it was held
+     * on to and asked here.
+     */
+    private JMenu labels;
+
     private void addLiveMenus(List<JMenu> built) {
         for (JMenu menu : built) {
             if ("File".equals(menu.getName()) || isNamed(menu, "makeAlias")) {
-                menu.add(Finder.labelMenu(this::selection), indexAfter(menu, "makeAlias"));
+                labels = Finder.labelMenu(this::selection);
+                menu.add(labels, indexAfter(menu, "makeAlias"));
             }
             if (isNamed(menu, "goToFolder")) {
                 menu.add(desktop.mainMenu().recentFoldersMenu(),
@@ -173,6 +184,12 @@ public final class FinderMenus implements NibLoader.Commands {
                     nameTheSelection();
                     nameTheUndo();
                     sayShowOrHide();
+                    // Labelling needs something to label, the same as everything else in
+                    // this menu. It is asked here rather than by the menu machinery
+                    // because its items are made at run time and are not in the interface
+                    // file to be asked about, but the question is the same question, so
+                    // that a check can put it and get the answer the menu will show.
+                    if (labels != null) labels.setEnabled(canPerform(FMString.of("label")));
                 }
                 @Override public void menuDeselected(javax.swing.event.MenuEvent e) { }
                 @Override public void menuCanceled(javax.swing.event.MenuEvent e) { }
@@ -398,7 +415,8 @@ public final class FinderMenus implements NibLoader.Commands {
             // Something has to be chosen.
             case "open", "openWithDefault", "openWithChosen", "getInfo", "compress",
                  "duplicate", "makeAlias", "quickLook", "addToSidebar", "moveToTrash",
-                 "print", "copy", "cleanUpSelection" -> !selection().isEmpty();
+                 "print", "copy", "cleanUpSelection",
+                 "label" -> !selection().isEmpty();
 
             // Chosen, and of a kind the command means anything for.
             case "showOriginal" -> isAlias(Finder.first(selection()));

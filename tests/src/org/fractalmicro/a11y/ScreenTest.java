@@ -56,17 +56,35 @@ public final class ScreenTest {
             screen.width > 0 && screen.height > 0
             && work.width > 0 && work.height > 0 && work.height <= screen.height);
 
-        // A window has to exist to be registered, so this uses the one the shell already
-        // knows about: the foreground window. Nothing is reserved, only asked.
-        long anyWindow = org.fractalmicro.win.User32.foregroundWindow();
+        // A window has to exist to be registered, and this makes one of its own rather than
+        // borrowing whichever window happened to be in front.
+        //
+        // It used to use the foreground window, which on a machine somebody is using is
+        // their window: their terminal, their browser. Registering an app bar against it
+        // fails if it is already registered, which made this check fail on a person's own
+        // desktop and pass on a build machine where nothing else is running. Worse than the
+        // flapping, it was reaching into something that is not this program's to touch.
+        //
+        // A frame and not a plain window, because a handle is found by its title and only
+        // frames and dialogs carry one. The title is unlikely enough that nothing else on
+        // the desktop answers to it. The window is never shown; it exists for as long as
+        // this question takes.
+        java.awt.Frame own = new java.awt.Frame("Fractal edge check " + ProcessHandle.current().pid());
+        own.setBounds(0, 0, 1, 1);
+        own.addNotify();
+        long handle = org.fractalmicro.win.User32.handleOf(own);
         Rectangle wanted = new Rectangle(screen.x, screen.y, screen.width, 22);
-        AppBar bar = anyWindow == 0 ? null : AppBar.claim(anyWindow, AppBar.ABE_TOP, wanted);
+        AppBar bar = handle == 0 ? null : AppBar.claim(handle, AppBar.ABE_TOP, wanted);
         boolean registered = bar != null && bar.isRegistered();
         if (bar != null) bar.release();
+        if (handle == 0) {
+            out.println("      this display gives a window no handle, so the shell is not asked");
+        }
         failures += check(out, "the shell answers about reserving an edge",
-            registered || anyWindow == 0);
+            registered || handle == 0);
         failures += check(out, "the reservation is given back",
             bar == null || !bar.isRegistered());
+        own.dispose();
 
         /* ------------------------------------------------------ a real window */
         JInternalFrame window = new JInternalFrame("A Document", true, true, true, true);
@@ -99,6 +117,7 @@ public final class ScreenTest {
                                               : failures + " failed"));
         return failures;
     }
+
 
     private static int check(PrintStream out, String what, boolean ok) {
         out.println((ok ? "ok    " : "FAIL  ") + what);

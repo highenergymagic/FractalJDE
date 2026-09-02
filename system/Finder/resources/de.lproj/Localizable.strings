@@ -33,3 +33,5 @@
 "finder.redoNamed" = "%1$@ wiederholen";
 "finder.undoPlain" = "Widerrufen";
 "finder.redoPlain" = "Wiederholen";
+
+"gallery.splitView" = "Geteilte Ansicht mit einem Ordner darin";

@@ -302,11 +302,52 @@ public final class User32 {
         }
     }
 
-    /** The handle of one of this program's own windows, found by the title it carries. */
+    /**
+     * The handle of the first window of a class, whoever owns it.
+     *
+     * The shell's own windows are found this way and not by title: they have none. It is
+     * how anything reaches the notification area, and how this system finds out whether
+     * something else is already the shell.
+     */
+    public static long findWindowByClass(String className) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment name = Native.wide(arena, className);
+            MemorySegment hwnd = (MemorySegment) FIND_WINDOW.invokeExact(
+                name, MemorySegment.NULL);
+            return hwnd.address();
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    /** The process a window belongs to. */
+    public static long processOf(long handle) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment pid = arena.allocate(ValueLayout.JAVA_INT);
+            MemorySegment hwnd = MemorySegment.ofAddress(handle);
+            int ignored = (int) GET_WINDOW_THREAD_PROCESS_ID.invokeExact(hwnd, pid);
+            return Integer.toUnsignedLong(pid.get(ValueLayout.JAVA_INT, 0));
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    /**
+     * The handle of one of this program's own windows, found by the title it carries.
+     *
+     * The title is matched against every window on the desktop, because that is what the
+     * shell offers, and the answer is then checked to be ours. Two programs can put the
+     * same words in a title bar, and handing back somebody else's window because it was
+     * named the same would have this one reserving screen edges against a stranger.
+     */
     public static long handleOf(java.awt.Window window) {
-        if (window instanceof java.awt.Dialog dialog) return findWindowByTitle(dialog.getTitle());
-        if (window instanceof java.awt.Frame frame) return findWindowByTitle(frame.getTitle());
-        return 0;
+        String title = window instanceof java.awt.Dialog dialog ? dialog.getTitle()
+                     : window instanceof java.awt.Frame frame ? frame.getTitle()
+                     : null;
+        if (title == null || title.isEmpty()) return 0;
+        long handle = findWindowByTitle(title);
+        if (handle == 0) return 0;
+        return processOf(handle) == ProcessHandle.current().pid() ? handle : 0;
     }
 
     public static long foregroundWindow() {
