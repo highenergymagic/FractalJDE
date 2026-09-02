@@ -70,10 +70,9 @@ public final class FinderMenus implements NibLoader.Commands {
     /**
      * The settings pane the file manager's own Preferences item opens.
      *
-     * Named here rather than written into the command, so that a check can put the two
-     * halves side by side. It used to ask for a pane called "finder", which is not one of
-     * them, and the settings quietly showed the first pane instead: a wrong name that
-     * nothing said anything about and nobody could see.
+     * Named here rather than written into the command, so a check can put the two halves
+     * side by side. It used to ask for one called "finder", which is not a pane, and the
+     * settings quietly showed the first instead.
      */
     public static final String SETTINGS_PANE = "desktop";
 
@@ -102,9 +101,8 @@ public final class FinderMenus implements NibLoader.Commands {
      * Reads the Finder's menus and gives them to the bar as the program in front by
      * default, so they are what shows when no other program owns it.
      *
-     * A bar with nothing in it is what happens when the file cannot be read, and it is
-     * worth saying so plainly: every command in the desktop is in that file, and a Finder
-     * whose menus are empty is not a Finder that is nearly working.
+     * A bar with nothing in it means the file could not be read, which is worth saying
+     * plainly: a Finder whose menus are empty is not one that is nearly working.
      */
     public static FinderMenus install(Desktop desktop) {
         FinderMenus menus = new FinderMenus(desktop);
@@ -143,9 +141,8 @@ public final class FinderMenus implements NibLoader.Commands {
      * The Label submenu, kept because nothing else can validate it.
      *
      * Its items are made at run time from the labels somebody has used, so they carry no
-     * command name and the menu machinery has nothing to ask about. Every other item in the
-     * bar greys itself out with nothing selected; this one stayed black until it was held
-     * on to and asked here.
+     * command name and the menu machinery has nothing to ask about. Every other item greys
+     * itself with nothing selected; this one stayed black until it was asked here.
      */
     private JMenu labels;
 
@@ -182,10 +179,9 @@ public final class FinderMenus implements NibLoader.Commands {
     /**
      * The handful of items that read differently depending on what is in front.
      *
-     * Quick Look names the file it would show, Compress says how many things it would
-     * compress, and the four that hide something say Show once it is hidden. All of them
-     * are written down with the words they have when nothing is selected, and what happens
-     * here is only ever a replacement of one of those, in the language it was read in.
+     * Quick Look names the file it would show, Compress says how many, and the four that
+     * hide something say Show once it is hidden. All are written down with the words they
+     * have when nothing is selected, and this only ever replaces one of those.
      */
     private void followTheSelection(List<JMenu> built) {
         for (JMenu menu : built) {
@@ -211,9 +207,8 @@ public final class FinderMenus implements NibLoader.Commands {
      * Says what Undo would undo, which is the point of an undo manager keeping names.
      *
      * "Undo" alone asks somebody to press a key and find out. "Undo Rename" is a promise
-     * about what is going to change, made before it changes. The two words are put together
-     * from the strings file rather than joined here, because which order they go in is not
-     * the same in every language.
+     * made before anything changes. The two words come together from the strings file,
+     * since their order is not the same in every language.
      */
     private void nameTheUndo() {
         JMenuItem undo = loaded.item(FMString.of("undo"));
@@ -272,9 +267,8 @@ public final class FinderMenus implements NibLoader.Commands {
      * Every command in the Finder's bar, by the name it sends.
      *
      * One switch rather than a listener per item, because the file already says which item
-     * sends which name and a second copy of that arrangement here would be the thing that
-     * goes out of date. A name with nothing under it is a command in the file that this
-     * version does not have, which is said rather than ignored.
+     * sends which name. A name with nothing under it is a command this version does not
+     * have, which is said rather than ignored.
      */
     @Override public void perform(FMString action) {
         switch (action.toString()) {
@@ -412,14 +406,10 @@ public final class FinderMenus implements NibLoader.Commands {
     /**
      * Whether a command applies right now, asked of every item as its menu opens.
      *
-     * The rules are the ones a person would say out loud: Get Info needs something chosen,
-     * Paste needs something on the clipboard and somewhere to put it, Eject needs a disk.
-     * Most commands are not on this list, because most commands always apply and saying so
-     * for each of them would be a list of everything the Finder can do written twice.
-     *
-     * Before this, every item in every menu was black at all times. A menu that offers Undo
-     * when there is nothing to undo, and Eject when nothing is selected, is not a menu: it
-     * is a list of the program's methods with keyboard shortcuts on them.
+     * The rules a person would say out loud: Get Info needs something chosen, Paste needs
+     * something on the clipboard, Eject needs a disk. Most commands are not listed because
+     * most always apply. A menu that offers Undo with nothing to undo is not a menu, it is
+     * a list of the program's methods with shortcuts on them.
      */
     @Override public boolean canPerform(FMString action) {
         return switch (action.toString()) {

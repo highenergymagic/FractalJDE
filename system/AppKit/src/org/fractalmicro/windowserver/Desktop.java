@@ -110,19 +110,11 @@ public class Desktop extends JFrame {
      * The system beep, and nothing else.
      *
      * NSBeep takes no argument and says nothing, because a beep is what a Mac makes when a
-     * key means nothing where it was pressed: Back at the start of the history, a shortcut
-     * in a window with no toolbar. It is a full stop, not a sentence.
+     * key means nothing where it was pressed. It is a full stop, not a sentence.
      *
-     * This used to take a message and write it along the bottom of the screen. Mac OS X has
-     * never done that. A Finder's status bar says how many items are in the folder and how
-     * much room is left on the disk; it is not somewhere a program explains itself, and a
-     * sentence appearing there after every refused keystroke reads like a machine narrating
-     * itself to somebody who did not ask.
-     *
-     * What is left is three answers rather than one. A command that cannot apply is drawn
-     * grey and cannot be chosen at all. Something that genuinely went wrong puts up an
-     * alert, which is a thing a person dismisses rather than a line they may not have been
-     * looking at. And a key that means nothing here beeps, which is this.
+     * There are three answers rather than one. A command that cannot apply is drawn grey
+     * and cannot be chosen. Something that went wrong puts up an alert, which is a thing a
+     * person dismisses. And a key that means nothing here beeps.
      */
     public static void beep() {
         java.awt.Toolkit.getDefaultToolkit().beep();
@@ -133,14 +125,10 @@ public class Desktop extends JFrame {
     /**
      * What is shown on the desktop, once something has put something there.
      *
-     * Nothing here, on purpose. On a Mac the desktop is a folder and the icons on it are a
-     * view of that folder, drawn by the Finder, which is a program like any other. The
-     * screen provides the back of itself and does not know what goes on it: this used to
-     * hold a Finder class, which meant the layer that draws could not be built until the
-     * file manager had been.
-     *
-     * Null until {@link #setIcons} is called, and a screen with nothing at the back of it
-     * still works. That is the honest state of a machine whose file manager is not running.
+     * Nothing here, on purpose. The desktop is a folder and the icons on it are a view of
+     * it drawn by the Finder, which is a program like any other. The screen provides the
+     * back of itself and does not know what goes on it. Null until {@link #setIcons} is
+     * called, which is the honest state of a machine whose file manager is not running.
      */
     private JComponent icons;
     private final Dock dock = new Dock();

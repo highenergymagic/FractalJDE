@@ -160,10 +160,9 @@ final class FMPanelHost {
     /**
      * The top of the panel: what it is called, and where it is going.
      *
-     * A save panel names the file here; an open panel has nothing to name, so the row is
-     * the browser's own and the name field is not built at all rather than built and
-     * disabled. A control that cannot be used is still a control somebody has to move
-     * through to get past.
+     * A save panel names the file here. An open panel has nothing to name, so the field is
+     * not built rather than built and disabled: a control that cannot be used is still one
+     * somebody has to move through.
      */
     private static JComponent top(State state, boolean opening) {
         JPanel rows = new JPanel();
@@ -242,10 +241,9 @@ final class FMPanelHost {
     /**
      * The browser: the places on the left, and the columns on the right.
      *
-     * Columns rather than a list, because that is what this system shows a tree with and
-     * because a list only ever says what is in one folder. In a column browser the route
-     * is on the screen: where you are, what was beside it, and what you came through, all
-     * at once and all still clickable.
+     * Columns rather than a list, because a list only says what is in one folder. In a
+     * column browser the route is on the screen: where you are, what was beside it and
+     * what you came through, all at once and all still clickable.
      */
     private static JComponent browser(State state) {
         state.places = new JList<>(new DefaultListModel<>());
@@ -284,10 +282,9 @@ final class FMPanelHost {
     /**
      * The row above the browser: how to move, how it is shown, and what to look for.
      *
-     * Back and forward walk the folders already visited, the way they do in a Finder
-     * window. The three buttons beside them choose how a folder is drawn, and answer to
-     * the same keys as in the Finder because it is the same choice. The field on the right
-     * narrows what is shown to what is being looked for.
+     * Back and forward walk the folders already visited. The three buttons beside them
+     * choose how a folder is drawn and answer to the same keys as in the Finder, because
+     * it is the same choice. The field on the right narrows what is shown.
      */
     private static JComponent navigation(State state) {
         JPanel bar = new JPanel(new BorderLayout(8, 0));

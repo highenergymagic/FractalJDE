@@ -61,19 +61,15 @@ public final class FMApplicationMain implements Bundles.Launcher {
     /**
      * Where a program in a process of its own starts, which is not in the program.
      *
-     * The loader maps the image and calls its entry point. On a Mac that entry point is
-     * main, and what every Cocoa application writes in it is one line: return
-     * NSApplicationMain(argc, argv). Nobody writes anything else there, because there is
-     * nothing an application knows at that moment that its bundle has not already said.
+     * The loader maps the image and calls its entry point. On a Mac that is main, and what
+     * every Cocoa application writes there is one line: return NSApplicationMain. There is
+     * nothing an application knows at that moment its bundle has not already said.
      *
-     * So the entry point of a program here is this, and not the program. It finds the
-     * bundle the loader just opened, reads NSPrincipalClass out of it, makes one, and
-     * sends it the messages an application expects. The program has no main at all: it has
-     * a class that answers open, which is what a delegate is.
-     *
-     * What that removed was the same fifteen lines in every program: check that there is a
-     * window server, make itself, show its window, register its handlers, read events until
-     * told to stop, close. Only two of those are the program's business.
+     * So the entry point here is this and not the program. It finds the bundle the loader
+     * opened, reads NSPrincipalClass, makes one and sends it the messages an application
+     * expects. The program has no main: it has a class that answers open, which is what a
+     * delegate is. That removed the same fifteen lines from every program, of which only
+     * two were ever the program's business.
      */
     public static void main(String[] arguments) {
         Bundle bundle = openingBundle();
@@ -174,17 +170,14 @@ public final class FMApplicationMain implements Bundles.Launcher {
     /**
      * Makes the principal class and says something to it on the main thread.
      *
-     * Loading goes through the loader so that opening a program from the desktop happens
-     * the same way as opening it from outside: the code comes out of the executable in the
-     * bundle, with the libraries it links behind it, and a program reaching for something
-     * it did not link fails here as it would there.
+     * Through the loader, so opening a program from the desktop happens the same way as
+     * from outside: the code comes out of the bundle with the libraries it links behind it.
      *
-     * Unless this process is already the program, which is what a hosted program is. Then
-     * its code is here and taking a second copy out of the bundle would be two copies of
-     * every class it has: two of each static field, two of each type, and a desktop
-     * holding a control made by one of them while everything else asks the other. That is
-     * not isolation, it is a program talking to itself through a wall. A program with a
-     * process of its own has no copy here and gets the bundle's, which is the only one.
+     * Unless this process is already the program, which is what a hosted one is. Its code
+     * is here, and a second copy out of the bundle would be two of every class: two of
+     * each static field, two of each type, and a desktop holding a control made by one
+     * while everything else asks the other. A program with its own process has no copy
+     * here and gets the bundle's.
      */
     private static boolean deliver(Bundle bundle, java.util.function.Consumer<FMApplicationDelegate> what) {
         if (bundle == null) return false;

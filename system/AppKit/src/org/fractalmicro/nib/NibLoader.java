@@ -146,15 +146,10 @@ public final class NibLoader {
         /**
          * Whether the command could be done right now.
          *
-         * Asked as a menu opens, of every item in it, which is when NSMenuValidation asks
-         * and for the same reason: what can be done depends on what is selected and where
-         * the keyboard is, and both of those change constantly. Anything answering no is
-         * drawn grey and does nothing when pressed.
-         *
-         * Yes by default, because a command with no opinion is one that always applies:
-         * New Window does not care what is selected. The ones that do care say so, and
-         * saying so is the whole difference between a menu and a list of everything the
-         * program can ever do.
+         * Asked as a menu opens, which is when NSMenuValidation asks and for the same
+         * reason: what can be done depends on the selection and where the keyboard is.
+         * Yes by default, since a command with no opinion always applies, and the ones
+         * that do care say so.
          */
         default boolean canPerform(FMString action) { return true; }
     }
@@ -183,13 +178,10 @@ public final class NibLoader {
     /**
      * Asks the program about every item in a menu, as the menu opens.
      *
-     * Then, rather than when the menu was built, because what can be done changes with the
-     * selection and the menu was built once at start-up. This is what NSMenuValidation is
-     * and when it runs; the alternative is every command in the program remembering to
-     * enable and disable its own menu item from everywhere that changes anything, which is
-     * how menus come to lie.
-     *
-     * A tick is asked for at the same moment and for the same reason.
+     * Then rather than when the menu was built, because what can be done changes with the
+     * selection. The alternative is every command remembering to enable and disable its
+     * own item from everywhere that changes anything, which is how menus come to lie. A
+     * tick is asked for at the same moment.
      */
     private void validateAsItOpens(JMenu menu, Commands commands) {
         menu.addMenuListener(new javax.swing.event.MenuListener() {
@@ -304,11 +296,9 @@ public final class NibLoader {
     /**
      * A key equivalent as the key that produces it.
      *
-     * Usually one character, the way a menu has always written it. The keys that have no
-     * character are written by name instead: XML cannot carry a backspace or an escape at
-     * all, so a description spelling them literally would be one no parser would read.
-     * Cocoa puts them in a private area of Unicode for the same reason and it comes to the
-     * same thing, except that a name can be typed by whoever is editing the file.
+     * Usually one character, the way a menu has always written it. Keys with no character
+     * are written by name, since XML cannot carry a backspace or an escape. Cocoa puts
+     * them in a private area of Unicode; a name can be typed by whoever edits the file.
      */
     private static Integer codeFor(String key) {
         switch (key) {

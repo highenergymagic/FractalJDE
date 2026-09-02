@@ -141,18 +141,14 @@ public final class Sheet {
     /**
      * Drops any panel from under a window's title bar and waits for it to finish.
      *
-     * The alert form above is one thing that can be put in a sheet; a save panel is
-     * another, and so is anything else that belongs to one document rather than to the
-     * screen. What is shared is the whole of the behaviour: it hangs from the window, that
-     * window cannot be used underneath it, every other window still can, and the call
-     * returns once it is done.
+     * An alert is one thing that can go in a sheet, a save panel another, and so is
+     * anything belonging to one document rather than the screen. What is shared is the
+     * behaviour: it hangs from the window, that window cannot be used underneath it, and
+     * the call returns once it is done.
      *
-     * The panel is handed a way to say it has finished rather than being asked afterwards.
-     * A sheet ends when its own buttons decide it does, and only the thing inside it knows
-     * which of them mean that.
-     *
-     * Answers whether it was shown at all. A window that is not on screen cannot carry a
-     * sheet, and the caller falls back to a panel that stands on its own.
+     * The panel is handed a way to say it has finished, since only the thing inside knows
+     * which of its buttons mean that. Answers whether it was shown: a window that is not
+     * on screen cannot carry a sheet, and the caller falls back to a standalone panel.
      */
     public static boolean present(JInternalFrame owner, JComponent content,
                                   java.util.function.Consumer<Runnable> giveCloser) {

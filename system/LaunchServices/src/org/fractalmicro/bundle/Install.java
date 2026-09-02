@@ -55,12 +55,10 @@ public final class Install {
     /**
      * Lays the system out on the volume, and answers whether anything was written.
      *
-     * There was a time when this also installed the whole system as one framework, so that
-     * a program could be given it and have everything. What replaced that is the images:
-     * each library is its own file, carrying its own code and its own symbol table, and a
-     * program is given the ones it linked. A single framework holding all of them would be
-     * a way around that, so it is taken out when it is found rather than left to be picked
-     * up by anything still looking for one.
+     * This once installed the whole system as one framework. The images replaced that:
+     * each library is its own file with its own code and symbol table, and a program is
+     * given the ones it linked. One framework holding all of them would be a way around
+     * that, so it is taken out when found.
      */
     public static synchronized boolean ensureInstalled() {
         int written = Images.installAll();
@@ -194,10 +192,9 @@ public final class Install {
      * The archive this program is running from, or nothing when it is running from an
      * image or from loose classes.
      *
-     * What asks are the parts that write bundles, and the answer is what they copy a
-     * program's classes out of. Started from an image there is no archive and no copying to
-     * do: the code is already where it belongs, and a bundle written from nothing would
-     * replace a working program with a plist.
+     * The parts that write bundles ask, and copy a program's classes out of the answer.
+     * Started from an image there is nothing to copy: the code is already where it
+     * belongs, and a bundle written from nothing would replace a program with a plist.
      */
     public static File runningCode() {
         try {

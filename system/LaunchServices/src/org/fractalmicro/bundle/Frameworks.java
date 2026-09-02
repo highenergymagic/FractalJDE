@@ -69,20 +69,14 @@ public final class Frameworks {
     /**
      * Tells the loader that all of these are already loaded, and what each one holds.
      *
-     * Everything the system is made of was loaded before the loader existed, by whatever
-     * started the virtual machine. Registering them means a program that links Foundation
-     * is handed these classes rather than a second copy, so an object it makes is the same
-     * kind of thing when the desktop is given it back.
+     * Everything the system is made of was loaded before the loader existed. Registering
+     * them hands a program that links Foundation these classes rather than a second copy,
+     * so an object it makes is the same kind of thing when the desktop gets it back.
      *
-     * What each one holds is read out of the image on disk, from the same symbol table a
-     * program would resolve against had it been started in a process of its own. Nothing
-     * about the division is written down here: a class moving from one framework to
-     * another changes which library exports it, and this follows without being edited.
-     *
-     * With no images installed there is nothing to read and nothing to divide, so each is
-     * registered as holding everything. That is a development build running out of one
-     * archive, where the division has not been made yet and pretending otherwise would
-     * only produce failures that the installed system does not have.
+     * What each holds is read from the image on disk, from the same symbol table a program
+     * would resolve against, so a class moving between frameworks follows without anything
+     * here being edited. With no images installed each is registered as holding everything,
+     * which is a development build where the division has not been made yet.
      */
     public static void registerRunning(ClassLoader running) {
         int described = 0;

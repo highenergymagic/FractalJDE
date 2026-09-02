@@ -121,9 +121,8 @@ public final class Bundles {
     /**
      * One built-in program.
      *
-     * `own` names the packages that are the program's own code and go inside its
-     * executable. Most are a single class over the desktop's own windows, because that is
-     * all they are: parts of Finder with a name and an icon. The two that are separate
+     * `own` names the packages that go inside its executable. Most are a single class over
+     * the desktop's own windows, because that is all they are. The two that are separate
      * programs say so by naming a package.
      */
     private record Spec(String name, String identifier, String principalClass,
@@ -160,10 +159,9 @@ public final class Bundles {
     /**
      * Writes the built-in bundles, then reads everything that is installed.
      *
-     * Writing them needs somewhere to take their code from. A system started from its own
-     * images has no archive to copy an application's classes out of, and rewriting the
-     * bundles without one would replace working programs with empty ones, so with no
-     * source what is installed is only read.
+     * Writing them needs somewhere to take the code from. A system started from its own
+     * images has no archive to copy out of, so with no source what is installed is read
+     * and left alone rather than replaced with empty bundles.
      */
     public static synchronized void install() {
         // Programs link against the framework, so it has to be there before they are
@@ -224,10 +222,9 @@ public final class Bundles {
     /**
      * Copies a program's own resources into its bundle.
      *
-     * The interface files and the words in each language. They are not code: a translation
-     * is added by putting a directory in the bundle, and needing a rebuild to add one would
-     * defeat keeping them apart. Nothing to copy is ordinary for a program whose window is
-     * still described in code.
+     * Interface files and the words in each language. They are not code: needing a rebuild
+     * to add a translation would defeat keeping them apart. Nothing to copy is ordinary
+     * for a program whose window is still described in code.
      */
     private static void copyResources(Spec spec, Bundle bundle) {
         File from = resourcesOf(spec);
@@ -243,10 +240,9 @@ public final class Bundles {
     /**
      * Where a program's resources are, whichever way this is running.
      *
-     * A build says where it put the compiled code and stages each program's resources
-     * beside it. Run out of a checkout they are still in the tree, under apps for a program
-     * and under system for the Finder. The staged copy is tried first, so a volume being
-     * built cannot pick up whatever is in the directory the build started from.
+     * A build says where it put the compiled code and stages resources beside it. Run out
+     * of a checkout they are still in the tree. The staged copy is tried first, so a volume
+     * being built cannot pick up whatever is in the directory the build started from.
      */
     private static File resourcesOf(Spec spec) {
         String plain = spec.name().replace(" ", "");
@@ -372,10 +368,8 @@ public final class Bundles {
      * What opening a program actually means, which is not this layer's business.
      *
      * LaunchServices finds a program and knows what it claims. Making the class named by
-     * NSPrincipalClass and sending it messages on the main thread belongs above here with
-     * the windows, the way NSApplicationMain does. AppKit puts one in place when the
-     * desktop starts; without a desktop there is none, and a bundle wrapping something
-     * outside this system is opened by the host.
+     * NSPrincipalClass and sending it messages belongs above here with the windows, the
+     * way NSApplicationMain does. AppKit puts one in place when the desktop starts.
      */
     public interface Launcher {
         boolean open(Bundle bundle, List<File> files);

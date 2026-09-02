@@ -164,9 +164,8 @@ public final class Finder {
      * The Finder's own way back.
      *
      * One for the program rather than one per window, because what it undoes is not in a
-     * window: a file renamed in one window is renamed in every window showing that folder
-     * and on the desktop as well. Cocoa puts an undo manager on a document and reaches it
-     * through the responder chain; the Finder's documents are the disk.
+     * window: a file renamed in one is renamed in every window showing that folder and on
+     * the desktop. Cocoa puts one on a document; the Finder's documents are the disk.
      */
     private static final org.fractalmicro.foundation.FMUndoManager UNDO =
         new org.fractalmicro.foundation.FMUndoManager();
@@ -399,14 +398,10 @@ public final class Finder {
     /**
      * What letting go of a drag does.
      *
-     * One way in for every view and for the desktop, because a drop means the same thing
-     * wherever it lands: these files, into that folder, doing this. The view worked out
-     * which folder and which of the three it was while the mouse was still down; by here
-     * the decision is made and what is left is doing it and remembering how to take it back.
-     *
-     * The way back is registered for the whole drop rather than for each file. A person
-     * dropped one thing, however many files were in their hand, and one Undo should put all
-     * of it where it was.
+     * One way in for every view and the desktop, because a drop means the same thing
+     * wherever it lands: these files, into that folder, doing this. The view decided which
+     * while the mouse was down. The way back is registered for the whole drop rather than
+     * each file, since a person dropped one thing however many were in their hand.
      */
     public static boolean receiveDrop(List<File> files, File into, FMDragOperation how) {
         if (files == null || files.isEmpty() || into == null || how == FMDragOperation.NONE) {
@@ -473,10 +468,9 @@ public final class Finder {
     /**
      * Copies files into a folder.
      *
-     * Into the folder they are already in as well, which is what Option-dragging something
-     * onto its own window means and is the same thing Duplicate does. That is why the name
-     * is asked for rather than assumed: a copy landing beside the original has to be called
-     * something else.
+     * Into the folder they are already in as well, which is what Option-dragging onto its
+     * own window means. That is why the name is asked for: a copy landing beside the
+     * original has to be called something else.
      */
     private static boolean copyInto(List<File> files, File into) {
         List<File> made = new ArrayList<>();
@@ -699,10 +693,9 @@ public final class Finder {
     /**
      * Something went wrong that a person needs to know about, said in an alert.
      *
-     * An alert rather than a line along the bottom of the screen, because a failure is a
-     * thing to be dismissed rather than a thing to be noticed. This is what a Mac puts up
-     * when a file cannot be renamed, and the difference between it and a status line is
-     * whether the program can be sure the message was read.
+     * An alert rather than a line along the bottom, because a failure is a thing to be
+     * dismissed rather than noticed. The difference is whether the program can be sure the
+     * message was read.
      */
     public static void tell(FMString key) {
         FMAlert.tell(FMLocalized.of(key), FMString.EMPTY);

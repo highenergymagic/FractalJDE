@@ -61,10 +61,9 @@ public final class FMApplication implements AutoCloseable {
     /**
      * One of a program's windows.
      *
-     * A program with one window can go on ignoring these and talk about "the window",
-     * which is what every program here did while there was only ever one. A program with
-     * several has to be able to say which, and a number on its own would be a number: this
-     * is the same number, said in a way that cannot be passed where a control was meant.
+     * A program with one window can talk about "the window" and ignore these. One with
+     * several has to say which, and this is that number said in a way that cannot be
+     * passed where a control was meant.
      */
     public record FMWindow(int id) {
         public boolean isOpen() { return id > 0; }
@@ -136,10 +135,9 @@ public final class FMApplication implements AutoCloseable {
     /**
      * The one this program is, which is NSApp.
      *
-     * A program has one connection to the window server for the same reason a Cocoa
-     * program has one NSApplication: it is the program, as the screen sees it. The first
-     * one made is it, and what makes the first one is normally FMApplicationMain, before
-     * any of the program's own code has run.
+     * One connection to the window server, for the reason a Cocoa program has one
+     * NSApplication: it is the program as the screen sees it. The first one made is it,
+     * normally by FMApplicationMain before the program's own code runs.
      */
     public static FMApplication sharedApplication() {
         FMApplication one = SHARED;
@@ -258,9 +256,8 @@ public final class FMApplication implements AutoCloseable {
      * Opens the window an interface file describes, in the language this account reads.
      *
      * The program names the file and nothing else. Where it is, which language folder it
-     * comes out of, and which words go in it are all worked out from the bundle the
-     * program was started from, which means a translation is added by putting a directory
-     * in the bundle and the program never learns that it happened.
+     * comes from and which words go in it all follow from the bundle, so a translation is
+     * added by putting a directory in there and the program never learns of it.
      */
     public boolean showWindow(FMString interfaceName) {
         Nib described = load(interfaceName);
@@ -381,16 +378,10 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Whether a command can be done right now.
      *
-     * This is NSMenuValidation, and it is asked as a menu opens rather than answered once
-     * when the menu is described. Save is live when there is something to save and grey
-     * when there is not, and the difference is a question that only the program can answer
-     * and only at the moment it is asked.
-     *
-     * A program that says nothing here still gets the first half of it right, because the
-     * default is the one Cocoa uses: a command is live when the program has said what it
-     * does and grey when it has not. That is the whole of the old lie, gone without anybody
-     * writing anything. What is left for a program to say is the part that changes while it
-     * runs, and it says it by answering this.
+     * NSMenuValidation, asked as a menu opens rather than answered once when the menu was
+     * described. Save is live when there is something to save, which only the program
+     * knows and only when asked. A program that says nothing gets the default Cocoa uses:
+     * live when it has said what the command does, grey when it has not.
      */
     public interface Validator {
         boolean canPerform(FMString action);
@@ -414,10 +405,9 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Why the last thing this program asked for did not work.
      *
-     * A failure here is a value rather than a throw. Almost everything that can go wrong
-     * between a program and the window server is worth telling somebody about and not
-     * worth unwinding the stack for: the server is not answering, the window is gone, the
-     * control was not in the description. A program checks, and shows what it finds.
+     * A value rather than a throw. Nearly everything that goes wrong between a program and
+     * the window server is worth telling about and not worth unwinding the stack for: no
+     * answer, no window, no such control.
      */
     public FMError lastError() {
         FMError said = complaint;
@@ -465,9 +455,8 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Puts different rows in a list, answering whether they went.
      *
-     * This is how a window shows something that changes: what is running, what was found,
-     * what is in a folder. The description said there was a list; this says what is in it
-     * now.
+     * How a window shows something that changes: what is running, what was found, what is
+     * in a folder. The description said there was a list; this says what is in it now.
      */
     public boolean setRows(FMString control, FMArray<FMString> rows) {
         try {
@@ -504,9 +493,9 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Asks a control to do something to itself, answering whether it could.
      *
-     * The names are the editing commands a text view already knows: cut, copy, paste,
-     * selecting everything, making the selection bold. A program sends the command rather
-     * than doing the work, because the text is in the view and the view is somewhere else.
+     * The names are the editing commands a text view already knows. A program sends the
+     * command rather than doing the work, because the text is in the view and the view is
+     * somewhere else.
      */
     public boolean perform(FMString control, FMString action) {
         try {
@@ -541,9 +530,8 @@ public final class FMApplication implements AutoCloseable {
     /**
      * What a sheet came back with: the button that ended it, and what was in it.
      *
-     * A sheet is a question, so its answer is one value and not a window to look after
-     * afterwards. Nothing was chosen when the sheet was dismissed without a button, which
-     * is what Escape does.
+     * A sheet is a question, so its answer is one value and not a window to look after.
+     * Nothing chosen means it was dismissed without a button, which is what Escape does.
      */
     public record Answer(FMString action, FMArray<FMString> controls,
                          FMArray<FMString> values) {
@@ -562,9 +550,8 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Runs a described window as a sheet on this program's window, and waits for it.
      *
-     * The waiting is what makes it a sheet rather than a second window. It hangs off one
-     * window, that window cannot be used until it is answered, and the program asking is
-     * not doing anything else meanwhile either.
+     * The waiting is what makes it a sheet rather than a second window: it hangs off one
+     * window, which cannot be used until it is answered, and nor can the program.
      */
     public Answer sheet(Nib description) {
         try {
@@ -591,9 +578,8 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Says this program's window is holding changes that have not been written.
      *
-     * The window server draws a dot in the close button. A program says this rather than
-     * being asked, because whether a document has changed is the one thing about it that
-     * nothing outside the program can work out.
+     * The window server draws a dot in the close button. A program says it rather than
+     * being asked, because nothing outside it can work out whether a document has changed.
      */
     public boolean setDocumentEdited(boolean edited) {
         try {
@@ -652,13 +638,11 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Asks for a piece of text, and answers what was typed.
      *
-     * Nothing back means the person cancelled, which is a real answer and not a failure:
-     * every program that asks has to be able to be told no.
+     * Nothing back means the person cancelled, which is an answer and not a failure.
      *
-     * The dialog is drawn by the window server rather than here. A program in a process of
-     * its own has no screen to draw on; a window it opened itself would appear outside the
-     * desktop, unowned and behind whatever was in front, and what that looks like to
-     * somebody using it is a command that did nothing at all.
+     * Drawn by the window server: a program in its own process has no screen, and a window
+     * it opened itself would appear outside the desktop behind whatever was in front,
+     * which looks like a command that did nothing.
      */
     public FMString ask(FMString message, FMString label, FMString initial,
                         FMString actionButton) {
@@ -709,9 +693,9 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Asks a question with three answers, and says which was chosen.
      *
-     * Nought is the action, one is Cancel, two is the other choice. That is the order the
-     * buttons are offered in, and Cancel is in the middle because the two either side of
-     * it both do something that cannot be undone.
+     * Nought is the action, one is Cancel, two is the other choice, which is the order the
+     * buttons are offered in. Cancel is in the middle because both the others cannot be
+     * undone.
      */
     public int choose(FMString message, FMString informative, FMString actionButton,
                       FMString otherChoice) {
@@ -738,10 +722,8 @@ public final class FMApplication implements AutoCloseable {
     /**
      * Runs a save panel, and answers where the person put the document.
      *
-     * Nothing back means they cancelled. The panel is built by the window server: this
-     * program has a process of its own and no screen in it, and the panel is the system's
-     * anyway, so that every program that saves asks the same way and a person learns it
-     * once.
+     * Nothing back means they cancelled. Built by the window server, which has the screen,
+     * and the panel is the system's anyway so every program that saves asks the same way.
      */
     public FMURL runSavePanel(FMSavePanel panel) {
         return runPanel(panel, WindowServer.SAVE_PANEL);
@@ -833,8 +815,7 @@ public final class FMApplication implements AutoCloseable {
      * Answers which of the commands in a menu that is opening can be done.
      *
      * The menu bar is waiting on this, so it does no work beyond asking: whether a command
-     * is live has to be something the program already knows, or the menu would be slower
-     * than the mouse.
+     * is live has to be something the program already knows.
      */
     private void sayWhatCanBeDone(Message asking) throws IOException {
         java.util.List<String> live = new java.util.ArrayList<>();

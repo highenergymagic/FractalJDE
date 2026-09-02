@@ -51,11 +51,9 @@ public final class Task {
     /**
      * What has become of a task.
      *
-     * A task that has ended is not gone. Its number stays taken and its exit status stays
-     * readable until whatever started it comes and asks, because otherwise the answer
-     * would be a race: a parent that looked a moment too late would find nothing and have
-     * no way to tell success from failure. That state is a zombie, and it is the reason
-     * every system with processes has one.
+     * A task that has ended is not gone. Its number stays taken and its exit status
+     * readable until whatever started it asks, or a parent looking a moment too late would
+     * find nothing and have no way to tell success from failure. That state is a zombie.
      */
     public enum State { RUNNING, STOPPED, FAILED, ZOMBIE }
 
@@ -219,11 +217,9 @@ public final class Task {
     /**
      * Asks a task to stop.
      *
-     * A task that is a process of the host system is ended the way processes are ended. A
-     * task that is a thread here is asked, because a thread cannot be ended from outside
-     * without leaving whatever it was holding in an unknown state. The runtime has not
-     * allowed that for twenty years, and it was right not to. So an internal task says how
-     * to stop it when it registers, and that is what is called.
+     * A task that is a host process is ended the way processes are. One that is a thread
+     * here is asked, because a thread cannot be ended from outside without leaving what it
+     * held in an unknown state. An internal task says how to stop it when it registers.
      */
     boolean stop() {
         if (adopted && hostPid > 0) {

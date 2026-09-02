@@ -106,10 +106,9 @@ public final class FileDrops {
     /**
      * Somewhere files can be thrown away.
      *
-     * Not a folder, which is why it is its own destination rather than a folder that
-     * happens to be the Trash: there is no directory on this host that means "the Trash",
-     * and pretending otherwise would have the refusals in the kit asking whether a place
-     * that does not exist is writable.
+     * Its own destination rather than a folder, because no directory on this host means
+     * "the Trash" and pretending otherwise would have the kit asking whether a place that
+     * does not exist is writable.
      */
     public static FMFileDragging.Destination theTrash() {
         return new FMFileDragging.Destination() {
@@ -146,14 +145,10 @@ public final class FileDrops {
     /**
      * The ghosts of the files being dragged.
      *
-     * A Mac drags translucent copies of the things being carried, each where it was when it
-     * was picked up. That is more than decoration: it is the only thing that says what is in
-     * your hand. A drag of one file and a drag of forty look the same otherwise, and so do a
-     * drag of the file you meant and a drag of the one next to it.
-     *
-     * Drawn from the view's own cells, so the arrangement is the arrangement on the screen:
-     * a row of icons stays a row, a column of rows stays a column, and nothing has to know
-     * which kind of view it came from.
+     * More than decoration: it is the only thing that says what is in your hand. A drag of
+     * one file and a drag of forty look the same otherwise, and so do a drag of the file
+     * you meant and one of the file next to it. Drawn from the view's own cells, so the
+     * arrangement on the pointer is the arrangement on the screen.
      */
     private static final class Ghosts {
         /** How see-through they are. A Mac's are faint enough to read the desktop through. */
@@ -219,10 +214,9 @@ public final class FileDrops {
         /**
          * How big to draw them.
          *
-         * From the shortest cell, so a list of twenty-pixel rows gets sixteen-pixel icons
-         * and a grid of icons gets the size it is already showing. Taking the tallest
-         * instead would have one big cell make every icon in the drag too large for its
-         * place, which is the arrangement no longer being the arrangement.
+         * From the shortest cell, so a list of twenty-pixel rows gets sixteen-pixel icons.
+         * Taking the tallest would have one big cell make every icon too large for its
+         * place.
          */
         private static int smallestCellHeight(IntFunction<java.awt.Rectangle> cellOf, int[] indices) {
             int shortest = Integer.MAX_VALUE;

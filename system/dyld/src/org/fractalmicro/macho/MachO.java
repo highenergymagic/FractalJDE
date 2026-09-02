@@ -367,20 +367,15 @@ public final class MachO {
     /**
      * The symbol table and the names that go with it.
      *
-     * Symbols come in a fixed order because LC_DYSYMTAB describes them as runs rather than
-     * one at a time: everything defined here first, everything undefined after. A loader
-     * wanting the undefined ones reads a start and a count instead of testing each entry.
+     * A fixed order, because LC_DYSYMTAB describes them as runs: everything defined here
+     * first, everything undefined after, so a loader reads a start and a count instead of
+     * testing each entry.
      *
-     * Each entry is an nlist_64: an offset into the string table, what kind of symbol it
-     * is, which section it lives in, two bytes of description, and an address. For a
-     * defined class the address is nothing useful here, since the class is bytecode in a
-     * zip rather than something at an address; what matters is that it is marked as
-     * defined in the section the bytecode is in. For an undefined one the description
-     * carries the ordinal of the library expected to supply it, which is the whole of the
-     * two level namespace in one byte.
-     *
-     * The string table begins with a zero byte so that offset zero means no name, which is
-     * a convention old enough that everything reading one of these relies on it.
+     * Each entry is an nlist_64. A defined class has no useful address, being bytecode in
+     * a zip, so what matters is that it is marked defined in the section that holds it. An
+     * undefined one carries in its description the ordinal of the library expected to
+     * supply it, which is the two level namespace in one byte. The string table begins
+     * with a zero byte so offset zero means no name.
      */
     private static byte[] symbolTable(List<String> exports, Map<String, String> imports,
                                       List<String> ordinals) {

@@ -62,14 +62,10 @@ public class FMFileDragging extends TransferHandler {
          * What is drawn under the pointer while the drag is going, and where the pointer is
          * in it.
          *
-         * A Mac drags ghosts of the things being carried, sitting where they were when they
-         * were picked up, so a drag of six files looks like those six files rather than
-         * like an outline of nothing. Swing's own answer is a plain rectangle, which says
-         * only that something is happening.
-         *
-         * A view that has nothing to say leaves this alone and gets the rectangle. The
-         * offset is where in the picture the pointer is, so the icons stay under the finger
-         * that picked them up instead of jumping to sit beside it.
+         * A Mac drags ghosts of the things being carried, where they were when they were
+         * picked up. Swing offers a plain rectangle, which says only that something is
+         * happening. The offset is where in the picture the pointer is, so the icons stay
+         * under the finger that picked them up.
          */
         default java.awt.Image pictureOfTheDrag() { return null; }
         default Point pointerInThePicture() { return new Point(0, 0); }
@@ -90,20 +86,18 @@ public class FMFileDragging extends TransferHandler {
          * Told when a drag arrives over the view and when it leaves again, so the view can
          * show that letting go here would do something.
          *
-         * Swing has nowhere to put this: a transfer handler is asked whether it would take a
-         * drop and is never told the pointer has gone somewhere else, so a view that lit up
-         * on the first question would stay lit for the rest of the session. The drop target
-         * underneath does know, and {@link #install} listens to it.
+         * Swing has nowhere to put this: a transfer handler is asked whether it would take
+         * a drop and never told the pointer has left, so a view that lit up would stay lit.
+         * The drop target underneath does know, and {@link #install} listens to it.
          */
         default void aimedAt(boolean yes) {}
 
         /**
          * What resting the drag here would open, or nothing where resting does nothing.
          *
-         * This is a spring-loaded folder. A person dragging a file into a folder three
-         * levels down would otherwise have to put it somewhere, open their way down, and
-         * pick it up again, all while holding something they cannot put down. Resting on a
-         * folder opens it, and the drag carries on inside.
+         * A spring-loaded folder. Filing something three levels down would otherwise mean
+         * putting it somewhere, opening the way down and picking it up again, all while
+         * holding something you cannot put down.
          */
         default File wouldSpringOpen(Point where) { return null; }
 
@@ -124,10 +118,9 @@ public class FMFileDragging extends TransferHandler {
      * The ordinary kind of destination: a view of folders, where a drop goes into whichever
      * one is under the pointer, or into the folder the view is showing when none is.
      *
-     * The refusals are here because they are the same everywhere and because getting them
-     * wrong loses a person's files. A folder cannot go into itself or into anything inside
-     * it, which would move the folder out from under the path saying where it was going.
-     * Nothing can be moved into the folder it is already in, which would mean nothing.
+     * The refusals are here because they are the same everywhere and getting them wrong
+     * loses files. A folder cannot go into itself or anything inside it, which would move
+     * it out from under the path saying where it was going.
      */
     public abstract static class IntoFolders implements Destination {
 
@@ -207,10 +200,9 @@ public class FMFileDragging extends TransferHandler {
     /**
      * Tells the destination when a drag is over it.
      *
-     * Setting a transfer handler makes Swing put a drop target on the view; adding a
-     * listener to that is the only place the arriving and the leaving can both be heard.
-     * Nothing here consumes the events: they go on to Swing's own listener, which is what
-     * actually performs the drop.
+     * Setting a transfer handler makes Swing put a drop target on the view, and a listener
+     * on that is the only place the arriving and the leaving are both heard. Nothing here
+     * consumes the events: Swing's own listener is what performs the drop.
      */
     private static void watchForTheDrag(JComponent view, Destination to) {
         java.awt.dnd.DropTarget target = view.getDropTarget();
@@ -307,10 +299,9 @@ public class FMFileDragging extends TransferHandler {
     /**
      * How often the wait is looked at.
      *
-     * Often enough that the space bar feels immediate and rarely enough to cost nothing. It
-     * has to be a tick rather than one alarm set for the end of the wait, because the space
-     * bar can be pressed at any point during it and pressing a key is not something that
-     * arrives here: while the mouse is down the keyboard belongs to the drag.
+     * Often enough that the space bar feels immediate and rarely enough to cost nothing. A
+     * tick rather than one alarm at the end of the wait, because the space bar can be
+     * pressed at any point and while the mouse is down the keyboard belongs to the drag.
      */
     private static final int TICK_MILLIS = 50;
 
@@ -322,9 +313,8 @@ public class FMFileDragging extends TransferHandler {
      * Notices that the pointer has stopped over something that would open.
      *
      * The clock starts again every time the answer changes, so crossing four folders on the
-     * way to a fifth opens none of them: what counts is resting, and moving off something
-     * and back onto it is not resting on it. Nothing happens at all while the answer is
-     * nothing, which is most of a drag.
+     * way to a fifth opens none: what counts is resting, and moving off something and back
+     * onto it is not resting on it.
      */
     private void watchForResting(File wouldOpen) {
         if (java.util.Objects.equals(wouldOpen, restingOn)) return;

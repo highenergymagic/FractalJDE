@@ -56,10 +56,9 @@ public final class FMBrowser extends JPanel {
     /**
      * The three ways of showing a folder, and what each is for.
      *
-     * Icons for recognising something by its shape, a list for comparing files against
-     * each other by their dates and sizes, columns for finding your way through a tree.
-     * They are the Finder's three and the panel's three because they are the same
-     * question asked in the same places, and the keys that choose them are the same too.
+     * Icons for recognising something by its shape, a list for comparing dates and sizes,
+     * columns for finding your way through a tree. The Finder's three and the panel's
+     * three, because they are the same question asked in the same places.
      */
     public enum Mode { ICON, LIST, COLUMN }
 
@@ -107,14 +106,10 @@ public final class FMBrowser extends JPanel {
     /**
      * The four things a browser can be asked to do, in its own action map.
      *
-     * Named rather than called, so that one name reaches them from three directions: a
-     * menu item in an interface file, a key bound in this window, and a program in another
-     * process saying perform. None of the three needs a method on this class, and the
-     * program in the other process could not have one anyway.
-     *
-     * They are the selectors the Finder's menus already use, because these are those
-     * commands. A second set of names for the same four things would be a second set to
-     * keep in step.
+     * Named rather than called, so one name reaches them from three directions: a menu
+     * item in an interface file, a key bound in this window, and a program in another
+     * process saying perform. They are the selectors the Finder's menus already use, since
+     * a second set of names for the same four things would be a second set to keep in step.
      */
     private void installActions() {
         ActionMap actions = getActionMap();

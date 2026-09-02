@@ -105,13 +105,10 @@ public final class Dyld {
     /**
      * Everything a program needs, not only what it named.
      *
-     * A program links Foundation; Foundation links the system library; an umbrella passes
-     * on the frameworks inside it. None of that is written in the program, and none of it
-     * can be left out, so the names it does carry are followed to the ones they carry, and
-     * so on, until nothing new turns up.
-     *
-     * Order is kept as the load commands gave it, because that is the order a symbol is
-     * looked for in, and a library reached twice is only added once.
+     * A program links Foundation, Foundation links the system library, an umbrella passes
+     * on what is inside it. None of that is written in the program and none can be left
+     * out, so the names it carries are followed until nothing new turns up. Order is kept
+     * as the load commands gave it, since that is the order a symbol is looked for in.
      */
     private static List<Path> closureOf(List<String> named, List<String> runpaths) {
         List<Path> out = new ArrayList<>();
@@ -191,11 +188,9 @@ public final class Dyld {
     /**
      * What a program's own process is started with, which is the loader and nothing else.
      *
-     * A class path is a search order: everything on it can see everything else on it, and
-     * a program started that way could reach a library it never linked simply because the
-     * library was standing next to it. So only the loader goes on it. The loader maps the
-     * program, follows its load commands, and resolves each class through the symbol
-     * tables, which is the arrangement the load commands were written to describe.
+     * A class path is a search order, so a program started with one could reach a library
+     * it never linked simply because the library was standing next to it. Only the loader
+     * goes on it, and the loader resolves each class through the symbol tables.
      */
     public static String bootstrapClassPath() {
         Path loader = OSPaths.dyld();

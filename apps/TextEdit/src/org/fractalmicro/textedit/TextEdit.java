@@ -129,10 +129,9 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
     /**
      * What is being edited: where it came from, and whether it has changed since.
      *
-     * The two facts this program used to keep in two fields of its own, and the five things
-     * that follow from them, which it used to arrange for itself and now does not: the
-     * title, the dot in the close button, the question when it is closed, and the entry in
-     * the recent items.
+     * Two facts this program used to keep in two fields of its own, and the four things
+     * that follow: the title, the dot in the close button, the question when it is closed,
+     * and the entry in the recent items.
      */
     private final org.fractalmicro.appkit.FMDocument document =
         new org.fractalmicro.appkit.FMDocument(FMApplication.sharedApplication());

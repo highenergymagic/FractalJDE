@@ -71,10 +71,9 @@ public final class Dyld {
     /**
      * Whether an image reaching past what it linked is an error.
      *
-     * Off while code is still being moved between libraries: the reach is recorded and the
-     * class is resolved anyway, so a run produces a list of everything still to fix rather
-     * than stopping at the first one. On once the layering is finished, when reaching for
-     * something a program never linked should fail the way it would anywhere else.
+     * Off while code is still being moved between libraries: the reach is recorded and
+     * resolved anyway, so a run lists everything still to fix rather than stopping at the
+     * first. On once the layering is finished.
      */
     public static void setStrict(boolean value) { strict = value; }
 
@@ -97,17 +96,12 @@ public final class Dyld {
      * Records an image that is already loaded, and what belongs to it.
      *
      * A development build runs everything out of one jar, so every class is in one loader
-     * and there is nothing to keep an image's classes apart from its neighbour's. Saying
-     * which packages are this image's restores that: the classes are the same classes, so
-     * a value handed across a boundary is still the same kind of thing, and a program that
-     * links Foundation and reaches for AppKit is still told there is no such symbol.
+     * and nothing keeps one image's classes apart from its neighbour's. Saying which
+     * packages are this image's restores that, and a program linking Foundation that
+     * reaches for AppKit is still told there is no such symbol.
      *
-     * That is what two-level namespace means. A symbol is not a name on its own; it is a
-     * name and the library it came from.
-     *
-     * What it answers for is its export list, read from the image on disk: the same
-     * symbols it would have offered had it been mapped here rather than started with the
-     * process. Nothing about the division is written down twice.
+     * What it answers for is its export list, read from the image on disk, so nothing
+     * about the division is written down twice.
      *
      * @param exports the classes this image offers, or empty to mean everything the
      *                loader has
@@ -132,10 +126,9 @@ public final class Dyld {
     /**
      * Loads an image and everything it links, and answers its loader.
      *
-     * Everything needed comes out of the file: what it calls itself, what it links, what
-     * it defines, what it expects, and the code. Nothing is passed alongside it and
-     * nothing is unpacked, because a library that had to be described from outside would
-     * not be a library.
+     * Everything comes out of the file: what it calls itself, what it links, what it
+     * defines and the code. A library that had to be described from outside would not be
+     * a library.
      *
      * @param binary the image file
      * @param locate how to find the file for a name one of these links
@@ -211,10 +204,9 @@ public final class Dyld {
     /**
      * The image's own files, out of the segment that carries them.
      *
-     * The segment is an archive, read once when the image is mapped. Reading it entry by
-     * entry on demand would mean holding the file open for the life of the process and
-     * seeking through it for every class, which is slower and no more faithful: a mapped
-     * image is in memory either way.
+     * An archive, read once when the image is mapped. Reading it entry by entry would hold
+     * the file open for the life of the process and seek for every class, which is slower
+     * and no more faithful: a mapped image is in memory either way.
      */
     private static Map<String, byte[]> contentsOf(MachO image) throws IOException {
         Map<String, byte[]> out = new LinkedHashMap<>();

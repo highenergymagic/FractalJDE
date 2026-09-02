@@ -64,10 +64,9 @@ public final class Images {
      * One image: what it is called, where it goes, what kind of Mach-O it is, whether it
      * is wrapped in a framework, and for a program, where it starts.
      *
-     * A library has no entry point because nothing runs it. A program has one, and it is
-     * written into the image rather than known by whatever starts it: the loader maps the
-     * file and reads it from there, which is the only way a program can be started by
-     * something that has never heard of it.
+     * A library has no entry point because nothing runs it. A program has one written into
+     * the image rather than known by whatever starts it, which is the only way a program
+     * can be started by something that has never heard of it.
      */
     private record Image(String name, Path binary, int fileType, boolean framework,
                          String entry) {
@@ -179,13 +178,9 @@ public final class Images {
     /**
      * A framework's words and pictures, copied in beside its binary.
      *
-     * A framework has text a person reads, and that text belongs to the framework rather
-     * than to whichever program happened to load it. AppKit says "Cancel" on a button in
-     * every program on the volume, and a translation of it has to live where AppKit is or
-     * every program would have to carry one.
-     *
-     * What is copied is whatever the build left in the framework's resources directory,
-     * which is where the language directories are.
+     * A framework has text a person reads, and it belongs to the framework rather than to
+     * whichever program loaded it: AppKit says "Cancel" on a button in every program on
+     * the volume, so a translation of it has to live where AppKit is.
      */
     private static void copyResources(String name, Path into) throws IOException {
         Path built = builtImages();
@@ -283,10 +278,9 @@ public final class Images {
     /**
      * What @rpath stands for.
      *
-     * The frameworks are in the system's own directory, and an application carries this so
-     * that a name beginning @rpath can be found there. An application that shipped a
-     * framework of its own would add @loader_path/../Frameworks and be found either way,
-     * which is the reason @rpath exists rather than an absolute path.
+     * The frameworks are in the system's own directory and an application carries this so
+     * a name beginning  is found there. One shipping a framework of its own would
+     * add /../Frameworks and be found either way, which is why  exists.
      */
     public static final List<String> RUNPATHS =
         List.of("/System/Library/Frameworks", "@loader_path/../Frameworks");
@@ -407,13 +401,10 @@ public final class Images {
     /**
      * The metadata server, inside the framework whose work it does.
      *
-     * Mac OS X keeps it at Metadata.framework/Versions/A/Support/mds. It is a plain
-     * executable rather than a program a person opens, which is why it is here and not in
-     * Applications.
-     *
-     * It says where it starts, as every program image does. Without that the loader maps
-     * it and then has nothing to run, and the job that starts it fails on every attempt
-     * with launchd starting it again ten seconds later for as long as the machine is on.
+     * Mac OS X keeps it at Metadata.framework/Versions/A/Support/mds, a plain executable
+     * rather than a program a person opens. It says where it starts, as every program
+     * image does: without that the loader has nothing to run and launchd starts it again
+     * every ten seconds for as long as the machine is on.
      */
     private static void metadataSupport(Path built, Linker linker) throws IOException {
         Path support = OSPaths.frameworkSupport(

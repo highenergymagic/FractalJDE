@@ -77,11 +77,9 @@ public final class WindowServer {
     /**
      * Asks a control to do something to itself: cut, paste, bold, centre.
      *
-     * None of those is something a program can do from outside, and on a Mac the program
-     * does not do them either. It sends the command and the responder chain carries it to
-     * whatever knows what "bold" means. This is that chain with a process boundary in it.
-     * The names are the editor kits' own, so the actions are ones already tested against
-     * every kind of selection somebody can make.
+     * A Mac program does not do them either: it sends the command and the responder chain
+     * carries it to whatever knows what "bold" means. This is that chain with a process
+     * boundary in it. The names are the editor kits' own.
      */
     public static final String PERFORM = "perform";
 
@@ -124,11 +122,9 @@ public final class WindowServer {
     /**
      * A described window, run as a sheet on one that is already open.
      *
-     * A sheet is a question asked of one window that cannot be answered anywhere else, and
-     * the asking waits. So it is one message out and back with the answer, rather than an
-     * identifier the program then has to look after. What comes back is which button ended
-     * it and what everything in it held, since asking again afterwards would be asking a
-     * sheet that is no longer there.
+     * A question asked of one window that cannot be answered anywhere else, and the asking
+     * waits. One message out and back with the answer, rather than an identifier to look
+     * after, and what comes back is which button ended it and what everything held.
      */
     public static final String SHEET = "sheet";
 
@@ -174,10 +170,8 @@ public final class WindowServer {
     /**
      * Pending events, one queue per program.
      *
-     * A single shared queue was fine while only one program lived outside the desktop. With
-     * two, each takes whatever is at the front: one gets told about a window it has never
-     * heard of while the other reads its button press. An event belongs to the program
-     * whose window produced it.
+     * With one shared queue and two programs, each takes whatever is at the front: one is
+     * told about a window it never heard of while the other reads its button press.
      */
     private final Map<String, LinkedBlockingQueue<Message>> events = new ConcurrentHashMap<>();
     private Service service;
@@ -185,11 +179,9 @@ public final class WindowServer {
     /**
      * How many programs may have queues at once, and how many events each may hold.
      *
-     * Both are ceilings on what a caller can make the server allocate. A queue is created
-     * only when a program opens a window, never from a name in a request, because a name in
-     * a request is whatever the sender typed; and a queue that fills drops its oldest event
-     * rather than growing, because a program that has stopped reading its events is not a
-     * reason to run the desktop out of memory.
+     * Ceilings on what a caller can make the server allocate. A queue is made only when a
+     * program opens a window, never from a name in a request, and a full one drops its
+     * oldest rather than growing.
      */
     private static final int MAX_PROGRAMS = 64;
     private static final int MAX_EVENTS_PER_PROGRAM = 1024;
@@ -197,9 +189,8 @@ public final class WindowServer {
     /**
      * The largest window or control a description may ask for.
      *
-     * Bigger than any real display, so no honest description is affected, and small enough
-     * that Swing can lay it out. Without this a description asking for two billion pixels is
-     * handed straight to setSize on the event thread.
+     * Bigger than any real display and small enough for Swing to lay out. Without it a
+     * description asking for two billion pixels goes straight to setSize.
      */
     private static final int MAX_DIMENSION = 16384;
 
@@ -223,8 +214,7 @@ public final class WindowServer {
      * A window owned by a program in another process.
      *
      * Same class, title bar and accessible tree as any window here, and it owns the menu
-     * bar while it is in front. The menus arrived in the same description as the window and
-     * are built here; choosing one posts an event back, as a button press does.
+     * bar while it is in front. Choosing one of its menus posts an event back.
      */
     private final class RemoteFrame extends JInternalFrame implements org.fractalmicro.appkit.AppWindow {
         private final String application;
@@ -276,13 +266,8 @@ public final class WindowServer {
         /**
          * Asks the program which of this menu's commands are live, as the menu opens.
          *
-         * Until this, a description said whether an item was enabled and that was the last
-         * anybody heard of it: Save stayed black in a program with nothing to save, Undo
-         * stayed black with nothing to undo, and choosing one sent the program a command it
-         * would ignore. A menu that offers what cannot be done teaches people not to read it.
-         *
-         * Only items with an action are asked about. An item with none opens a submenu or is
-         * a label, and neither is something a program can be asked whether it can do.
+         * A menu that offers what cannot be done teaches people not to read it. Only items
+         * with an action are asked about, since one without opens a submenu or is a label.
          */
         private void askAsItOpens(JMenu menu, Map<JMenuItem, String> commands) {
             if (commands.isEmpty()) return;
@@ -515,11 +500,9 @@ public final class WindowServer {
     /**
      * Puts a control inside another one, in whatever way that other one holds things.
      *
-     * A split view takes two and no more, in the order they were described. A toolbar takes
-     * as many as it is given, and a separator in it is flexible space: what comes before is
-     * pushed left and what comes after is pushed right, which is how a search field ends up
-     * at the far end of one without anybody measuring. Anything else that is asked to hold
-     * a control simply does, at the place the description gave it.
+     * A split view takes two, in the order described. A toolbar takes any number, and a
+     * separator in it is flexible space: what is before goes left and what is after goes
+     * right, which is how a search field reaches the far end without anybody measuring.
      */
     private static void putInside(JComponent parent, JComponent child) {
         if (parent instanceof JSplitPane split) {
@@ -543,10 +526,8 @@ public final class WindowServer {
     /**
      * The row along the top of a window.
      *
-     * Its own class rather than a panel with a layout set on it, because what a toolbar
-     * does with a separator is not something any layout manager knows: everything before it
-     * goes left, everything after it goes right, and the gap between them is whatever is
-     * left over.
+     * Its own class because no layout manager knows what a toolbar does with a separator:
+     * before it goes left, after it goes right, and the gap is whatever is left over.
      */
     private static final class Toolbar extends JPanel {
         private final JPanel left = new JPanel(new java.awt.FlowLayout(
@@ -762,11 +743,9 @@ public final class WindowServer {
     /**
      * Whether the value in a control is being set by the program that owns it.
      *
-     * A control given a value has not been used, and the event goes back to the program
-     * that just set it: a window filling its controls in as it opens would hear that every
-     * one of them had been used. Cocoa states the same rule: setting a control does not
-     * send its action. One flag rather than one per control, since all of this happens on
-     * the thread that draws.
+     * A control given a value has not been used, and the event goes back to whoever set
+     * it, so a window filling its controls in as it opens would hear that every one had
+     * been used. Cocoa: setting a control does not send its action.
      */
     private boolean settingFromTheProgram;
 
@@ -820,8 +799,7 @@ public final class WindowServer {
      * A program saying which of the commands it was asked about are live.
      *
      * Never touches the screen, and must not: the thread that asked is the one drawing the
-     * menu, and it is waiting here. Hopping to it to deliver the answer would be waiting for
-     * the thread that is waiting for this.
+     * menu and it is waiting here, so hopping to it would wait on the thread waiting here.
      */
     private Message validated(Message request) {
         java.util.concurrent.CompletableFuture<java.util.Set<String>> waiting =
@@ -847,12 +825,9 @@ public final class WindowServer {
      * Tells a program that is already running that it has been opened on something.
      *
      * NSApplication's application:openFiles:, which exists because a program in its own
-     * process cannot be handed an object. Without it, opening a second document started a
-     * second copy: two TextEdits, two Dock tiles, two of everything.
-     *
-     * It needs no new channel, since the program has been reading events since it opened
-     * its window. Answers whether there was anybody there to tell, which is how the caller
-     * knows whether to start one instead.
+     * process cannot be handed an object. Without it a second document started a second
+     * copy: two TextEdits, two Dock tiles, two of everything. Answers whether there was
+     * anybody to tell, which is how the caller knows whether to start one instead.
      */
     public boolean reopen(String application, List<String> paths) {
         return deliver(application, Message.of(EVENT)
@@ -863,9 +838,8 @@ public final class WindowServer {
     /**
      * The queue a program reads from, made when it opens its first window.
      *
-     * Answers false when there are already too many programs and none of them can be let
-     * go. Queues belonging to programs with no windows left are reclaimed first, which is
-     * what makes the ceiling a ceiling rather than a wall.
+     * False when there are too many programs and none can be let go. Queues for programs
+     * with no windows are reclaimed first, which makes the ceiling a ceiling not a wall.
      */
     private boolean openQueue(String application) {
         String name = key(application);
@@ -934,9 +908,8 @@ public final class WindowServer {
     /**
      * Shows or hides one control, and whatever is holding it.
      *
-     * A control inside a scroll pane is not the thing on the screen; the scroll pane is.
-     * Hiding the control and leaving the frame around it would leave a hole where the pane
-     * was, which is worse than not hiding it at all.
+     * The thing on the screen is the scroll pane, not the control in it. Hiding the control
+     * and leaving the frame would leave a hole, which is worse than not hiding it.
      */
     private Message setVisible(Message request) throws Exception {
         JComponent control = find(request);
@@ -958,9 +931,8 @@ public final class WindowServer {
     /**
      * Puts styled text into a pane, or plain text when it is not styled.
      *
-     * A program that has never set a font sends plain text, and it would be wrong to
-     * refuse that: the pane holds a document either way and plain is a document with one
-     * style in it.
+     * A program that never set a font sends plain text, and the pane holds a document
+     * either way: plain is a document with one style in it.
      */
     private static void setRich(javax.swing.JTextPane pane, String text) {
         if (!text.startsWith("{" + "\\rtf")) {
@@ -1000,10 +972,9 @@ public final class WindowServer {
     /**
      * Runs a named action on a control.
      *
-     * The action comes from the control's own action map, which is where a text view keeps
-     * everything it knows how to do to itself. A name it does not know is answered with an
-     * error rather than ignored, because a menu item that quietly does nothing is worse
-     * than one that says why.
+     * From the control's own action map, where a text view keeps what it can do to
+     * itself. A name it does not know is an error rather than ignored, since a menu item
+     * that quietly does nothing is worse than one that says why.
      */
     private Message perform(Message request) throws Exception {
         JComponent control = find(request);
@@ -1024,11 +995,9 @@ public final class WindowServer {
     /**
      * The action a control knows by that name.
      *
-     * A text component's own action map has the ones the keyboard is bound to. The rest,
-     * bold and italic and the alignments, belong to the editor kit, which is where a styled
-     * view keeps what it can do to a document. Both are asked, because which of the two an
-     * action lives in is an implementation detail of the toolkit and not something a
-     * program should have to know.
+     * The action map holds what the keyboard is bound to; bold, italic and the alignments
+     * belong to the editor kit. Both are asked, since which of the two an action lives in
+     * is the toolkit's business and not a program's.
      */
     private static javax.swing.Action actionNamed(JComponent control, String name) {
         javax.swing.Action found = control.getActionMap().get(name);
@@ -1180,9 +1149,8 @@ public final class WindowServer {
     /**
      * Marks a window as holding changes, or as not.
      *
-     * The close button reads it and draws a dot instead of a cross. Nothing else changes,
-     * which is the point: it is a warning on the control that would lose the work and not
-     * an announcement.
+     * The close button draws a dot instead of a cross. Nothing else changes: it is a
+     * warning on the control that would lose the work, not an announcement.
      */
     private Message setEdited(Message request) throws Exception {
         Window window = windowOf(request);
@@ -1262,9 +1230,8 @@ public final class WindowServer {
     /**
      * Puts a question on the screen for a program that has no screen.
      *
-     * The dialog is drawn here, over the desktop, where a person is already looking. It is
-     * modal, so this waits: the program that asked is waiting too, and a question nobody
-     * answers is not a question.
+     * Drawn here, over the desktop, where a person is already looking. Modal, so this
+     * waits: the program that asked is waiting too.
      */
     private Message ask(Message request) throws Exception {
         FMString[] answer = new FMString[1];
@@ -1283,9 +1250,8 @@ public final class WindowServer {
     /**
      * Asks a yes or no question, and answers which was chosen.
      *
-     * The buttons are named for what they do rather than saying OK, which is the same rule
-     * everywhere else here: somebody reading only the buttons still knows which one keeps
-     * their work.
+     * The buttons are named for what they do rather than OK, so somebody reading only the
+     * buttons still knows which one keeps their work.
      */
     private Message confirm(Message request) throws Exception {
         boolean[] chose = new boolean[1];
@@ -1307,9 +1273,8 @@ public final class WindowServer {
     /**
      * Runs a description as a sheet on a window that is already open, and waits.
      *
-     * The waiting is the point. A sheet belongs to one window and stops it being used until
-     * it is answered, so the program that asked is stopped too: it sent one message and the
-     * answer to it is what the person did.
+     * The waiting is the point. A sheet stops its window being used until it is answered,
+     * so the program is stopped too: one message, and the answer is what the person did.
      */
     private Message sheet(Message request) throws Exception {
         Window owner = windowOf(request);
@@ -1349,10 +1314,8 @@ public final class WindowServer {
     /**
      * The panel a described sheet puts up, built and wired but not shown.
      *
-     * Separated from showing it for the reason the alerts are: a sheet needs a window that
-     * is on the screen and a check has none, so what can be checked without one is checked
-     * without one. Every button in it ends the sheet, because that is what a button on a
-     * sheet is for; which one was pressed is the answer.
+     * Separated from showing it because a sheet needs a window on the screen and a check
+     * has none. Every button ends the sheet, and which one is the answer.
      */
     JPanel sheetPanel(Nib nib, Window owner, Map<String, JComponent> made, String[] chosen) {
         JPanel panel = new JPanel(null);
@@ -1395,10 +1358,9 @@ public final class WindowServer {
     /**
      * The panel a sheet would put up, for a check with no window to hang one on.
      *
-     * A sheet needs a window that is on the screen, and a checking run has none: the desktop
-     * is laid out and drawn into an image and never shown, which is what lets the checks run
-     * on a machine somebody is using. This is the same panel the same description makes,
-     * built and wired, so what can be checked without a screen is.
+     * A checking run has no window: the desktop is laid out and drawn into an image and
+     * never shown, which is what lets the checks run on a machine somebody is using. This
+     * is the same panel the same description makes, built and wired.
      */
     public JPanel sheetPanelForChecking(Nib nib, Map<String, JComponent> made,
                                         String[] chosen) {
@@ -1408,9 +1370,8 @@ public final class WindowServer {
     /**
      * Runs a save or open panel for a program that has no screen to run one on.
      *
-     * What crosses the boundary is what the program said about the panel and what came
-     * back out of it: a name, a place, the kinds it writes, and afterwards the file that
-     * was chosen and which format. The panel itself never leaves this process.
+     * What crosses is what the program said about the panel and what came back: a name, a
+     * place, the kinds it writes, then the file chosen. The panel stays in this process.
      */
     private Message panel(Message request, boolean opening) throws Exception {
         org.fractalmicro.appkit.FMSavePanel panel = opening
@@ -1469,9 +1430,8 @@ public final class WindowServer {
     /**
      * A list of names as the toolkit underneath wants them.
      *
-     * Everything above this class works in FMString. Swing works in the runtime's own, and
-     * something has to do the conversion. Doing it here, at the one place the two meet,
-     * keeps it out of everywhere else.
+     * Everything above works in FMString and Swing works in the runtime's own. Converting
+     * here, where the two meet, keeps it out of everywhere else.
      */
     private static String[] textOf(org.fractalmicro.foundation.FMArray<org.fractalmicro.foundation.FMString> names) {
         String[] out = new String[names.count()];

@@ -232,9 +232,8 @@ public final class Bundle {
      * The bundle the running program came out of.
      *
      * Everything that is not code: interface files, the words in each language, the icon.
-     * A program works this out rather than being told, since the executable is at
-     * Contents/Fractal/Name and the bundle is three directories up. A program the loader
-     * did not start has none, and says so.
+     * Worked out rather than told, since the executable is at Contents/Fractal/Name and
+     * the bundle is three directories up.
      */
     public static Bundle main() {
         String executable = System.getProperty(
@@ -251,11 +250,10 @@ public final class Bundle {
     /**
      * A resource inside the bundle, in the language this account reads.
      *
-     * One directory per language, ending in .lproj. Searched in the usual order: each
-     * language the account asked for, then the one the program was written in, then the
-     * resource outside the language directories altogether. That last is what makes a
-     * program with no translations work, and stops a description that is the same in every
-     * language being copied once per language.
+     * One directory per language, ending in .lproj, searched in the usual order: each
+     * language the account asked for, the one the program was written in, then the resource
+     * outside the language directories. That last is what makes a program with no
+     * translations work.
      */
     public File resource(FMString name, FMString type) {
         File resources = new File(root, "Contents/Resources");
@@ -271,10 +269,9 @@ public final class Bundle {
     /**
      * The words this bundle uses, in one table, in the language this account reads.
      *
-     * A missing table is an empty one rather than a failure. A program with no
-     * translations asks for its strings, gets none, and shows what it was written with,
-     * which is the behaviour that lets translation be added to a program afterwards
-     * without the program knowing.
+     * A missing table is an empty one rather than a failure: a program with no translations
+     * shows what it was written with, which is what lets one be added afterwards without
+     * the program knowing.
      */
     public FMDictionary strings(FMString table) {
         File file = resource(table, org.fractalmicro.plist.Strings.EXTENSION);
@@ -369,10 +366,9 @@ public final class Bundle {
     /**
      * The same, saying what the program links.
      *
-     * What goes into the executable is the install name of each library, which is the name
-     * that library calls itself. A program that names Foundation and AppKit gets those and
-     * whatever they pass on, and nothing else: reaching for a class from a library it did
-     * not name fails the way it would on any system that records where a symbol came from.
+     * The install name of each library, which is what that library calls itself. A program
+     * naming Foundation and AppKit gets those and whatever they pass on and nothing else,
+     * so reaching for a class from a library it did not name fails.
      */
     public static Bundle create(File parent, String name, FMDictionary info,
                                 String launchArguments, List<String> ownPackages,
@@ -560,13 +556,9 @@ public final class Bundle {
      * for, and a .cmd, which is what Windows actually runs. Both start the loader on the
      * executable, which is the same thing the system does when it opens a program.
      *
-     * Neither may contain an absolute path. One naming the JDK it was built against, or a
-     * home directory, works on the machine it was written on and nowhere else, and how
-     * that fails is somebody unpacking a release to find every program dead.
-     *
-     * So the volume is found rather than named: the launcher walks up until it sees
-     * usr/lib/dyld. A bundle copied onto another volume runs against that one, and one
-     * copied somewhere that is not a volume says so.
+     * Neither may contain an absolute path, or unpacking a release finds every program
+     * dead. The volume is found rather than named: the launcher walks up until it sees
+     * usr/lib/dyld, so a bundle copied onto another volume runs against that one.
      */
     private static void writeLaunchers(File where, String name, String arguments)
             throws IOException {

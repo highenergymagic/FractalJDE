@@ -60,17 +60,14 @@ public final class Service implements AutoCloseable {
     /**
      * Starts listening, and does not answer until the name is being served.
      *
-     * The name is claimed in one step rather than looked at and then taken: two services
-     * starting at the same moment would both see a free name and both start, and no amount
-     * of looking first prevents that. The claim is what decides, and the loser is told by
-     * the same call that tried.
+     * The name is claimed in one step rather than looked at and then taken, because two
+     * services starting at once would both see it free. The claim decides, and the loser
+     * is told by the same call that tried.
      *
-     * The port itself is made on the accepting thread, which is a thread that has just
-     * been started and on a busy machine has not necessarily run yet. So this waited for
-     * it before answering, because everything that starts a service goes on to use the
-     * name, and a call that says yes before the name is there hands back something that
-     * is not a service until a moment later. Every caller waiting a little differently for
-     * a thing that had already been promised is how that gets papered over instead.
+     * The port is made on the accepting thread, which on a busy machine has not
+     * necessarily run yet, so this waits for it before answering: everything that starts a
+     * service goes on to use the name, and saying yes early hands back something that is
+     * not a service until a moment later.
      */
     public boolean start() {
         if (running.get()) return true;

@@ -55,9 +55,8 @@ public final class TaskServer {
      * Asking for a number.
      *
      * The one message that has to go through the table rather than round it. A process
-     * handing out numbers from a counter of its own hands out numbers another process has
-     * already used, and two tasks with the same number is not a namespace. So the table
-     * gives them out, and every process asks.
+     * counting for itself hands out numbers another process has already used, and two
+     * tasks with the same number is not a namespace.
      */
     public static final String ALLOCATE = "allocate";
 
@@ -121,10 +120,9 @@ public final class TaskServer {
      * The numbers this table handed out.
      *
      * Everything on the connection is another process of this account, which is the right
-     * boundary for a desktop: a person may stop their own programs. It is not a reason to
-     * believe what one of them says about a task it did not start. A number that was never
-     * handed out is a number nobody was given, and a row claiming it is a row claiming to
-     * be something else.
+     * boundary for a desktop, but not a reason to believe what one of them says about a
+     * task it did not start. A row claiming a number nobody was given is claiming to be
+     * something else.
      */
     private static final java.util.Set<Integer> handedOut =
         java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -147,10 +145,9 @@ public final class TaskServer {
     /**
      * Every task, as lines.
      *
-     * One line each, fields in a fixed order, separated by the character the ASCII table
-     * set aside for exactly this and which cannot occur in any of the fields. A structure
-     * would be tidier and would mean agreeing on one across a boundary that already has
-     * enough to agree on.
+     * One line each, fields in a fixed order, separated by the character ASCII set aside
+     * for exactly this. A structure would be tidier and would mean agreeing on one across
+     * a boundary that has enough to agree on.
      */
     private Message listing() {
         List<String> rows = new ArrayList<>();
@@ -164,17 +161,14 @@ public final class TaskServer {
     /**
      * Whether there is a table to ask at all.
      *
-     * By looking for the name, not by connecting to it. Connecting waits, on purpose and
-     * for two seconds, because a service asked for the moment after it was started has not
-     * finished claiming its name yet and giving up on it would be wrong. That is not this
-     * question. The table is task 1's, and task 1 is running before anything that could ask
-     * exists; a process that cannot find it is a process running without one, and it can
-     * know that now.
+     * By looking for the name, not by connecting to it. Connecting waits two seconds on
+     * purpose, because a service asked for just after it started has not claimed its name
+     * yet. That is not this question: the table is task 1's and task 1 runs before
+     * anything that could ask, so a process that cannot find it has none.
      *
-     * The difference is the whole of a slow start-up. Registering a task asks twice, once
-     * for a number and once to announce it, and the session registers two before it draws
-     * anything. Waiting to find out that nothing is listening cost eight seconds of every
-     * start where the table was not there, with nothing to show for the wait.
+     * The difference is the whole of a slow start-up. Registering asks twice and the
+     * session registers two tasks before it draws anything, so waiting to find out that
+     * nothing is listening cost eight seconds of every start without a table.
      */
     private static boolean somewhereToAsk() {
         return running == null && Connection.available(SERVICE);
@@ -259,10 +253,9 @@ public final class TaskServer {
     /**
      * The same listing arranged as what it is: a tree with task 1 at the root.
      *
-     * The flat table says every task's parent in a column, which is the same information
-     * and is unreadable as an answer to the question people actually ask, which is what
-     * started what. Anything whose parent is missing is hung under task 1, because that is
-     * where an orphan goes and a listing that quietly dropped one would be wrong.
+     * The flat table says every parent in a column, which is the same information and is
+     * unreadable as an answer to what started what. Anything whose parent is missing hangs
+     * under task 1, since that is where an orphan goes.
      */
     public static String describeAsTree() {
         org.fractalmicro.foundation.FMArray<Row> all = everything();
@@ -343,9 +336,8 @@ public final class TaskServer {
         /**
          * A field with the separator taken out of it.
          *
-         * A program chooses its own name, and a name holding the character the fields are
-         * separated by would split one field into two and shift everything after it. The
-         * separator was set aside for this and nothing legitimate contains it, so taking
+         * A program chooses its own name, and one holding the separator would split a field
+         * in two and shift everything after it. Nothing legitimate contains it, so taking
          * it out loses nothing and a malformed line stays impossible.
          */
         private static String plain(org.fractalmicro.foundation.FMString value) {

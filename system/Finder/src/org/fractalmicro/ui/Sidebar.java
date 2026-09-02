@@ -154,19 +154,13 @@ public class Sidebar extends JScrollPane {
     /**
      * Dropping onto the sidebar, which means one of two things depending on where in it.
      *
-     * Onto a place: the files go into that folder, the same as dropping onto its icon in a
-     * window. This is what the sidebar is for. Somebody filing a download into Documents
-     * should not have to open Documents first.
+     * Onto a place, the files go into that folder: somebody filing a download into
+     * Documents should not have to open Documents first. Between two places, the folder
+     * joins the list, which is a shortcut rather than a file operation.
      *
-     * Between two places: the folder joins the list. A shortcut rather than a copy of
-     * anything, so it is not a file operation at all and none of the move-or-copy rules
-     * apply to it.
-     *
-     * Which one is meant is read from where in the row the pointer is, the same way every
-     * list that can be both dropped on and inserted into reads it: near an edge means
-     * between, the middle means on. It has to be a quarter of a twenty pixel row, so the
-     * answer is five pixels either way, which is why the highlight showing which it will be
-     * is not a nicety.
+     * Which is meant is read from where in the row the pointer is: near an edge means
+     * between, the middle means on. That is five pixels either way, which is why the
+     * highlight showing which it will be is not a nicety.
      */
     private void allowDrops() {
         FMFileDragging.install(table, null, new FMFileDragging.IntoFolders() {

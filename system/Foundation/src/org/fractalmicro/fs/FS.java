@@ -66,11 +66,10 @@ public final class FS {
      * The applications that ship with the system, when the folder being listed is the one
      * they belong in.
      *
-     * They live under System/Library/Applications, where an install can replace them
-     * without touching anything a person put in Applications themselves. Both are shown as
-     * one folder, because the difference is about who owns the file rather than about where
-     * a person should look for their programs. A program in Applications hides one of the
-     * same name that shipped, which is what makes it possible to replace one.
+     * Under System/Library/Applications, where an install can replace them without
+     * touching what a person put in Applications. Shown as one folder, since the difference
+     * is who owns the file. A program in Applications hides one of the same name that
+     * shipped, which is what makes it possible to replace one.
      */
     private static List<File> systemApplicationsShownIn(File dir) {
         try {
@@ -191,9 +190,9 @@ public final class FS {
      * The size of a file, as Get Info writes it: exactly how much data is in it, then how
      * much of the disk it takes up.
      *
-     * Two different numbers: the second is the first rounded up to whole blocks, or smaller
-     * for a sparse file. Printing one number twice in different units would answer a
-     * question nobody asked.
+     * Two numbers: the second is the first rounded up to whole blocks, or smaller for a
+     * sparse file. Printing one twice in different units would answer a question nobody
+     * asked.
      */
     public static String formatSize(long bytes, long onDisk) {
         if (bytes < 0) return "--";
@@ -272,10 +271,9 @@ public final class FS {
     /**
      * Where a file would go inside a folder without treading on anything.
      *
-     * The name it already has, when nothing there has it. Otherwise the name a Mac gives a
-     * second one: "Report copy", then "Report copy 2". The extension is kept on the end
-     * where it belongs, so a copy of a document is still a document of that kind, and a
-     * folder with a dot in its name does not have half of it treated as an extension.
+     * The name it already has, or the one a Mac gives a second: "Report copy", then
+     * "Report copy 2". The extension stays on the end, so a copy is still a document of
+     * that kind and a folder with a dot in its name keeps all of it.
      */
     public static File freeNameIn(File src, File folder) {
         File plain = new File(folder, src.getName());
@@ -303,10 +301,9 @@ public final class FS {
     /**
      * Moves a file or a whole folder to an exact place.
      *
-     * A rename where the two are on one disk, which is instant and cannot half happen. Where
-     * they are not, there is no such thing as moving: it is a copy and then a delete, and the
-     * delete only after the copy has finished, so an interrupted move across disks leaves the
-     * file where it started rather than nowhere.
+     * A rename on one disk, which is instant and cannot half happen. Across two there is no
+     * such thing as moving: it is a copy and then a delete, and the delete only once the
+     * copy is done, so an interrupted move leaves the file where it started.
      */
     public static void moveTo(File src, File dest) throws IOException {
         try {

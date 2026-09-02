@@ -98,16 +98,11 @@ public final class FMLocalized {
     /**
      * The same, from a table of its own. A window's words are usually in one.
      *
-     * One table is read from every bundle it might be in, merged once, and kept. Asking a
-     * question of a merged table is a lookup; asking it of a list of directories is a walk
-     * over the disk, and this is asked for every word on the screen.
-     *
-     * It went the other way first, and the difference was a hundred and thirty microseconds
-     * per word. The cost was not the reading: it was the not-reading. A bundle without a
-     * table has no file to open, so nothing was kept, so every later question asked the
-     * file system again whether the file had appeared. Listing a folder of a thousand items
-     * asks for a thousand kinds, and the Finder stopped for a sixth of a second to name
-     * files it had already named.
+     * Read from every bundle it might be in, merged once and kept, because this is asked
+     * for every word on the screen and asking a list of directories is a walk over the
+     * disk. The cost was never the reading but the not-reading: a bundle without a table
+     * has no file to open, so nothing was kept and every later question asked the file
+     * system again whether one had appeared.
      */
     public static FMString of(FMString key, FMString table) {
         if (key == null || key.isEmpty()) return FMString.EMPTY;
@@ -221,13 +216,10 @@ public final class FMLocalized {
     /**
      * Says that a bundle's words belong in this process too.
      *
-     * The running program's own bundle is found without being told, and for a program in a
-     * process of its own that is the whole answer. It is not the whole answer here: the
-     * Finder, the Dock and the window server all run inside one process, and only one of
-     * them can be the program that started it. The others say so.
-     *
-     * Searched before the frameworks and after the program that started the process, which
-     * is the order the same question has anywhere else: the more particular bundle wins.
+     * A program in its own process finds its bundle without being told. The Finder, the
+     * Dock and the window server all run inside one process and only one of them started
+     * it, so the others say so. Searched after that program and before the frameworks,
+     * which is the usual order: the more particular bundle wins.
      */
     public static synchronized void searchAlso(Path resources) {
         if (resources == null || ALSO.contains(resources)) return;

@@ -66,23 +66,15 @@ public final class OSPaths {
      * Where the volume is.
      *
      * Normally .fractaldt in the home directory, and said otherwise in two ways that mean
-     * two different things.
+     * different things. org.fractalmicro.root is the volume this process was booted from,
+     * which the kernel passes on to everything it starts, and is asked first because a
+     * process booted from somewhere is running from there whatever anybody thinks.
+     * org.fractalmicro.volume is a volume being built, which is not the one the build
+     * machine runs.
      *
-     * org.fractalmicro.root is the volume this process was booted from. The kernel finds a
-     * volume, reads the loader off it and tells everything it starts which one it was, so
-     * a session started by launchd is told this and nothing else. It is asked first,
-     * because a process that was booted from somewhere is running from there whatever
-     * anybody else thinks.
-     *
-     * org.fractalmicro.volume is a volume being built. A build laying out a system to ship
-     * says where it is putting it, because that volume is not the one the build machine
-     * runs and writing one over the other would be a poor way to find that out.
-     *
-     * Only the second used to be read. A session booted onto any volume but the usual one
-     * therefore ran against the usual one: it drew a desktop, so the pictures came out and
-     * the checks passed, and the programs it opened were the ones installed at home rather
-     * than the ones that had just shipped. The whole point of installing onto an empty
-     * directory is to find out what happens there, and it was not what happened.
+     * Only the second used to be read, so a session booted onto any other volume ran
+     * against the usual one: it drew a desktop and the checks passed, and the programs it
+     * opened were the ones installed at home rather than the ones that had just shipped.
      */
     private static Path chooseRoot() {
         for (String property : new String[]{"org.fractalmicro.root", "org.fractalmicro.volume"}) {
@@ -99,14 +91,12 @@ public final class OSPaths {
      * Moves a volume left under the old name to the new one, once.
      *
      * The directory was called .fractalos while this was a program that looked like a
-     * desktop. It is a system volume now and is named for what it is. Anyone who ran an
-     * earlier build has their preferences, their logs and their own applications in the
-     * old place, so the whole directory is moved rather than started again.
+     * desktop. Anyone who ran an earlier build has their preferences, logs and programs in
+     * the old place, so the whole directory is moved rather than started again.
      *
      * A volume with something running out of it cannot be renamed on Windows, so the
-     * daemons are asked to stop first. If the move still cannot be made, that is said
-     * plainly and loudly: carrying on quietly would leave an empty volume beside a full
-     * one and lose track of which is which.
+     * daemons are asked to stop first. A move that still cannot be made is said loudly,
+     * since carrying on would leave an empty volume beside a full one.
      */
     public static synchronized boolean adoptFormerVolume() {
         if (!Files.isDirectory(FORMER_ROOT)) return true;

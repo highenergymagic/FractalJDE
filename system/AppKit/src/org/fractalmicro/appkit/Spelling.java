@@ -86,19 +86,14 @@ public final class Spelling {
     /**
      * Checks the whole document now and marks what it finds.
      *
-     * Three steps on two threads, because the two halves of this want different ones.
-     * Reading the document and marking it are Swing, and Swing is the event thread's. The
-     * checker underneath is the host's spelling service, and that one answers on a worker
-     * and returns nothing at all on the event thread: the same words come back with one
-     * mistake off it and none on it.
+     * Two threads, because the halves want different ones. Reading and marking are Swing,
+     * so the event thread's. The host's spelling service answers on a worker and returns
+     * nothing at all on the event thread, which is why as-you-type checking found nothing
+     * for as long as it existed: a Swing timer fires on the event thread and the check it
+     * ran there always came back empty.
      *
-     * That is why as-you-type checking found nothing for as long as it existed. Typing
-     * restarts a timer, a Swing timer fires on the event thread, and the check it ran there
-     * always came back empty. Nothing failed and no mistake was ever underlined.
-     *
-     * Called off the event thread this waits and answers. Called on it, the check is sent
-     * to a worker and the marks appear when it comes back, because the alternative is
-     * stopping the screen while the host looks up every word.
+     * Off the event thread this waits and answers. On it, the check goes to a worker and
+     * the marks appear when it comes back.
      */
     public List<SpellChecker.Mistake> checkNow() {
         if (!available()) {

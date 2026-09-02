@@ -76,10 +76,9 @@ public final class Nib {
     /**
      * The two ends of a control that holds a number between them.
      *
-     * A slider is the only control here that has them, and without them every slider in
-     * the system ran from nothing to a hundred whatever it was for. What it is set to only
-     * means something against what it can be set to, so the ends belong in the description
-     * beside the value and not in the head of whoever wrote the program.
+     * A slider is the only control here with them, and without them every slider ran from
+     * nothing to a hundred whatever it was for. What one is set to only means something
+     * against what it can be set to, so the ends belong beside the value.
      */
     public static final FMString FROM = FMString.of("From");
     public static final FMString TO = FMString.of("To");
@@ -110,9 +109,8 @@ public final class Nib {
          * A folder, shown as icons, as a list, or as columns.
          *
          * The first control here that views something the program does not send. The
-         * description says which folder and how to show it, and the folder is read on this
-         * side, where the icons and kinds already are. Sending the listing instead would
-         * have a program keeping a copy of the disk to draw a window with.
+         * folder is read on this side, where the icons and kinds already are; sending the
+         * listing would have a program keeping a copy of the disk to draw a window with.
          */
         FMBrowser("a folder, shown as icons, a list or columns"),
         /**
@@ -178,10 +176,9 @@ public final class Nib {
         /**
          * A command that is either on or off.
          *
-         * A menu is where most of a program's settings are turned on, and an item that
-         * shows a tick is a different thing from one that does something. Written down as
-         * a property of the item rather than as a second kind, because everything else
-         * about it is the same.
+         * A menu is where most settings are turned on, and an item showing a tick is a
+         * different thing from one that does something. A property of the item rather than
+         * a second kind, since everything else about it is the same.
          */
         public static MenuItem toggle(FMString title, FMString action, boolean on,
                                       FMString key, FMString... modifiers) {
@@ -467,10 +464,9 @@ public final class Nib {
     /**
      * Reads a description, refusing one that would produce a window nobody could use.
      *
-     * A control with no identifier cannot be referred to afterwards, and a control with no
-     * name cannot be described. Both are refused here rather than drawn and
-     * discovered later, because the program that wrote the description is the only thing
-     * that can still fix them.
+     * A control with no identifier cannot be referred to afterwards and one with no name
+     * cannot be described. Refused here rather than drawn and discovered later, because
+     * the program that wrote the description is the only thing that can fix them.
      */
     public static Nib from(FMDictionary values) throws IOException {
         FMDictionary window = values.dictionary(WINDOW);

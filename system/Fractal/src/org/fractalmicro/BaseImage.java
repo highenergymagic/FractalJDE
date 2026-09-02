@@ -73,10 +73,9 @@ public final class BaseImage {
     /**
      * Packs a volume into an image, and answers how many files went in.
      *
-     * The volume handed in is one the build laid out from nothing, so what goes into the
-     * image is only what the build put there. Files a person would own are skipped anyway:
-     * a build machine has an account on it too, and none of what collects in it belongs to
-     * anybody who installs the result.
+     * The volume handed in is one the build laid out from nothing, so the image holds only
+     * what the build put there. Files a person would own are skipped anyway: a build
+     * machine has an account on it too.
      */
     public static int create(Path volume, Path image, String version, String build,
                              String built) throws IOException {
@@ -154,12 +153,8 @@ public final class BaseImage {
      * What the image says about itself.
      *
      * Fields first, one to a line, then every file indented by two spaces: what it hashes
-     * to, a space, and its name. Names have spaces in them, so only the first space
-     * separates the two and the rest of the line is the name.
-     *
-     * The links are listed again afterwards, saying which of those files is not one. A
-     * digest of what a link points at is still a digest, so both lists can be checked the
-     * same way and neither has to be believed on its own.
+     * to, a space, and its name. Names have spaces, so only the first space separates the
+     * two. The links are listed again afterwards, saying which of those files is not one.
      */
     private static String manifest(String version, String build, String built,
                                    Map<String, String> digests, List<String> links) {
@@ -256,14 +251,11 @@ public final class BaseImage {
     /**
      * Unpacks an image onto a volume, and answers how many files it wrote.
      *
-     * Each file is checked against the manifest as it comes out. An image is a file that
-     * travelled: a program that unpacks whatever it is handed and then runs it cannot tell
-     * a half-finished download from a working system, and the first sign of the difference
-     * would be something failing to load much later, somewhere unrelated to the cause.
-     *
-     * What is on the volume already and not in the image stays. Somebody's documents, their
-     * preferences, anything they installed themselves: none of it came from an image, and
-     * none of it is an image's to remove.
+     * Each file is checked against the manifest as it comes out, because an image is a
+     * file that travelled and a half-finished download would otherwise show up much later
+     * as something failing to load somewhere unrelated. What is on the volume already and
+     * not in the image stays: none of it came from an image and none of it is an image's
+     * to remove.
      */
     public static int unpack(Path image, Path root) throws IOException {
         String manifest = manifestIn(image);
@@ -327,16 +319,14 @@ public final class BaseImage {
     /**
      * Turns a file holding a path into a real link, where the file system allows one.
      *
-     * A framework is a directory of versions with names pointing at the current one, so
-     * these are what make Resources and the rest resolve at all. Windows hands out the
-     * privilege to make them only to an administrator or an account with developer mode
-     * on, and a desktop is not worth either.
+     * A framework is a directory of versions with names pointing at the current one, and
+     * Windows gives out the privilege to make real links only to an administrator or an
+     * account in developer mode.
      *
      * So the file written first is the fallback rather than a step towards the link: a
-     * small file holding the path it stands for, which the system reads as a pointer
-     * wherever it finds one. If the link can be made it replaces the file, and if it
-     * cannot, what is already there is the answer. The image carries the same bytes
-     * either way, and so hashes the same on a machine that can and one that cannot.
+     * small file holding the path it stands for, which this system reads as a pointer. If
+     * the link can be made it replaces the file. The image carries the same bytes either
+     * way, so it hashes the same on a machine that can and one that cannot.
      */
     private static void point(Path at, String target) {
         try {

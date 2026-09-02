@@ -40,11 +40,17 @@ public final class CommentTest {
 
     public static int count() { return 2; }
 
-    /** Where "long" starts. Above this, a doc comment is an essay somebody will skip. */
-    private static final int LONG = 10;
+    /**
+     * Where "long" starts, for a doc comment on a member.
+     *
+     * A summary line, a blank, and four of reason. Past that it is an essay, and an essay
+     * about one method belongs at the top of the class with the rest of the reasoning.
+     * Only members are counted: a class doc is where the long explanation is meant to be.
+     */
+    private static final int LONG = 8;
 
     /** How many long ones there still are. It goes down. */
-    private static final int LONG_ONES_ALLOWED = 206;
+    private static final int LONG_ONES_ALLOWED = 118;
 
     public static int run(PrintStream out) {
         out.println();
@@ -83,8 +89,11 @@ public final class CommentTest {
                 boolean opensDoc = line.startsWith("/**");
                 boolean opensBlock = line.startsWith("/*");
                 boolean closes = line.contains("*/");
+                // Indented, which is what tells a member's doc from a class's. A class
+                // sits at the left margin and its doc does too.
+                boolean onAMember = opensDoc && !lines[i].startsWith("/");
 
-                if (opensDoc && !closes) {
+                if (opensDoc && !closes && onAMember) {
                     inDoc = true;
                     docFrom = i + 1;
                     docLines = 1;
@@ -116,8 +125,8 @@ public final class CommentTest {
         int share = comment + code == 0 ? 0 : comment * 100 / (comment + code);
         out.println("      " + comment + " lines of comment against " + code + " of code, "
                     + share + " per cent");
-        out.println("      " + longOnes + " doc comments of " + LONG + " lines or more, and "
-                    + LONG_ONES_ALLOWED + " allowed");
+        out.println("      " + longOnes + " doc comments on members of " + LONG
+                    + " lines or more, and " + LONG_ONES_ALLOWED + " allowed");
 
         failures += check(out, "no more essays are written than were before",
             longOnes <= LONG_ONES_ALLOWED);
