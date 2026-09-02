@@ -203,6 +203,28 @@ public final class WindowServer {
      * somebody double-clicked a document it handles while it was already running.
      */
     public static final String EVENT_OPEN_FILES = "openFiles";
+
+    /**
+     * Which of these commands can be done right now?
+     *
+     * Cocoa asks this by sending validateMenuItem: to whatever would perform the command,
+     * every time a menu is about to open. It can, because the menu and the program are in
+     * one process. Here the menu is drawn by the desktop and the program is somewhere else,
+     * so the question has to be carried, and it goes as an event like everything else:
+     * these are the commands in the menu somebody just clicked, say which of them are live.
+     *
+     * Asked once for a whole menu rather than once an item. A menu is opened by a mouse
+     * going down and has to be right by the time it is drawn, so what matters is the number
+     * of round trips and not the number of questions in one.
+     *
+     * The program never sees this. It answers from what it has said it can do, the same way
+     * a Cocoa program answers by having implemented the action or not, so nothing has to be
+     * written twice and a menu cannot disagree with the program about what exists.
+     */
+    public static final String EVENT_VALIDATE = "validate";
+
+    /** The answer, coming back the other way: the commands that can be done. */
+    public static final String VALIDATED = "validated";
     public static final String EVENT_NONE = "none";
 
     private static WindowServer instance;
@@ -287,6 +309,7 @@ public final class WindowServer {
         private JMenu build(Nib.Menu described) {
             JMenu menu = new JMenu(described.title().toString());
             menu.getAccessibleContext().setAccessibleName(described.title().toString());
+            Map<JMenuItem, String> commands = new LinkedHashMap<>();
             for (Nib.MenuItem item : described.items()) {
                 if (item.separator()) {
                     menu.addSeparator();
@@ -296,6 +319,8 @@ public final class WindowServer {
                 KeyStroke stroke = strokeOf(item);
                 if (stroke != null) made.setAccelerator(stroke);
                 made.setEnabled(item.enabled());
+                String action = item.action() == null ? "" : item.action().toString();
+                if (!action.isEmpty()) commands.put(made, action);
                 made.addActionListener(e -> post(application, Message.of(EVENT)
                     .put("event", EVENT_MENU)
                     .put("window", (long) id)
@@ -304,7 +329,35 @@ public final class WindowServer {
                     .put("action", item.action() == null ? "" : item.action())));
                 menu.add(made);
             }
+            askAsItOpens(menu, commands);
             return menu;
+        }
+
+        /**
+         * Asks the program which of this menu's commands are live, as the menu opens.
+         *
+         * Until this, a description said whether an item was enabled and that was the last
+         * anybody heard of it: Save stayed black in a program with nothing to save, Undo
+         * stayed black with nothing to undo, and choosing one sent the program a command it
+         * would ignore. A menu that offers what cannot be done teaches people not to read it.
+         *
+         * Only items with an action are asked about. An item with none opens a submenu or is
+         * a label, and neither is something a program can be asked whether it can do.
+         */
+        private void askAsItOpens(JMenu menu, Map<JMenuItem, String> commands) {
+            if (commands.isEmpty()) return;
+            menu.addMenuListener(new javax.swing.event.MenuListener() {
+                @Override public void menuSelected(javax.swing.event.MenuEvent e) {
+                    java.util.Set<String> live =
+                        whatCanBeDone(application, new ArrayList<>(commands.values()));
+                    if (live == null) return;          // nobody answered; leave it as it was
+                    for (Map.Entry<JMenuItem, String> one : commands.entrySet()) {
+                        one.getKey().setEnabled(live.contains(one.getValue()));
+                    }
+                }
+                @Override public void menuDeselected(javax.swing.event.MenuEvent e) { }
+                @Override public void menuCanceled(javax.swing.event.MenuEvent e) { }
+            });
         }
     }
 
@@ -387,6 +440,7 @@ public final class WindowServer {
                 case SET_EDITED -> setEdited(request);
                 case SET_ENABLED -> setEnabled(request);
                 case NEXT_EVENT -> nextEvent(request);
+                case VALIDATED -> validated(request);
                 case LIST -> listWindows();
                 case ASK -> ask(request);
                 case TELL -> tell(request);
@@ -759,6 +813,69 @@ public final class WindowServer {
 
     private void post(String application, Message event) {
         deliver(application, event);
+    }
+
+    /* --------------------------------------------- asking whether a command is live */
+
+    /** How long a menu will wait for the program whose menu it is to answer. */
+    public static final long VALIDATION_WAIT_MILLIS = 250;
+
+    private final Map<Long, java.util.concurrent.CompletableFuture<java.util.Set<String>>>
+        validations = new ConcurrentHashMap<>();
+    private final java.util.concurrent.atomic.AtomicLong tickets =
+        new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * Asks a program which of these commands it can do, and waits for the answer.
+     *
+     * Waits, because the menu is opening: a menu that greyed its items a moment after a
+     * person could see them would be worse than one that never greyed them, since by then
+     * they may have clicked. Cocoa waits too; it is a method call there and the wait is
+     * nothing, and here it is a pipe and the wait is nearly nothing.
+     *
+     * A program that does not answer in a quarter of a second is one that has stopped
+     * answering, and its menus stay as the description left them. That is the same thing a
+     * Mac does with a program that has stopped: the menus are still there and still say what
+     * the program said they would.
+     *
+     * Answers nothing at all when there was no answer, which is different from an answer
+     * that nothing can be done.
+     */
+    private java.util.Set<String> whatCanBeDone(String application, List<String> actions) {
+        if (actions.isEmpty()) return java.util.Set.of();
+        long ticket = tickets.incrementAndGet();
+        java.util.concurrent.CompletableFuture<java.util.Set<String>> answer =
+            new java.util.concurrent.CompletableFuture<>();
+        validations.put(ticket, answer);
+        try {
+            boolean listening = deliver(application, Message.of(EVENT)
+                .put("event", EVENT_VALIDATE)
+                .put("ticket", ticket)
+                .put("actions", new ArrayList<>(actions)));
+            if (!listening) return null;
+            return answer.get(VALIDATION_WAIT_MILLIS,
+                              java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (Exception noAnswer) {
+            return null;
+        } finally {
+            validations.remove(ticket);
+        }
+    }
+
+    /**
+     * A program saying which of the commands it was asked about are live.
+     *
+     * Never touches the screen, and must not: the thread that asked is the one drawing the
+     * menu, and it is waiting here. Hopping to it to deliver the answer would be waiting for
+     * the thread that is waiting for this.
+     */
+    private Message validated(Message request) {
+        java.util.concurrent.CompletableFuture<java.util.Set<String>> waiting =
+            validations.get(request.integer("ticket", -1));
+        if (waiting != null) {
+            waiting.complete(new java.util.HashSet<>(request.strings("enabled")));
+        }
+        return Message.of(VALIDATED).put("ok", Boolean.TRUE);
     }
 
     /** The same, saying whether there was anybody listening. */

@@ -209,6 +209,12 @@ public final class SelfTest {
         int undoFailures = UndoTest.run(System.out);
         if (undoFailures > 0) failures.add(undoFailures + " undo checks failed");
 
+        steps += MenuValidationTest.count();
+        int validationFailures = MenuValidationTest.run(desktop, System.out);
+        if (validationFailures > 0) {
+            failures.add(validationFailures + " menu validation checks failed");
+        }
+
         steps += DragTest.count();
         int dragFailures = DragTest.run(System.out);
         if (dragFailures > 0) failures.add(dragFailures + " dragging checks failed");

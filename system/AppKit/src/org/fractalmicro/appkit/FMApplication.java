@@ -379,6 +379,39 @@ public final class FMApplication implements AutoCloseable {
     }
 
     /**
+     * Whether a command can be done right now.
+     *
+     * This is NSMenuValidation, and it is asked as a menu opens rather than answered once
+     * when the menu is described. Save is live when there is something to save and grey
+     * when there is not, and the difference is a question that only the program can answer
+     * and only at the moment it is asked.
+     *
+     * A program that says nothing here still gets the first half of it right, because the
+     * default is the one Cocoa uses: a command is live when the program has said what it
+     * does and grey when it has not. That is the whole of the old lie, gone without anybody
+     * writing anything. What is left for a program to say is the part that changes while it
+     * runs, and it says it by answering this.
+     */
+    public interface Validator {
+        boolean canPerform(FMString action);
+    }
+
+    private Validator validator;
+
+    /** Says how to answer whether a command can be done. */
+    public FMApplication onValidate(Validator validator) {
+        this.validator = validator;
+        return this;
+    }
+
+    /** Whether this command is live, which is what the menu bar is about to draw. */
+    public boolean canPerform(FMString action) {
+        if (action == null || action.isEmpty()) return false;
+        if (!handlers.containsKey(action)) return false;
+        return validator == null || validator.canPerform(action);
+    }
+
+    /**
      * Why the last thing this program asked for did not work.
      *
      * A failure here is a value rather than a throw. Almost everything that can go wrong
@@ -772,6 +805,14 @@ public final class FMApplication implements AutoCloseable {
             .put("timeout", (long) waitMillis));
         String kind = reply.string("event", WindowServer.EVENT_NONE);
         if (WindowServer.EVENT_NONE.equals(kind)) return null;
+        // Answered here and never handed on. A program is asked whether a command can be
+        // done, not told that somebody asked: Cocoa makes this a method it calls on the
+        // program and not an event the program has to know to expect, and a program that
+        // had to remember to answer it would be a program whose menus lie by default.
+        if (WindowServer.EVENT_VALIDATE.equals(kind)) {
+            sayWhatCanBeDone(reply);
+            return null;
+        }
         // A menu command names the item it came from where a control names itself, so
         // both arrive the same shape and a program handles them the same way.
         String from = WindowServer.EVENT_MENU.equals(kind)
@@ -786,6 +827,23 @@ public final class FMApplication implements AutoCloseable {
                          reply.get("value"),
                          FMString.of(reply.string("folder", "")),
                          files.asArray());
+    }
+
+    /**
+     * Answers which of the commands in a menu that is opening can be done.
+     *
+     * The menu bar is waiting on this, so it does no work beyond asking: whether a command
+     * is live has to be something the program already knows, or the menu would be slower
+     * than the mouse.
+     */
+    private void sayWhatCanBeDone(Message asking) throws IOException {
+        java.util.List<String> live = new java.util.ArrayList<>();
+        for (String action : asking.strings("actions")) {
+            if (canPerform(FMString.of(action))) live.add(action);
+        }
+        connection().send(Message.of(WindowServer.VALIDATED)
+            .put("ticket", asking.integer("ticket", -1))
+            .put("enabled", live));
     }
 
     /** Hands one event to whatever said it wanted it. */

@@ -1,0 +1,258 @@
+/*CDDL HEADER START
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://illumos.org/license/CDDL.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information:
+ *
+ * CDDL HEADER END
+ * Copyright (C) 2026 by Fractal Microsystems, Inc.
+ * Use is subject to license terms.
+ */
+package org.fractalmicro.a11y;
+
+import org.fractalmicro.appkit.AppWindow;
+import org.fractalmicro.appkit.FMApplication;
+import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.nib.Nib;
+import org.fractalmicro.windowserver.Desktop;
+import org.fractalmicro.windowserver.WindowServer;
+
+import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import java.io.PrintStream;
+import java.util.List;
+
+/**
+ * Menus that stop lying about a program in another process.
+ *
+ * A menu in Cocoa is asked, every time it opens, which of its items can be used. It asks
+ * whatever would perform the command, which is a method call, because the menu and the
+ * program are the same process. Here they are not: the desktop draws the menu and the
+ * program is somewhere else, so the question has to be carried.
+ *
+ * Until it was, a description said whether an item was enabled and that was the last anybody
+ * heard of it. Save stayed black in a program with nothing to save. Choosing it sent a
+ * command the program ignored, and what that looks like from the outside is Save doing
+ * nothing, which is the worst answer a menu can give.
+ *
+ * The default is the one that matters most and costs a program nothing: an item is live when
+ * the program has said what it does. Everything after that is a program answering for
+ * itself, and the last check here is the one that says what happens when it does not answer
+ * at all, since a program that has stopped is the case where a menu bar could freeze.
+ */
+public final class MenuValidationTest {
+    private MenuValidationTest() {}
+
+    public static int count() { return 8; }
+
+    public static int run(Desktop desktop, PrintStream out) {
+        int failures = 0;
+        out.println();
+        out.println("menus that ask the program:");
+
+        WindowServer server = WindowServer.sharedServer();
+        if (!server.start() && !server.isRunning()) {
+            out.println("FAIL  the window server is not running");
+            return count();
+        }
+
+        Thread loop = null;
+        FMApplication app = FMApplication.named(FMString.of("Validating"));
+        try {
+            // A program with two of the three commands. Print is in its menu and it has
+            // never said what Print does, which is the lie this is about.
+            app.on(FMString.of("save"), e -> { });
+            app.on(FMString.of("close"), e -> { });
+            app.showWindow(new Nib.Builder()
+                .title(FMString.of("Validating")).size(320, 200)
+                .menu(FMString.of("File"),
+                      Nib.MenuItem.of(FMString.of("Save"), FMString.of("save"), FMString.EMPTY),
+                      Nib.MenuItem.of(FMString.of("Print"), FMString.of("print"), FMString.EMPTY),
+                      Nib.MenuItem.of(FMString.of("Close"), FMString.of("close"), FMString.EMPTY))
+                .build());
+            drain();
+
+            // Its run loop, which is what answers. A program that is not reading events is
+            // a program that has stopped, and the last check turns this off to be one.
+            loop = new Thread(app::run, "validating");
+            loop.setDaemon(true);
+            loop.start();
+
+            JMenu file = menuOf(desktop, "Validating", "File");
+            if (file == null) {
+                out.println("FAIL  the program's menu reached the bar");
+                return count();
+            }
+            failures += check(out, "the program's menu reached the bar", true);
+
+            open(file);
+            failures += check(out, "a command the program has is live",
+                enabled(file, "Save") && enabled(file, "Close"));
+            failures += check(out, "and one it has never heard of is not",
+                !enabled(file, "Print"));
+
+            // What the program says for itself, which is the half that changes while it
+            // runs. Nothing has been typed, so there is nothing to save.
+            boolean[] anythingToSave = {false};
+            app.onValidate(action ->
+                !action.sameAs(FMString.of("save")) || anythingToSave[0]);
+
+            open(file);
+            failures += check(out, "with nothing to save, Save is grey",
+                !enabled(file, "Save") && enabled(file, "Close"));
+
+            anythingToSave[0] = true;
+            open(file);
+            failures += check(out, "and once there is, it is not",
+                enabled(file, "Save"));
+
+            // A program that has stopped answering. Its menus stay as they were rather than
+            // emptying out, and the bar waits a quarter of a second at most for it.
+            app.stop();
+            loop.join(2000);
+            long started = System.nanoTime();
+            open(file);
+            long waited = (System.nanoTime() - started) / 1_000_000;
+            failures += check(out, "a program that has stopped does not hold up its own menu",
+                waited < WindowServer.VALIDATION_WAIT_MILLIS * 4);
+            failures += check(out, "and its menu keeps what it last said",
+                enabled(file, "Save") && enabled(file, "Close"));
+        } catch (Exception e) {
+            out.println("FAIL  menus that ask the program: " + e);
+            failures++;
+        } finally {
+            app.stop();
+            if (loop != null) {
+                try { loop.join(2000); } catch (InterruptedException ignored) { }
+            }
+            // The window as well as the connection. A window left open owns the menu bar
+            // while it is in front, and the bar would then be this check's menus for the
+            // rest of the run rather than the file manager's.
+            app.close(app.mainWindow());
+            app.close();
+            drain();
+        }
+
+        failures += checkAShippedProgram(desktop, out);
+
+        out.println("      " + (failures == 0 ? "a menu says what the program says"
+                                              : failures + " failed"));
+        return failures;
+    }
+
+    /**
+     * A program this system actually ships, started for real and asked about its own menus.
+     *
+     * The rest of this is a program written to be asked. This is the one that would catch
+     * the change going wrong in the direction that matters: the new default greys a command
+     * the program has never said it can do, so a program whose menus name one set of commands
+     * and whose code answers to another would come up with everything grey, and every check
+     * above would still pass.
+     *
+     * TextEdit because it has the most commands and the most that depend on the moment. A
+     * machine where it will not start says so and checks nothing, rather than failing for a
+     * reason that is not about menus.
+     */
+    private static int checkAShippedProgram(Desktop desktop, PrintStream out) {
+        if (!org.fractalmicro.bundle.Bundles.openIdentifier("org.fractalmicro.textedit")) {
+            out.println("      TextEdit will not start here, so its menus are not asked");
+            return 0;
+        }
+        JInternalFrame window = null;
+        for (int tries = 0; tries < 60 && window == null; tries++) {
+            drain();
+            window = windowOf(desktop, "TextEdit");
+            if (window == null) {
+                try { Thread.sleep(100); } catch (InterruptedException ignored) { }
+            }
+        }
+        if (window == null) {
+            out.println("      TextEdit put no window up here, so its menus are not asked");
+            return 0;
+        }
+        try {
+            JMenu file = menuNamed((AppWindow) window, "File");
+            if (file == null) {
+                out.println("      TextEdit brought no File menu, so nothing was asked");
+                return 0;
+            }
+            open(file);
+            int live = 0;
+            for (int i = 0; i < file.getItemCount(); i++) {
+                JMenuItem item = file.getItem(i);
+                if (item != null && item.isEnabled()) live++;
+            }
+            if (live == 0) out.println("      every item in TextEdit's File menu came back grey");
+            return check(out, "a program this system ships answers about its own menus", live > 0);
+        } finally {
+            // Shut again, because a window left open owns the menu bar while it is in
+            // front, and everything checked after this would be reading TextEdit's menus
+            // where it meant to read the file manager's.
+            JInternalFrame open = window;
+            try {
+                javax.swing.SwingUtilities.invokeAndWait(open::doDefaultCloseAction);
+            } catch (Exception ignored) { }
+            drain();
+        }
+    }
+
+    /** Opens a menu, which is the moment the question is asked. */
+    private static void open(JMenu menu) {
+        menu.setSelected(true);
+        menu.setSelected(false);
+    }
+
+    private static boolean enabled(JMenu menu, String title) {
+        for (int i = 0; i < menu.getItemCount(); i++) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && title.equals(item.getText())) return item.isEnabled();
+        }
+        return false;
+    }
+
+    /** The named menu of the named program, as the bar would build it. */
+    private static JMenu menuOf(Desktop desktop, String application, String title) {
+        JInternalFrame frame = windowOf(desktop, application);
+        return frame == null ? null : menuNamed((AppWindow) frame, title);
+    }
+
+    private static JMenu menuNamed(AppWindow window, String title) {
+        for (JMenu menu : window.applicationMenus()) {
+            if (title.equals(menu.getText())) return menu;
+        }
+        return null;
+    }
+
+    /** A window belonging to the named program. */
+    private static JInternalFrame windowOf(Desktop desktop, String application) {
+        for (JInternalFrame frame : desktop.windows()) {
+            if (frame instanceof AppWindow window
+                    && application.equals(window.applicationName())) {
+                return frame;
+            }
+        }
+        return null;
+    }
+
+    /** Lets the screen catch up, since the window is made on the main thread. */
+    private static void drain() {
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+        } catch (Exception ignored) { }
+    }
+
+    private static int check(PrintStream out, String what, boolean ok) {
+        out.println((ok ? "ok    " : "FAIL  ") + what);
+        return ok ? 0 : 1;
+    }
+}

@@ -203,6 +203,42 @@ told a window it has never heard of has closed while its own button press is rea
 other. Events belong to the program whose window they came from, and a program says who it
 is when it asks for the next one.
 
+## Menus that ask the program
+
+A menu in Cocoa is asked, every time it opens, which of its items can be used. It asks
+whatever would perform the command, which is a method call, because the menu and the program
+are one process. Here they are not. The desktop draws the menu and the program is somewhere
+else, so the question is carried: as a menu opens, the window server sends the program the
+list of commands in it and waits for the list that comes back.
+
+Once for a whole menu rather than once an item. A menu is opened by a mouse going down and
+has to be right by the time it is drawn, so what matters is the number of round trips and
+not the number of questions in one.
+
+The default costs a program nothing and is most of the value. A command is live when the
+program has said what it does and grey when it has not, which is the same rule Cocoa uses,
+where an item is grey when nobody in the responder chain implements its action. That alone
+removes the whole of the old lie: before this, a description said whether an item was
+enabled and that was the last anybody heard of it, so Save stayed black in a program with
+nothing to save and choosing it sent a command the program ignored. What a menu did then,
+seen from outside, was nothing.
+
+What is left for a program to say is the part that changes while it runs, and it says it by
+answering `onValidate`:
+
+```java
+app.onValidate(action -> !action.sameAs(SAVE) || document.hasChanges());
+```
+
+A program that does not answer within a quarter of a second is one that has stopped
+answering, and its menus stay as the description left them. That is what a Mac does with a
+program that has stopped too: the menus are still there and still say what the program said
+they would.
+
+The answer is never handed to the program as an event. It is a question the program answers,
+not news it has to know to expect, because a program that had to remember to answer would be
+a program whose menus lie by default.
+
 ## The desktop
 
 The desktop shows `%USERPROFILE%\Desktop-Folder`, created on first run, plus whichever
