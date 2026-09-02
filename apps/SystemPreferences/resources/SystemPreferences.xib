@@ -21,73 +21,73 @@
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Hard disks on the desktop"/>
                         <accessibility key="accessibilityLabel" label="Hard disks on the desktop"/>
-                        <connections><action selector="hard disks"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowHardDrivesOnDesktop"/></connections>
                     </button>
                     <button id="external disks" type="check">
                         <rect key="frame" x="178" y="42" width="420" height="22"/>
                         <buttonCell key="cell" title="External disks on the desktop"/>
                         <accessibility key="accessibilityLabel" label="External disks on the desktop"/>
-                        <connections><action selector="external disks"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowExternalHardDrivesOnDesktop"/></connections>
                     </button>
                     <button id="removable media" type="check">
                         <rect key="frame" x="178" y="68" width="420" height="22"/>
                         <buttonCell key="cell" title="CDs, DVDs and iPods on the desktop"/>
                         <accessibility key="accessibilityLabel" label="CDs, DVDs and iPods on the desktop"/>
-                        <connections><action selector="removable media"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowRemovableMediaOnDesktop"/></connections>
                     </button>
                     <button id="servers" type="check">
                         <rect key="frame" x="178" y="94" width="420" height="22"/>
                         <buttonCell key="cell" title="Connected servers on the desktop"/>
                         <accessibility key="accessibilityLabel" label="Connected servers on the desktop"/>
-                        <connections><action selector="servers"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowMountedServersOnDesktop"/></connections>
                     </button>
                     <button id="sidebar devices" type="check">
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Devices in the sidebar"/>
                         <accessibility key="accessibilityLabel" label="Devices in the sidebar"/>
-                        <connections><action selector="sidebar devices"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowDevicesInSidebar"/></connections>
                     </button>
                     <button id="sidebar places" type="check">
                         <rect key="frame" x="178" y="42" width="420" height="22"/>
                         <buttonCell key="cell" title="Places in the sidebar"/>
                         <accessibility key="accessibilityLabel" label="Places in the sidebar"/>
-                        <connections><action selector="sidebar places"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowPlacesInSidebar"/></connections>
                     </button>
                     <button id="sidebar search" type="check">
                         <rect key="frame" x="178" y="68" width="420" height="22"/>
                         <buttonCell key="cell" title="Search For in the sidebar"/>
                         <accessibility key="accessibilityLabel" label="Search For in the sidebar"/>
-                        <connections><action selector="sidebar search"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowSearchForInSidebar"/></connections>
                     </button>
                     <button id="all extensions" type="check">
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Show all filename extensions"/>
                         <accessibility key="accessibilityLabel" label="Show all filename extensions"/>
-                        <connections><action selector="all extensions"/></connections>
+                        <connections><binding name="value" keyPath="values.global.AppleShowAllExtensions"/></connections>
                     </button>
                     <button id="warn on trash" type="check">
                         <rect key="frame" x="178" y="42" width="420" height="22"/>
                         <buttonCell key="cell" title="Show warning before emptying the Trash"/>
                         <accessibility key="accessibilityLabel" label="Show warning before emptying the Trash"/>
-                        <connections><action selector="warn on trash"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.WarnOnEmptyTrash"/></connections>
                     </button>
                     <button id="system icons" type="check">
                         <rect key="frame" x="178" y="68" width="420" height="22"/>
                         <buttonCell key="cell" title="Use Windows icons for applications"/>
                         <accessibility key="accessibilityLabel" label="Use Windows icons for applications"/>
-                        <connections><action selector="system icons"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.UseWindowsIconsForApplications"/></connections>
                     </button>
                     <button id="show labels" type="check">
                         <rect key="frame" x="178" y="94" width="420" height="22"/>
                         <buttonCell key="cell" title="Show labels behind names"/>
                         <accessibility key="accessibilityLabel" label="Show labels behind names"/>
-                        <connections><action selector="show labels"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.ShowLabels"/></connections>
                     </button>
                     <button id="spring loaded" type="check">
                         <rect key="frame" x="178" y="120" width="420" height="22"/>
                         <buttonCell key="cell" title="Spring-loaded folders and windows"/>
                         <accessibility key="accessibilityLabel" label="Spring-loaded folders and windows" help="Resting a drag on a folder opens it"/>
-                        <connections><action selector="spring loaded"/></connections>
+                        <connections><binding name="value" keyPath="values.finder.SpringingEnabled"/></connections>
                     </button>
                     <textField id="spring delay label" editable="NO">
                         <rect key="frame" x="198" y="146" width="120" height="22"/>
@@ -103,13 +103,13 @@
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Use white on black"/>
                         <accessibility key="accessibilityLabel" label="Use white on black"/>
-                        <connections><action selector="white on black"/></connections>
+                        <connections><binding name="value" keyPath="values.access.whiteOnBlack"/></connections>
                     </button>
                     <button id="magnification" type="check">
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Magnification"/>
                         <accessibility key="accessibilityLabel" label="Magnification"/>
-                        <connections><action selector="magnification"/></connections>
+                        <connections><binding name="value" keyPath="values.dock.magnification"/></connections>
                     </button>
                     <textField id="dock size label" editable="NO">
                         <rect key="frame" x="178" y="42" width="120" height="22"/>
@@ -119,7 +119,7 @@
                     <slider id="dock size" minValue="16" maxValue="128">
                         <rect key="frame" x="178" y="68" width="240" height="28"/>
                         <accessibility key="accessibilityLabel" label="Dock size" help="How big the Dock's icons are"/>
-                        <connections><action selector="dock size"/></connections>
+                        <connections><binding name="value" keyPath="values.dock.tilesize"/></connections>
                     </slider>
                 </subviews>
             </view>

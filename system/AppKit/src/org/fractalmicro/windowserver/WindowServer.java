@@ -25,6 +25,7 @@ import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.core.Log;
 import org.fractalmicro.nib.Nib;
+import org.fractalmicro.os.FMUserDefaultsController;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.windowserver.Desktop;
 import org.fractalmicro.xpc.Message;
@@ -451,6 +452,7 @@ public final class WindowServer {
             if (control.description() != null && !control.description().isBlank()) {
                 one.getAccessibleContext().setAccessibleDescription(control.description().toString());
             }
+            bind(one, control.boundTo());
             made.put(control.identifier().toString(), one);
             window.controls.put(control.identifier().toString(), one);
             if (control.defaultButton() && one instanceof JButton button) defaultButton = button;
@@ -521,6 +523,48 @@ public final class WindowServer {
             return;
         }
         parent.add(child);
+    }
+
+    /**
+     * Joins a control to the setting it shows, if it named one.
+     *
+     * Done here rather than by the program: the control reads the setting, writes it and
+     * hears it change, and the program has no code that could get it wrong. The hearing
+     * crosses processes, since a setting written anywhere is announced everywhere.
+     */
+    private void bind(JComponent control, FMString keyPath) {
+        if (keyPath == null || !FMUserDefaultsController.isSetting(keyPath)) return;
+        apply(control, FMUserDefaultsController.value(keyPath));
+
+        if (control instanceof JCheckBox box) {
+            box.addActionListener(e -> {
+                if (settingFromTheProgram) return;
+                FMUserDefaultsController.setValue(keyPath, box.isSelected());
+            });
+        } else if (control instanceof JSlider slider) {
+            slider.addChangeListener(e -> {
+                if (settingFromTheProgram || slider.getValueIsAdjusting()) return;
+                FMUserDefaultsController.setValue(keyPath, (long) slider.getValue());
+            });
+        } else if (control instanceof javax.swing.text.JTextComponent field) {
+            field.addFocusListener(new java.awt.event.FocusAdapter() {
+                @Override public void focusLost(java.awt.event.FocusEvent e) {
+                    if (!settingFromTheProgram) {
+                        FMUserDefaultsController.setValue(keyPath, field.getText());
+                    }
+                }
+            });
+        }
+
+        org.fractalmicro.os.FMUserDefaults.onChange((domain, key) -> {
+            if (!FMUserDefaultsController.names(keyPath, domain, key)) return;
+            onSwingLater(() -> apply(control, FMUserDefaultsController.value(keyPath)));
+        });
+    }
+
+    private void onSwingLater(Runnable what) {
+        if (SwingUtilities.isEventDispatchThread()) what.run();
+        else SwingUtilities.invokeLater(what);
     }
 
     /**

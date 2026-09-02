@@ -182,6 +182,12 @@ public final class Xib {
         Element access = firstChild(e, "accessibility");
         Element connections = firstChild(e, "connections");
         Element action = connections == null ? null : firstChild(connections, "action");
+        // A binding sits beside the action, in the same connections element, because the
+        // two are the same kind of thing: something the control is joined to that nobody
+        // had to write code for.
+        Element binding = connections == null ? null : firstChild(connections, "binding");
+        FMString boundTo = binding == null
+            ? FMString.EMPTY : FMString.of(attribute(binding, "keyPath"));
 
         FMMutableArray<FMString> choices = FMMutableArray.empty();
         Element items = firstChild(e, "items");
@@ -205,7 +211,7 @@ public final class Xib {
             // A slider says where its two ends are, the way a nib always has. Anything
             // else has no use for them and gets the pair everything used to have.
             null, number(e, "minValue", 0), number(e, "maxValue", 100),
-            choices.asArray(), isDefault, FMString.EMPTY);
+            choices.asArray(), isDefault, FMString.EMPTY, boundTo);
     }
 
     private static Nib.ControlClass kindOf(Element e) {
@@ -364,9 +370,17 @@ public final class Xib {
             }
             sb.append("                        </items>\n");
         }
-        if (!c.action().isEmpty()) {
-            sb.append("                        <connections><action selector=\"")
-              .append(quote(c.action().toString())).append("\"/></connections>\n");
+        if (!c.action().isEmpty() || !c.boundTo().isEmpty()) {
+            sb.append("                        <connections>");
+            if (!c.action().isEmpty()) {
+                sb.append("<action selector=\"")
+                  .append(quote(c.action().toString())).append("\"/>");
+            }
+            if (!c.boundTo().isEmpty()) {
+                sb.append("<binding name=\"value\" keyPath=\"")
+                  .append(quote(c.boundTo().toString())).append("\"/>");
+            }
+            sb.append("</connections>\n");
         }
         // What is inside it, nested, because that is how a view holding views is written.
         // The description this came from is flat and each child names its parent; here the
@@ -461,7 +475,7 @@ public final class Xib {
                 said(table, c.identifier(), "accessibilityHelp", c.description()),
                 c.text() == null ? null : said(table, c.identifier(), "title", c.text()),
                 c.action(), c.x(), c.y(), c.width(), c.height(), c.value(),
-                c.from(), c.to(), c.choices(), c.defaultButton(), c.in()));
+                c.from(), c.to(), c.choices(), c.defaultButton(), c.in(), c.boundTo()));
         }
 
         FMMutableArray<Nib.Menu> menus = FMMutableArray.empty();

@@ -50,15 +50,13 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
     private static final FMString PANES = FMString.of("panes");
 
     /**
-     * One switch: which control it is, which pane it is on, and what it reads and writes.
+     * One switch: which control it is and which pane it is on.
      *
-     * No words. Those are in the interface file, which is where somebody translating reads
-     * them. They used to be here as well, in a field nothing ever read: two copies of a
-     * label that can disagree, with no way to tell which is on the screen.
+     * Nothing about what it means. The words are in the interface file and so is the
+     * setting it shows, and all that is left here is which pane to put it on, because the
+     * description has no notion of a pane yet.
      */
-    private record Switch(FMString id, FMString pane,
-                          java.util.function.BooleanSupplier reads,
-                          java.util.function.Consumer<Boolean> writes) {}
+    private record Switch(FMString id, FMString pane) {}
 
     private static final FMString DESKTOP = FMString.of("Desktop");
     private static final FMString SIDEBAR = FMString.of("Sidebar");
@@ -70,45 +68,28 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
         FMArray.of(DESKTOP, SIDEBAR, ADVANCED, APPEARANCE, DOCK);
 
     private static final Switch[] SWITCHES = {
-        sw(FMString.of("hard disks"), DESKTOP,
-           FinderSettings::showHardDisks, FinderSettings::setShowHardDisks),
-        sw(FMString.of("external disks"), DESKTOP,
-           FinderSettings::showExternalDisks, FinderSettings::setShowExternalDisks),
-        sw(FMString.of("removable media"), DESKTOP,
-           FinderSettings::showRemovableMedia, FinderSettings::setShowRemovableMedia),
-        sw(FMString.of("servers"), DESKTOP,
-           FinderSettings::showServers, FinderSettings::setShowServers),
+        sw(FMString.of("hard disks"), DESKTOP),
+        sw(FMString.of("external disks"), DESKTOP),
+        sw(FMString.of("removable media"), DESKTOP),
+        sw(FMString.of("servers"), DESKTOP),
 
-        sw(FMString.of("sidebar devices"), SIDEBAR,
-           FinderSettings::sidebarShowDevices, FinderSettings::setSidebarShowDevices),
-        sw(FMString.of("sidebar places"), SIDEBAR,
-           FinderSettings::sidebarShowPlaces, FinderSettings::setSidebarShowPlaces),
-        sw(FMString.of("sidebar search"), SIDEBAR,
-           FinderSettings::sidebarShowSearch, FinderSettings::setSidebarShowSearch),
+        sw(FMString.of("sidebar devices"), SIDEBAR),
+        sw(FMString.of("sidebar places"), SIDEBAR),
+        sw(FMString.of("sidebar search"), SIDEBAR),
 
-        sw(FMString.of("all extensions"), ADVANCED,
-           FinderSettings::showAllExtensions, FinderSettings::setShowAllExtensions),
-        sw(FMString.of("warn on trash"), ADVANCED,
-           FinderSettings::warnOnEmptyTrash, FinderSettings::setWarnOnEmptyTrash),
-        sw(FMString.of("system icons"), ADVANCED,
-           FinderSettings::systemIconsForApplications,
-           FinderSettings::setSystemIconsForApplications),
-        sw(FMString.of("show labels"), ADVANCED,
-           FinderSettings::showLabels, FinderSettings::setShowLabels),
-        sw(FMString.of("spring loaded"), ADVANCED,
-           FinderSettings::springLoaded, FinderSettings::setSpringLoaded),
+        sw(FMString.of("all extensions"), ADVANCED),
+        sw(FMString.of("warn on trash"), ADVANCED),
+        sw(FMString.of("system icons"), ADVANCED),
+        sw(FMString.of("show labels"), ADVANCED),
+        sw(FMString.of("spring loaded"), ADVANCED),
 
-        sw(FMString.of("white on black"), APPEARANCE,
-           FinderSettings::highContrast, FinderSettings::setHighContrast),
+        sw(FMString.of("white on black"), APPEARANCE),
 
-        sw(FMString.of("magnification"), DOCK,
-           DockSettings::magnification, DockSettings::setMagnification),
+        sw(FMString.of("magnification"), DOCK),
     };
 
-    private static Switch sw(FMString id, FMString pane,
-                             java.util.function.BooleanSupplier reads,
-                             java.util.function.Consumer<Boolean> writes) {
-        return new Switch(id, pane, reads, writes);
+    private static Switch sw(FMString id, FMString pane) {
+        return new Switch(id, pane);
     }
 
     /** The one control that is not a switch: how big the Dock's tiles are. */
@@ -139,18 +120,15 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
             return;
         }
 
-        for (Switch one : SWITCHES) {
-            app.setValue(one.id(), FMNumber.of(one.reads().getAsBoolean()));
-            app.on(one.id(), event -> one.writes().accept(
-                FMNumber.parsing(event.text()) != null
-                && FMNumber.parsing(event.text()).isTrue()));
-        }
-        app.setValue(DOCK_SIZE, FMNumber.of(DockSettings.tileSize()));
-        app.on(DOCK_SIZE, event -> {
-            FMNumber size = FMNumber.parsing(event.text());
-            if (size != null) DockSettings.setTileSize(size.asInteger());
-        });
-
+        // Nothing here reads or writes a setting. Every switch and the Dock size are bound
+        // to theirs in the interface file, so the control reads it, writes it and hears it
+        // change without this program being told, which is what a binding is for. What was
+        // here was fourteen pairs of a getter and a setter, and every one of them was a
+        // chance for the switch and the setting to disagree.
+        //
+        // The delay is the exception, because the slider is in tenths of a second and the
+        // setting is in seconds. Cocoa binds through an NSValueTransformer for exactly
+        // this and there is not one here yet, so it stays wired by hand and says so.
         app.setValue(SPRING_DELAY,
                      FMNumber.of((int) Math.round(FinderSettings.springDelay() * 10)));
         app.on(SPRING_DELAY, event -> {

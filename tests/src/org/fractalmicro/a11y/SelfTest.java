@@ -271,6 +271,10 @@ public final class SelfTest {
             failures.add(responderFailures + " responder checks failed");
         }
 
+        steps += BindingTest.count();
+        int bindingFailures = BindingTest.run(desktop, System.out);
+        if (bindingFailures > 0) failures.add(bindingFailures + " binding checks failed");
+
         steps += LinkingTest.count();
         int linkFailures = LinkingTest.run(System.out);
         if (linkFailures > 0) failures.add(linkFailures + " linking checks failed");

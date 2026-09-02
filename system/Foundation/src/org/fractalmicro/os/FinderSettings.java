@@ -118,6 +118,7 @@ public final class FinderSettings {
         f.applyDefault(SHOW_TOOLBAR, Boolean.TRUE);
         f.applyDefault(SIDEBAR_WIDTH, 180L);
         f.applyDefault(SORT_FOLDERS_FIRST, Boolean.TRUE);
+        f.applyDefault(SHOW_LABELS, Boolean.TRUE);
         f.applyDefault(SPRING_LOADED, Boolean.TRUE);
         f.applyDefault(SPRING_DELAY, 0.5d);
         f.save();

@@ -1,4 +1,48 @@
-# Interface files and the words in them
+# Interface files
+
+## Bindings
+
+A control can say which setting it shows, and from then on nothing else is involved:
+
+```xml
+<button id="show labels" type="check">
+    <buttonCell key="cell" title="Show labels behind names"/>
+    <connections>
+        <binding name="value" keyPath="values.finder.ShowLabels"/>
+    </connections>
+</button>
+```
+
+The control reads the setting when the window opens, writes it when somebody uses it, and
+follows it when something else writes it. The program that described the window is not told
+about any of that and has no code that could get it wrong. A binding sits beside the action
+in the same connections element because the two are the same kind of thing: something the
+control is joined to that nobody had to write code for.
+
+The key path is written the way `NSUserDefaultsController` writes one, `values.` and then the
+setting. There are several preference domains here where a Mac has one, so the domain is the
+middle part: `values.finder.ShowLabels`, `values.global.AppleShowAllExtensions`,
+`values.dock.tilesize`.
+
+Following it across processes is free. A setting written in one program is a distributed
+notification in all of them, so a window bound to something changed elsewhere catches up
+without anything asking it to.
+
+What this took out of System Preferences was a table of fourteen switches, each with a getter
+and a setter, and every one of them a chance for the switch and the setting to disagree. What
+is left in that table is which pane each control is on, because the description has no notion
+of a pane yet.
+
+The one control still wired by hand is the spring-loading delay, because the slider is in
+tenths of a second and the setting is in seconds. Cocoa binds through an `NSValueTransformer`
+for exactly that and there is not one here yet.
+
+**A bound setting needs a registered default.** An unset key reads as nothing, so the control
+comes up empty while the rest of the system goes on using the fallback written in its code:
+the switch says one thing and the machine does another, with no error anywhere. It happened
+to Show Labels the first time this was tried, and there is now a check that reads every
+binding in every interface file and fails when one has nothing to start from.
+ and the words in them
 
 A window is a file, not a function. What is in it and what it is called are separate
 questions, and the second one is answered in a language the reader chose.
