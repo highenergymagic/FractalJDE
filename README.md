@@ -181,6 +181,10 @@ worked out at start-up.
   runs in a process of its own; the rest are loaded into the desktop's process out of their
   own bundles. Each one moves out as the description protocol grows to carry what it draws.
 - Burn folders, burning to disc and the clipboard viewer are named but do nothing.
+- `Fractal.exe` starts a session and waits for it, and does not start another if that one
+  ends. That is fine started by hand and not fine as the Windows shell, where the answer
+  to a desktop falling over would be an empty screen until you log out. Setting the shell
+  is the step that wants a watchdog first, and it is not done here yet.
 
 ## The licence
 

@@ -74,7 +74,13 @@ narration above is what fills the window. The console is the system console: clo
 stops the system, the way closing a terminal stops what was started from it.
 
 **`Fractal.exe`** is a boot screen. Grey, the company mark, a turning indicator, and the
-line the system is on. It is a program of its own, in `tools/launcher`, written in Rust
+line the system is on.
+
+![The boot screen](boot-screen.png)
+
+*Drawn into a file by the launcher itself, which is the only way to look at a window that
+covers the screen.*
+ It is a program of its own, in `tools/launcher`, written in Rust
 with no dependencies at all, because a launcher exists to be the thing on the machine that
 certainly works and every dependency is a way for that to stop being true. Every call it
 makes into Windows is declared in [win.rs](tools/launcher/src/win.rs), the same way the
