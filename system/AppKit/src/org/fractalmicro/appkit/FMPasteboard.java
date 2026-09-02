@@ -82,6 +82,16 @@ public final class FMPasteboard {
         }
     }
 
+    /** Whether there is anything on it that could be pasted as text. */
+    public boolean hasText() {
+        try {
+            return java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                .isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.stringFlavor);
+        } catch (Exception nothingThere) {
+            return false;
+        }
+    }
+
     /** Whether there is anything on it that could be pasted as files. */
     public boolean hasFiles() {
         try {

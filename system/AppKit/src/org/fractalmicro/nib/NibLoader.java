@@ -209,9 +209,9 @@ public final class NibLoader {
             // done now; the description says what this program offers at all, and a
             // command that is not offered cannot become available by being asked about.
             boolean described = !Boolean.FALSE.equals(item.getClientProperty(DESCRIBED));
-            item.setEnabled(described && commands.canPerform(FMString.of(action)));
+            item.setEnabled(described && offer(commands).canPerform(FMString.of(action)));
             if (item instanceof JCheckBoxMenuItem box) {
-                box.setSelected(commands.isOn(FMString.of(action)));
+                box.setSelected(offer(commands).isOn(FMString.of(action)));
             }
         }
     }
@@ -226,6 +226,46 @@ public final class NibLoader {
             if (child instanceof JMenuItem item && item.isEnabled()) return true;
         }
         return false;
+    }
+
+    /**
+     * A menu item is offered along the responder chain, not sent to the program.
+     *
+     * This is what connecting an item to First Responder means: the item names a command
+     * and does not know who will do it. Whatever has the keyboard is asked first, then what
+     * that sits inside, and the program last.
+     */
+    private static Offer offer(Commands commands) {
+        return new Offer(commands);
+    }
+
+    /** The program, at the end of the chain, in the shape a responder is asked in. */
+    private record Offer(Commands commands) implements org.fractalmicro.appkit.FMResponder {
+        @Override public boolean canPerform(FMString action) {
+            return org.fractalmicro.appkit.FMResponderChain.canPerform(action, program());
+        }
+
+        @Override public boolean perform(FMString action) {
+            return org.fractalmicro.appkit.FMResponderChain.sendAction(action, program());
+        }
+
+        @Override public boolean isOn(FMString action) {
+            return org.fractalmicro.appkit.FMResponderChain.isOn(action, program());
+        }
+
+        /** The commands object as the last responder, which is what a program is here. */
+        private org.fractalmicro.appkit.FMResponder program() {
+            return new org.fractalmicro.appkit.FMResponder() {
+                @Override public boolean canPerform(FMString action) {
+                    return commands.canPerform(action);
+                }
+                @Override public boolean perform(FMString action) {
+                    commands.perform(action);
+                    return true;
+                }
+                @Override public boolean isOn(FMString action) { return commands.isOn(action); }
+            };
+        }
     }
 
     /** What an item remembers about itself, so validating one is not a search for it. */
@@ -250,10 +290,10 @@ public final class NibLoader {
 
     private JMenuItem made(Nib.MenuItem item, Commands commands) {
         FMString action = item.action();
-        ActionListener listener = e -> commands.perform(action);
+        ActionListener listener = e -> offer(commands).perform(action);
 
         JMenuItem made = item.checkable()
-            ? new JCheckBoxMenuItem(item.title().toString(), commands.isOn(action))
+            ? new JCheckBoxMenuItem(item.title().toString(), offer(commands).isOn(action))
             : new JMenuItem(item.title().toString());
         made.addActionListener(listener);
         made.setEnabled(item.enabled());

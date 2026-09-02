@@ -27,7 +27,17 @@ import javax.swing.*;
  * A plain text area with the text system in it: {@link FMTextField} for text that runs to
  * more than one line but is not a document. Comment boxes are written in these.
  */
-public class FMTextArea extends JTextArea {
+public class FMTextArea extends JTextArea implements FMResponder {
+
+    /** The editing commands, which mean this text while this has the keyboard. */
+    @Override public boolean canPerform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.canPerform(this, action);
+    }
+
+    @Override public boolean perform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.perform(this, action);
+    }
+
 
     private final FMText.Support support;
 

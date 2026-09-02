@@ -35,7 +35,17 @@ import javax.swing.*;
  * offering to make a document out of the name, and one for a number has no use for
  * spelling. Saying so is one call rather than a different class.
  */
-public class FMTextField extends JTextField {
+public class FMTextField extends JTextField implements FMResponder {
+
+    /** The editing commands, which mean this text while this has the keyboard. */
+    @Override public boolean canPerform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.canPerform(this, action);
+    }
+
+    @Override public boolean perform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.perform(this, action);
+    }
+
 
     private final FMText.Support support;
 

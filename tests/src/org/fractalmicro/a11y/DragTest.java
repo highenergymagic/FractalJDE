@@ -365,14 +365,9 @@ public final class DragTest {
      * Spring-loaded folders: resting a drag on one opens it, and the window goes back
      * afterwards.
      *
-     * The clock is a timer and what it does when it fires is the part worth checking, so
-     * this asks the view's own destination the two questions the timer asks it: what would
-     * resting here open, and open it. Then it ends the drag the way the drop target does
-     * and looks at where the window is.
-     *
-     * The going back is the half people notice. Without it a drag through four folders
-     * leaves four windows open, which is the thing spring loading exists to save them from,
-     * and it is the half that is easy to leave out because the opening looks finished.
+     * The clock is a timer, so this asks the view's own destination the two questions the
+     * timer asks it: what would resting here open, and open it. The going back is the half
+     * people notice, and the half easy to leave out because the opening looks finished.
      */
     private static int checkSpringing(PrintStream out) {
         int failures = 0;

@@ -203,6 +203,27 @@ told a window it has never heard of has closed while its own button press is rea
 other. Events belong to the program whose window they came from, and a program says who it
 is when it asks for the next one.
 
+## Where a command goes
+
+A command is not sent to a program. It is offered to whatever has the keyboard, and if that
+cannot do it the offer passes to whatever the thing sits inside, and so on out to the program
+itself. The first that can do it does. That is the responder chain, and it is why a menu item
+in Cocoa is connected to First Responder rather than to anything in particular: the item names
+a command and does not know who will do the work.
+
+Copy is the case that shows why. The file manager copies files. A text field copies text.
+Both answer to the same name, and which one happens depends only on where the keyboard is,
+with neither of the two having been told about the other.
+
+Answering no is how the offer passes on, and it matters as much as answering yes. A field
+with nothing selected in it cannot copy, says so, and Copy carries on to the window behind:
+with the cursor in an empty search field, Copy still copies the files that are selected, which
+is what a Mac does.
+
+Before this there was one object per window answering every command, so Copy in the Finder
+copied files whatever had the keyboard, including while somebody was typing in the search
+field with text selected in it.
+
 ## Menus that ask the program
 
 A menu in Cocoa is asked, every time it opens, which of its items can be used. It asks

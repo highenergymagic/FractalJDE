@@ -25,7 +25,17 @@ import javax.swing.*;
  * A text view with the text system in it: the same as {@link FMTextField}, for text that
  * runs to more than a line. Documents are written in these.
  */
-public class FMTextView extends JTextPane {
+public class FMTextView extends JTextPane implements FMResponder {
+
+    /** The editing commands, which mean this text while this has the keyboard. */
+    @Override public boolean canPerform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.canPerform(this, action);
+    }
+
+    @Override public boolean perform(org.fractalmicro.foundation.FMString action) {
+        return FMEditingResponder.perform(this, action);
+    }
+
 
     private final FMText.Support support;
 
