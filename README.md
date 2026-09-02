@@ -32,10 +32,19 @@ The jar starts a small launcher first, which restarts the virtual machine with t
 the rest of it needs. Started any other way it used to half work, and absorbing that is
 what a launcher is for.
 
+Starting takes about a second and a half from nothing to a drawn desktop, and it says where
+it has got to as it goes: to the console when there is one, and to a boot screen when there
+is not. [booting.md](docs/booting.md) has the whole of it.
+
 `sh tools/release.sh` builds what other people get: a 14K kernel jar and `BaseSystem.dmg`,
 a whole system volume in one file. Started, the kernel unpacks the image into `~/.fractaldt`
 if there is nothing there yet, then reads the loader off that volume and boots it. Nothing
 is compiled or assembled on the machine it is installed on, so what shipped is what runs.
+
+The release also carries `Fractal.exe`, a boot screen and a way to find a Java runtime,
+which is the thing to double-click and the thing a Windows `Shell` value would point at. It
+is built by `sh tools/launcher.sh` and wants a Rust compiler; without one the release is
+built without it and everything else still works.
 
 ## What comes with it
 
@@ -50,6 +59,7 @@ The rest is in `docs/`, roughly in the order it makes sense to read.
 | | |
 |---|---|
 | [architecture.md](docs/architecture.md) | images, the loader, processes, the task table |
+| [booting.md](docs/booting.md) | starting: the order, the boot screen, the process tree |
 | [volume.md](docs/volume.md) | the volume, bundles, installing, icons, packaging |
 | [windows.md](docs/windows.md) | the window server, descriptions, the menu bar, the desktop |
 | [interfaces.md](docs/interfaces.md) | interface files, and the words in them |
@@ -67,7 +77,8 @@ The rest is in `docs/`, roughly in the order it makes sense to read.
 system/     the frameworks and the desktop, one directory per image
 apps/       one directory per application, each compiled on its own
 tests/      the checks, which are allowed to see everything
-tools/      build and packaging
+tools/      build and packaging, and the launcher, which is the one thing here
+            that is not written in Java
 ```
 
 An application is compiled against the frameworks and never into them, enforced by the
@@ -121,6 +132,7 @@ keyboard or the mouse.
 | `--native-report` | Prints what the native layer reads from Windows |
 | `--screenshot FILE` | Renders the desktop to a PNG |
 | `--open PATH` | Opens a Finder window on that folder at start-up |
+| `--tasks tree` | Prints what is running, as what started what |
 
 Anything that goes wrong is written to `~/.fractaldt/Users/<user>/Library/Logs/Fractal.log`,
 including how many icons the desktop ended up with and what the drive list returned.
@@ -174,8 +186,8 @@ worked out at start-up.
 
 This is under the Common Development and Distribution License, Version 1.0. The full text
 is in [LICENSE](LICENSE), and the header the licence asks for is at the top of every source
-file. 213 of them, which the self test counts and checks on every run, because a file
-without the header is a licensing problem rather than an untidy one.
+file. 236 of them, Java and Rust both, which the self test counts and checks on every run,
+because a file without the header is a licensing problem rather than an untidy one.
 
 CDDL is a file-level copyleft licence: those files stay under it, and modifications to them
 are returned under it. It is worth being plain about one thing it does not do, since it is

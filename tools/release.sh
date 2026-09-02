@@ -93,12 +93,29 @@ cp build/Kernel.jar "$release/FractalJDE.jar"
 cp build/BaseSystem.dmg "$release/BaseSystem.dmg"
 cp LICENSE "$release/LICENSE" 2>/dev/null || true
 
+# The graphical launcher, when there is a Rust compiler to build it with. It is the nicer
+# way in and not the only one, so a machine without one still produces a release; what it
+# produces is a release you start from a terminal.
+launcher="not built: no Rust compiler on this machine"
+if sh tools/launcher.sh > "$volume-launcher.log" 2>&1; then
+    cp build/Fractal.exe "$release/Fractal.exe"
+    launcher="$(($(wc -c < build/Fractal.exe) / 1024))K"
+else
+    echo "the launcher was not built; the release will not have one:"
+    sed 's/^/  /' "$volume-launcher.log"
+fi
+
 cat > "$release/FractalJDE.cmd" <<CMD
 @echo off
-rem Starts FractalJDE. The kernel installs the system on first run.
+rem Starts FractalJDE and watches it come up.
+rem
+rem java rather than javaw, and in this window, because this is where the system says how
+rem far it has got. Closing the window stops it. For a boot screen instead, run Fractal.exe.
 setlocal
+title Fractal console
 cd /d "%~dp0"
-start "" javaw --enable-preview --enable-native-access=ALL-UNNAMED -jar FractalJDE.jar %*
+java --enable-preview --enable-native-access=ALL-UNNAMED -jar FractalJDE.jar %*
+if errorlevel 1 pause
 endlocal
 CMD
 
@@ -106,7 +123,13 @@ cat > "$release/README.txt" <<TXT
 FractalJDE $version ($build)
 A Mac OS X 10.6 desktop and Finder, by Fractal Microsystems.
 
-Run FractalJDE.cmd, or:
+Two ways in, and they start the same system.
+
+    Fractal.exe        a boot screen, and the log written to
+                       .fractaldt\private\var\log\boot.log
+    FractalJDE.cmd     a console, with the system saying where it has got to in it
+
+or by hand:
 
     java --enable-preview --enable-native-access=ALL-UNNAMED -jar FractalJDE.jar
 
@@ -115,8 +138,12 @@ the system from there. Later runs find it already installed and skip straight to
 starting it. A release with a different build number replaces the system files and
 leaves everything else on the volume alone.
 
-FractalJDE.jar and BaseSystem.dmg have to stay in the same directory: the kernel looks
-for the image beside itself.
+Fractal.exe, FractalJDE.jar and BaseSystem.dmg have to stay in the same directory: the
+kernel looks for the image beside itself, and the launcher for the jar beside itself.
+
+Fractal.exe finds a Java runtime by looking at FRACTAL_JAVA, then a runtime directory
+beside itself, then JAVA_HOME, then the path, then the registry. Set FRACTAL_JAVA to a
+javaw.exe to settle it. "Fractal.exe --where report.txt" writes down what it found.
 
 Needs a Java 21 runtime or newer. The layer that talks to Windows uses the foreign
 function interface, a preview feature on 21, which is what the flags are for.
@@ -133,5 +160,6 @@ kernel=$(wc -c < build/Kernel.jar | tr -d ' ')
 image=$(wc -c < build/BaseSystem.dmg | tr -d ' ')
 echo "released build/$archive"
 echo "  kernel        $((kernel / 1024))K"
+echo "  launcher      $launcher"
 echo "  base image    $((image / 1024))K, $(find "$volume" -type f | wc -l | tr -d ' ') files"
 echo "  applications  $( find "$volume" -maxdepth 5 -name '*.app' | wc -l | tr -d ' ')"

@@ -140,6 +140,24 @@ PID   Host   Kind        State     Memory   Name
 Both numberings are shown wherever both exist. The host process is real and hiding it
 would only make the table harder to trust.
 
+`--tasks tree` arranges the same rows as what started what, which is the question people
+actually ask of a process list:
+
+```
+PID    NAME                           KIND         HOST             STATE
+0      kernel_task                    system       37108            running
+1        launchd                      system       37108            running
+2          metadata                   daemon       53828            running
+3          loginwindow                system       29480            running
+4            Finder                   system       29480            running
+5            Dock                     system       29480            running
+6            WindowServer             system       29480            running
+```
+
+Anything whose parent has gone is hung under task 1 rather than dropped, because that is
+where an orphan goes and a listing that quietly lost one would be wrong.
+[booting.md](booting.md) has the order all of that starts in.
+
 ## Processes
 
 Until now everything ran in one process, which meant this was a program that looked like a

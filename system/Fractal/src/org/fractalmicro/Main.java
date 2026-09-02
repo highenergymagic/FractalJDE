@@ -19,6 +19,7 @@
  */
 package org.fractalmicro;
 
+import org.fractalmicro.core.Progress;
 import org.fractalmicro.fs.Apps;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Trash;
@@ -66,7 +67,7 @@ public final class Main {
         "  --open-app <id>         open a program by its bundle identifier",
         "  --controls              draw the controls on their own, for looking at",
         "  --install               put this build in place as the framework",
-        "  --tasks                 list what is running",
+        "  --tasks [tree]          list what is running, flat or as a tree",
         "  --launchctl <command>   load, start, stop or list jobs",
         "  --program-info <path>   describe a program bundle",
         "  --native-report         say what the host system answered");
@@ -150,7 +151,10 @@ public final class Main {
                 // From the table, which holds every process's tasks and not just this
                 // one's. Asking this process alone would print a listing that is true and
                 // almost empty.
-                System.out.print(org.fractalmicro.kernel.TaskServer.describe());
+                boolean asTree = i + 1 < args.length && "tree".equals(args[i + 1]);
+                System.out.print(asTree
+                    ? org.fractalmicro.kernel.TaskServer.describeAsTree()
+                    : org.fractalmicro.kernel.TaskServer.describe());
                 return;
             } else if ("--launchctl".equals(args[i])) {
                 org.fractalmicro.os.OSPaths.ensure();
@@ -235,7 +239,14 @@ public final class Main {
         final boolean doControls = controls;
         final String appToOpen = openApp;
 
+        // Everything from here to the desktop being on screen takes several seconds, and
+        // for most of them nothing used to be said, which from outside is exactly what
+        // hanging looks like. Each stage says where it has got to as it starts it: to the
+        // terminal if there is one, and to the boot screen, which reads the same lines.
+        Progress.speakingAs("loginwindow");
+
         SwingUtilities.invokeLater(() -> {
+            Progress.say("laying out the volume");
             org.fractalmicro.os.OSPaths.ensure();
             org.fractalmicro.os.Defaults.migrate();
             org.fractalmicro.bundle.Install.ensureInstalled();
@@ -250,8 +261,11 @@ public final class Main {
             org.fractalmicro.os.InterfaceStyle.installDefaults();
             org.fractalmicro.os.DockSettings.installDefaults();
             org.fractalmicro.theme.BrandMark.install();
+            Progress.say("reading the programs");
             org.fractalmicro.bundle.Bundles.install();
+            Progress.say("installing the look");
             AquaLaf.install();
+            Progress.say("the desktop folder");
             FS.desktopFolder();
 
             // Checking modes build the desktop offscreen: it is laid out and painted into
@@ -269,9 +283,11 @@ public final class Main {
             org.fractalmicro.kernel.Tasks.register("org.fractalmicro.dock", "Dock",
                 org.fractalmicro.kernel.Task.Kind.SYSTEM, java.util.List.of());
 
+            Progress.say("building the desktop");
             Desktop desktop = new Desktop();
             // The Finder hands the bar its menus, the same way any other program does.
             // Until it does, the bar has an Apple menu, a Window menu and nothing else.
+            Progress.say("the menu bar");
             org.fractalmicro.ui.FinderMenus.install(desktop);
             // And the indicators on the right come from their own bundles, loaded by the
             // thing whose job that is. The bar does not know what a clock is.
@@ -283,6 +299,7 @@ public final class Main {
             // application in its own process has nowhere to draw and the picture comes
             // out as an empty desktop, with nothing having failed.
             if (!offscreen || doSelfTest || appToOpen != null) {
+                Progress.say("the window server");
                 org.fractalmicro.windowserver.WindowServer.get().start();
             }
             if (doProbe) {
@@ -301,12 +318,18 @@ public final class Main {
                 desktop.addNotify();
                 desktop.validate();
             } else {
+                Progress.say("opening the screen");
                 desktop.setVisible(true);
                 desktop.openScreen();
                 desktop.icons().requestFocusInWindow();
                 Runtime.getRuntime().addShutdownHook(new Thread(desktop::closeScreen));
             }
             desktop.setStatus("Desktop ready");
+            // The screen is up and has something on it. Whatever is watching a boot stops
+            // watching here: the disks, the programs and the Trash count arrive afterwards
+            // and fill themselves in, and waiting for them would hold a boot screen over a
+            // desktop that is already usable.
+            Progress.ready();
 
             Volumes.refresh(() -> {
                 desktop.icons().refresh();

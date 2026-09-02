@@ -146,6 +146,10 @@ public final class SelfTest {
         int licenceFailures = LicenseTest.run(System.out);
         if (licenceFailures > 0) failures.add(licenceFailures + " licence checks failed");
 
+        steps += BootTest.count();
+        int bootFailures = BootTest.run(System.out);
+        if (bootFailures > 0) failures.add(bootFailures + " start-up checks failed");
+
         steps += MenuBridgeTest.count();
         int menuFailures = MenuBridgeTest.run(desktop, System.out);
         if (menuFailures > 0) failures.add(menuFailures + " menu bridge checks failed");

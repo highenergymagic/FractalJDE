@@ -14,3 +14,7 @@ selftest.txt
 
 # The base system image, which is built rather than kept
 BaseSystem.dmg
+
+# What cargo leaves behind building the launcher. src/mark.mask is kept, because it is
+# what lets the launcher build on a machine with a Rust compiler and no Java.
+tools/launcher/target/

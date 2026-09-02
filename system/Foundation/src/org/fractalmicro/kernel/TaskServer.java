@@ -161,9 +161,28 @@ public final class TaskServer {
 
     /* ---------------------------------------------------------------- speaking */
 
+    /**
+     * Whether there is a table to ask at all.
+     *
+     * By looking for the name, not by connecting to it. Connecting waits, on purpose and
+     * for two seconds, because a service asked for the moment after it was started has not
+     * finished claiming its name yet and giving up on it would be wrong. That is not this
+     * question. The table is task 1's, and task 1 is running before anything that could ask
+     * exists; a process that cannot find it is a process running without one, and it can
+     * know that now.
+     *
+     * The difference is the whole of a slow start-up. Registering a task asks twice, once
+     * for a number and once to announce it, and the session registers two before it draws
+     * anything. Waiting to find out that nothing is listening cost eight seconds of every
+     * start where the table was not there, with nothing to show for the wait.
+     */
+    private static boolean somewhereToAsk() {
+        return running == null && Connection.available(SERVICE);
+    }
+
     /** Tells the table about a task this process started, when the table is elsewhere. */
     public static void publish(Task task) {
-        if (running != null) return;
+        if (!somewhereToAsk()) return;
         try {
             Connection.ask(SERVICE, Message.of(ANNOUNCE).put("row", Row.of(task).toLine()));
         } catch (java.io.IOException notThere) {
@@ -178,7 +197,7 @@ public final class TaskServer {
      * where every process is its own, and saying so is more use than an empty listing.
      */
     public static org.fractalmicro.foundation.FMArray<Row> everything() {
-        if (running == null) {
+        if (somewhereToAsk()) {
             try {
                 Message reply = Connection.ask(SERVICE, Message.of(LIST));
                 if (!reply.isError()) {
@@ -209,7 +228,7 @@ public final class TaskServer {
      * numbers either, so there is nothing to collide with.
      */
     public static int takeNumber() {
-        if (running != null) return -1;
+        if (!somewhereToAsk()) return -1;
         try {
             Message reply = Connection.ask(SERVICE, Message.of(ALLOCATE));
             if (!reply.isError()) return (int) reply.integer("pid", -1);
@@ -237,9 +256,51 @@ public final class TaskServer {
         return sb.toString();
     }
 
+    /**
+     * The same listing arranged as what it is: a tree with task 1 at the root.
+     *
+     * The flat table says every task's parent in a column, which is the same information
+     * and is unreadable as an answer to the question people actually ask, which is what
+     * started what. Anything whose parent is missing is hung under task 1, because that is
+     * where an orphan goes and a listing that quietly dropped one would be wrong.
+     */
+    public static String describeAsTree() {
+        org.fractalmicro.foundation.FMArray<Row> all = everything();
+        java.util.Map<Integer, java.util.List<Row>> children = new java.util.TreeMap<>();
+        java.util.Set<Integer> known = new java.util.HashSet<>();
+        for (Row task : all) known.add(task.pid());
+        for (Row task : all) {
+            int parent = task.pid() == KERNEL_TASK ? -1
+                : known.contains(task.parent()) && task.parent() != task.pid()
+                  ? task.parent() : Tasks.LAUNCHD;
+            children.computeIfAbsent(parent, whoever -> new ArrayList<>()).add(task);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-6s %-30s %-12s %-16s %s%n",
+                                "PID", "NAME", "KIND", "HOST", "STATE"));
+        appendBranch(sb, children, -1, 0);
+        return sb.toString();
+    }
+
+    /** The task everything hangs from, which has no parent to be listed under. */
+    private static final int KERNEL_TASK = 0;
+
+    private static void appendBranch(StringBuilder sb,
+                                     java.util.Map<Integer, java.util.List<Row>> children,
+                                     int parent, int depth) {
+        java.util.List<Row> here = children.get(parent);
+        if (here == null || depth > 16) return;
+        here.sort(java.util.Comparator.comparingInt(Row::pid));
+        for (Row task : here) {
+            sb.append(String.format("%-6d %-30s %-12s %-16s %s%n", task.pid(),
+                " ".repeat(depth * 2) + task.name(), task.kind(), task.where(), task.state()));
+            appendBranch(sb, children, task.pid(), depth + 1);
+        }
+    }
+
     /** Asks the table to stop a task, wherever it is. */
     public static boolean kill(int pid) {
-        if (running != null) return Tasks.kill(pid);
+        if (!somewhereToAsk()) return Tasks.kill(pid);
         try {
             Message reply = Connection.ask(SERVICE, Message.of(KILL).put("pid", (long) pid));
             if (!reply.isError()) return true;

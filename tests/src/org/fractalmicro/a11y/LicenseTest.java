@@ -57,7 +57,7 @@ public final class LicenseTest {
         // and the checks are separate again. Walking one path was how this check came to
         // pass without looking at anything.
         List<Path> roots = new ArrayList<>();
-        for (String base : new String[]{"system", "apps", "tests"}) {
+        for (String base : new String[]{"system", "apps", "tests", "tools"}) {
             Path at = Path.of(base);
             if (Files.isDirectory(at)) roots.add(at);
         }
@@ -72,7 +72,10 @@ public final class LicenseTest {
         int walked = 0;
         for (Path source : roots) {
             try (var files = Files.walk(source)) {
-                for (Path file : files.filter(f -> f.toString().endsWith(".java")).toList()) {
+                // Java and Rust both. The launcher is written in the second one, and a
+                // file being in another language is not a reason for it to be the one
+                // file in the tree with nobody's terms on it.
+                for (Path file : files.filter(LicenseTest::isSource).toList()) {
                     walked++;
                     String head = head(file);
                     if (!head.contains(START) || !head.contains(END)) {
@@ -114,6 +117,13 @@ public final class LicenseTest {
         out.println("      " + (failures == 0 ? "the terms are on every file"
                                               : failures + " failed"));
         return failures;
+    }
+
+    /** A file somebody wrote, as against one a build left behind. */
+    private static boolean isSource(Path file) {
+        String name = file.toString();
+        if (name.contains("target" + java.io.File.separator)) return false;
+        return name.endsWith(".java") || name.endsWith(".rs");
     }
 
     private static String head(Path file) {

@@ -64,6 +64,7 @@ public final class Init {
     private static volatile boolean running = true;
 
     public static void main(String[] arguments) throws Exception {
+        org.fractalmicro.core.Progress.speakingAs("launchd");
         Tasks.setSelf(Tasks.LAUNCHD);
         say("starting, as task " + Tasks.LAUNCHD);
 
@@ -84,7 +85,7 @@ public final class Init {
         // loadAll starts what it reads; readAll only reads. What is on disk is meant to
         // be running, so it is started.
         int jobs = launchd.loadAll();
-        say(jobs + " jobs loaded");
+        say(jobs + (jobs == 1 ? " job loaded" : " jobs loaded"));
 
         Task session = startSession(root, arguments);
         if (session == null) {
@@ -118,6 +119,11 @@ public final class Init {
                 "--enable-native-access=ALL-UNNAMED",
                 "-D" + org.fractalmicro.dyld.Start.ROOT_PROPERTY + "=" + root,
                 "-D" + Tasks.PID_PROPERTY + "=" + pid,
+                // When the machine started, not when this process will. The session does
+                // most of the waiting, and its times have to carry on from these rather
+                // than start again from nothing.
+                "-D" + org.fractalmicro.core.Progress.SINCE_PROPERTY + "="
+                     + org.fractalmicro.core.Progress.began(),
                 "-cp", root.resolve("usr/lib/dyld").toString(),
                 "org.fractalmicro.dyld.Start", image.toString()));
             command.addAll(List.of(arguments));
@@ -174,13 +180,13 @@ public final class Init {
     }
 
     /**
-     * What task 1 has to say.
+     * What task 1 has to say, in the shape everything says it on the way up.
      *
      * To the error stream, because the log is a file somewhere on a volume this may be the
      * thing that mounted, and because whoever is watching a system come up is watching a
      * terminal.
      */
     private static void say(String what) {
-        System.err.println("launchd: " + what);
+        org.fractalmicro.core.Progress.say(what);
     }
 }

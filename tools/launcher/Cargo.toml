@@ -1,4 +1,4 @@
-#CDDL HEADER START
+# CDDL HEADER START
 # The contents of this file are subject to the terms of the
 # Common Development and Distribution License, Version 1.0 only
 # (the "License").  You may not use this file except in compliance
@@ -11,11 +11,36 @@
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
 # If applicable, add the following below this CDDL HEADER, with the
 # fields enclosed by brackets "[]" replaced with your own identifying
-# information: 
+# information:
 #
 # CDDL HEADER END
 # Copyright (C) 2026 by Fractal Microsystems, Inc.
 # Use is subject to license terms.
-# The version of FractalJDE. Semantic versioning: bump the patch for a fix, the minor
-# for a feature, the major for a break. The build script stamps the build number.
-version=5.6.0
+#
+# The graphical launcher: what starts the system when nobody is watching a terminal.
+# It has no dependencies, on purpose. Every call it makes into Windows is declared in
+# src/win.rs, the same way the system's own Windows layer declares its, and the whole
+# thing builds offline on a machine with a Rust compiler and nothing else.
+
+[package]
+name = "fractal-launcher"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.70"
+license = "CDDL-1.0"
+publish = false
+
+[[bin]]
+name = "Fractal"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# Its own workspace: the repository this sits in is not a Rust one, and without this
+# cargo walks up looking for a manifest that is not there.
+[workspace]

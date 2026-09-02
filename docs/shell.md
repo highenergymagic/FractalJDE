@@ -29,10 +29,14 @@ order they need doing, because each unlocks the next:
    never run, since its entries are deleted as they are used and getting that wrong
    during someone's install is not worth the tidiness. System Preferences has a Login
    Items pane listing what would start, with a button to start one now.
-6. **Packaging and installing, reversibly.** An app image with its own runtime, then a
-   tool that sets and unsets the shell. This is the step that can lock someone out of
-   their own machine, so it wants a watchdog, a restore path, and a rehearsal on a
-   spare account before it goes anywhere near a real one.
+6. **Packaging and installing, reversibly.** Half done. `Fractal.exe` exists and is the
+   thing a `Shell` value would point at: it finds a runtime, starts the system, puts up a
+   boot screen while it comes up, and waits for what it started rather than standing
+   aside, which is what Windows needs from a shell. See [booting.md](booting.md). What is
+   left is an app image with its own runtime, so the machine does not need Java installed,
+   and then the tool that sets and unsets the shell. That last one can lock someone out of
+   their own machine, so it wants a watchdog, a restore path, and a rehearsal on a spare
+   account before it goes anywhere near a real one.
 7. **Finder depth**, in parallel: inline renaming, drag and drop, copying with progress
    and a cancel button, undo, per-folder view settings, labels, a Spotlight index with a
    file watcher, Connect to Server, permissions in Get Info.

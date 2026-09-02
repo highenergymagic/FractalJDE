@@ -107,6 +107,12 @@ public final class FMDistributedNotificationCenter {
     public void post(FMString name, FMString about) {
         deliver(name, about);
         if (service != null) return;
+        // Looked for rather than waited for. Connecting waits to see whether a service that
+        // was just started turns up, which is right when something is being started and
+        // wrong here: this is a notification, it is being sent now, and if nothing holds the
+        // name then nothing is listening. Waiting two seconds to find that out, on the event
+        // thread, at every preference change, is a desktop that stops for two seconds.
+        if (!Connection.available(SERVICE)) return;
         try {
             Connection.ask(SERVICE, Message.of(POST)
                 .put("name", name.toString()).put("about", about.toString()));

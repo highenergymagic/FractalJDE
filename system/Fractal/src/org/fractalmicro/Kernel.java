@@ -72,7 +72,17 @@ public final class Kernel {
     /** How an image somewhere other than beside this program is asked for. */
     private static final String IMAGE_PROPERTY = "org.fractalmicro.image";
 
+    /** How everything started afterwards is told when the machine started. */
+    private static final String SINCE_PROPERTY = "org.fractalmicro.booted";
+
+    /** When this one did, which is when the machine did. */
+    private static final long SINCE = System.currentTimeMillis();
+
     public static void main(String[] arguments) throws Exception {
+        // Said once, here, because this is the first thing to run: everything else measures
+        // its own progress from this moment rather than from whenever it was started.
+        System.setProperty(SINCE_PROPERTY, Long.toString(SINCE));
+
         Path volume = volume();
         Path image = image();
 
@@ -168,6 +178,7 @@ public final class Kernel {
      * a copy kept here would be the one that ran.
      */
     private static void start(Path volume, Path loader, String[] arguments) throws Exception {
+        say("the volume is " + volume);
         System.setProperty(ROOT_PROPERTY, volume.toString());
 
         List<String> passed = new ArrayList<>();
@@ -181,8 +192,10 @@ public final class Kernel {
             new URL[]{loader.toUri().toURL()}, Kernel.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(system);
 
+        say("reading the loader");
         Method main = Class.forName(LOADER_ENTRY, true, system)
                            .getMethod("main", String[].class);
+        say("starting " + INIT);
         main.invoke(null, (Object) passed.toArray(new String[0]));
     }
 
@@ -191,8 +204,15 @@ public final class Kernel {
      *
      * The error stream, because there is no log until there is a volume and no window until
      * there is a system, and whoever watches a machine start is watching a terminal.
+     *
+     * The shape is the one everything else uses on the way up, and this is the second copy
+     * of it. The other is org.fractalmicro.core.Progress, in the system library, which is on
+     * the volume this has not opened yet: the kernel carries no framework, and a kernel that
+     * had to load one to say what it was doing could not say anything until it had.
      */
     private static void say(String what) {
-        System.err.println("kernel: " + what);
+        System.err.printf(java.util.Locale.ROOT, "%6.1f  kernel: %s%n",
+                          (System.currentTimeMillis() - SINCE) / 1000.0, what);
+        System.err.flush();
     }
 }

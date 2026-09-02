@@ -50,6 +50,32 @@ jobs:
           fi
           grep -q "0 failed" selftest.txt
 
+      - name: Build the launcher
+        shell: bash
+        # The boot screen, which is the other half of what the system says while it comes
+        # up and is the only part of this written in another language. Built before the
+        # release rather than inside it, so that a launcher that will not compile is a
+        # failed step here and not a quiet line in a log.
+        run: sh tools/launcher.sh
+
+      - name: Draw the boot screen
+        shell: bash
+        # It draws itself into a file, because it is a full screen window over everything
+        # and a runner has no screen to put one on. This is the whole of what a person
+        # sees while a machine starts, so it is worth having a copy of every build's.
+        run: |
+          ./build/Fractal.exe --draw "$PWD/build/boot-screen.bmp" --size 1440x900
+          test -s build/boot-screen.bmp
+          ./build/Fractal.exe --where "$PWD/build/launcher.txt"
+          cat build/launcher.txt
+          # It has to have found both, or the launcher would have put up a message box
+          # about it on a machine with nobody there to read one.
+          grep -q "FractalJDE.jar" build/launcher.txt
+          if grep -qE "^(jar|java) +not found" build/launcher.txt; then
+              echo "the launcher could not find what it needs"
+              exit 1
+          fi
+
       - name: Build a release
         shell: bash
         # The same thing anybody gets by running this: a kernel and a base image. It is
@@ -112,6 +138,8 @@ jobs:
             boot.txt
             build/fresh-desktop.png
             build/desktop.png
+            build/boot-screen.bmp
+            build/launcher.txt
 
       - name: Keep the release
         uses: actions/upload-artifact@v4
