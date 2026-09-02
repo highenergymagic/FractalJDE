@@ -167,6 +167,11 @@ pub const ERROR_SUCCESS: i32 = 0;
 
 /* ----------------------------------------------------------------- the calls */
 
+#[link(name = "kernel32")]
+extern "system" {
+    pub fn GetModuleHandleW(name: *const u16) -> HANDLE;
+}
+
 #[link(name = "user32")]
 extern "system" {
     pub fn RegisterClassW(class: *const WNDCLASSW) -> u16;

@@ -420,13 +420,17 @@ thread_local! {
 }
 
 unsafe fn boot_screen() {
+    // The class and the window are registered to the same module, and both are told which
+    // one. Left out, a window class belongs to nothing in particular and finding it again
+    // is left to a rule about what null means that is easier to get right than to rely on.
+    let module = GetModuleHandleW(std::ptr::null());
     let name = wide("FractalBootScreen");
     let class = WNDCLASSW {
         style: 0,
         lpfnWndProc: Some(handle),
         cbClsExtra: 0,
         cbWndExtra: 0,
-        hInstance: std::ptr::null_mut(),
+        hInstance: module,
         hIcon: std::ptr::null_mut(),
         hCursor: LoadCursorW(std::ptr::null_mut(), IDC_ARROW),
         hbrBackground: std::ptr::null_mut(),
@@ -442,8 +446,7 @@ unsafe fn boot_screen() {
     let title = wide("FractalJDE");
     let window = CreateWindowExW(WS_EX_TOPMOST, name.as_ptr(), title.as_ptr(), WS_POPUP,
                                  0, 0, width, height, std::ptr::null_mut(),
-                                 std::ptr::null_mut(), std::ptr::null_mut(),
-                                 std::ptr::null_mut());
+                                 std::ptr::null_mut(), module, std::ptr::null_mut());
     if window.is_null() {
         return;
     }
@@ -491,18 +494,15 @@ unsafe extern "system" fn handle(window: HWND, message: u32, w: WPARAM, l: LPARA
             };
             let mut over = done;
             PAINTER.with(|painter| {
-                if let Some(painter) = painter.borrow_mut().as_mut() {
-                    if painter.since.elapsed().as_secs() >= GIVE_UP_AFTER_SECONDS {
+                if let Some(Painter { surface, scene, font, phase, since }) =
+                        painter.borrow_mut().as_mut() {
+                    if since.elapsed().as_secs() >= GIVE_UP_AFTER_SECONDS {
                         over = true;
                     }
                     if !over {
-                        painter.phase = painter.phase.wrapping_add(1);
-                        let phase = painter.phase;
-                        let font = painter.font;
-                        let busy = painter.scene.busy;
-                        let scene = &painter.scene as *const Scene;
-                        (*scene).paint_moving(&mut painter.surface, phase, &saying, font);
-                        InvalidateRect(window, &busy, 0);
+                        *phase = phase.wrapping_add(1);
+                        scene.paint_moving(surface, *phase, &saying, *font);
+                        InvalidateRect(window, &scene.busy, 0);
                     }
                 }
             });
