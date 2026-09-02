@@ -27,8 +27,6 @@ import org.fractalmicro.foundation.FMMutableDictionary;
 import org.fractalmicro.foundation.FMDictionary;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.os.OSPaths;
-import org.fractalmicro.os.SystemProfile;
-import org.fractalmicro.os.Version;
 
 /**
  * System Profiler: what this machine is.
@@ -100,22 +98,26 @@ public final class SystemProfiler {
 
     private static FMDictionary factsFor(FMString section) {
         FMMutableDictionary facts = FMMutableDictionary.empty();
+        org.fractalmicro.foundation.FMProcessInfo machine =
+            org.fractalmicro.foundation.FMProcessInfo.processInfo();
         if (section.sameAs(SOFTWARE)) {
             facts.set(FMString.of("System Version"),
-                FMString.of(SystemProfile.OS_NAME + " " + SystemProfile.version()
-                            + " (" + SystemProfile.build() + ")"));
-            facts.set(FMString.of("System Name"), FMString.of(SystemProfile.OS_LONG_NAME));
-            facts.set(FMString.of("Built"), FMString.of(Version.builtAt()));
-            facts.set(FMString.of("Computer Name"),
-                      FMString.of(SystemProfile.computerName()));
+                      machine.operatingSystemVersionString());
+            facts.set(FMString.of("System Name"), machine.operatingSystemLongName());
+            facts.set(FMString.of("Built"), machine.operatingSystemBuiltAt());
+            facts.set(FMString.of("Computer Name"), machine.hostName());
         } else if (section.sameAs(VOLUMES)) {
-            for (org.fractalmicro.fs.Node v : org.fractalmicro.fs.Volumes.all()) {
-                facts.set(FMString.of(v.name), FMString.of(v.mountPoint + "  "
-                    + (v.size > 0
-                       ? org.fractalmicro.fs.FS.formatBytes(v.size) + ", "
-                         + org.fractalmicro.fs.FS.formatBytes(v.free) + " free"
+            org.fractalmicro.foundation.FMByteCountFormatter sizes =
+                org.fractalmicro.foundation.FMByteCountFormatter.formatter();
+            for (org.fractalmicro.appkit.FMVolume v
+                     : org.fractalmicro.appkit.FMWorkspace.sharedWorkspace().mountedVolumes()) {
+                facts.set(v.name(), FMString.of(
+                    (v.url() == null ? "" : v.url().path().toString()) + "  "
+                    + (v.isReady()
+                       ? sizes.stringFromByteCount(v.totalCapacity()) + ", "
+                         + sizes.stringFromByteCount(v.availableCapacity()) + " free"
                        : "not ready")
-                    + (v.fileSystem.isEmpty() ? "" : "  " + v.fileSystem)));
+                    + (v.fileSystem().isEmpty() ? "" : "  " + v.fileSystem())));
             }
         } else if (section.sameAs(LOCATIONS)) {
             facts.set(FMString.of("System Volume"), FMString.describing(OSPaths.ROOT));
@@ -126,11 +128,10 @@ public final class SystemProfiler {
             facts.set(FMString.of("Applications"),
                       FMString.describing(OSPaths.applications()));
         } else {
-            facts.set(FMString.of("Processor"), FMString.of(SystemProfile.processor()));
-            facts.set(FMString.of("Memory"), FMString.of(SystemProfile.memory()));
-            facts.set(FMString.of("Startup Disk"), FMString.of(SystemProfile.startupDisk()));
-            facts.set(FMString.of("Computer Name"),
-                      FMString.of(SystemProfile.computerName()));
+            facts.set(FMString.of("Processor"), machine.processorDescription());
+            facts.set(FMString.of("Memory"), machine.physicalMemoryDescription());
+            facts.set(FMString.of("Startup Disk"), machine.startupDisk());
+            facts.set(FMString.of("Computer Name"), machine.hostName());
         }
         return facts.asDictionary();
     }

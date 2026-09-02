@@ -19,7 +19,7 @@
  */
 package org.fractalmicro.textedit;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.appkit.FMApplication;
 import org.fractalmicro.appkit.FMTextAction;
 import org.fractalmicro.foundation.FMArray;

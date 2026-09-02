@@ -112,7 +112,7 @@ public final class SpellingPanel extends JInternalFrame {
 
     public static void show(javax.swing.text.JTextComponent text, Spelling spelling) {
         if (!Spelling.available()) {
-            org.fractalmicro.appkit.Alert.tell(FMString.of("Spelling cannot be checked on this computer."),
+            org.fractalmicro.appkit.FMAlert.tell(FMString.of("Spelling cannot be checked on this computer."),
                 FMString.of("No spelling dictionary is installed for any language this system asked for."));
             return;
         }

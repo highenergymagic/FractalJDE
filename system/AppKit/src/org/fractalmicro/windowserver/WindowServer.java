@@ -21,7 +21,7 @@ package org.fractalmicro.windowserver;
 
 import org.fractalmicro.appkit.FMTextArea;
 import org.fractalmicro.appkit.FMTextField;
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.core.Log;
 import org.fractalmicro.nib.Nib;
@@ -1112,7 +1112,7 @@ public final class WindowServer {
      */
     private Message ask(Message request) throws Exception {
         FMString[] answer = new FMString[1];
-        onSwing(() -> answer[0] = Alert.ask(
+        onSwing(() -> answer[0] = FMAlert.ask(
             said(request, "message"), said(request, "label"),
             said(request, "value"), said(request, "action")));
         return Message.of(ASK).put("value", answer[0] == null ? "" : answer[0].toString());
@@ -1120,7 +1120,7 @@ public final class WindowServer {
 
     /** Says something to a person on behalf of a program that cannot say it itself. */
     private Message tell(Message request) throws Exception {
-        onSwing(() -> Alert.tell(said(request, "message"), said(request, "informative")));
+        onSwing(() -> FMAlert.tell(said(request, "message"), said(request, "informative")));
         return Message.of(TELL);
     }
 
@@ -1133,7 +1133,7 @@ public final class WindowServer {
      */
     private Message confirm(Message request) throws Exception {
         boolean[] chose = new boolean[1];
-        onSwing(() -> chose[0] = Alert.confirm(Alert.Kind.CAUTION,
+        onSwing(() -> chose[0] = FMAlert.confirm(FMAlert.Kind.CAUTION,
             said(request, "message"), said(request, "informative"),
             said(request, "action")));
         return Message.of(CONFIRM).put("chose", chose[0]);
@@ -1142,7 +1142,7 @@ public final class WindowServer {
     /** The three-answer question, which answers with the button that was pressed. */
     private Message choose(Message request) throws Exception {
         int[] chosen = new int[1];
-        onSwing(() -> chosen[0] = Alert.confirmIrreversible(
+        onSwing(() -> chosen[0] = FMAlert.confirmIrreversible(
             said(request, "message"), said(request, "informative"),
             said(request, "action"), said(request, "other")));
         return Message.of(CHOOSE).put("chosen", (long) chosen[0]);

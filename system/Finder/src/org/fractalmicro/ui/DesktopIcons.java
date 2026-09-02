@@ -22,7 +22,7 @@ package org.fractalmicro.ui;
 
 
 import org.fractalmicro.fs.*;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 
 import javax.swing.*;
@@ -67,8 +67,8 @@ public class DesktopIcons extends JList<Node> {
         Timer poll = new Timer(4000, e -> refreshIfChanged());
         poll.start();
 
-        Defaults.onChange((domain, key) -> {
-            if (Defaults.FINDER.equals(domain)) refresh();
+        FMUserDefaults.onChange((domain, key) -> {
+            if (FMUserDefaults.FINDER.equals(domain)) refresh();
         });
         Volumes.onChange(this::refresh);
         Trash.onChange(this::refresh);

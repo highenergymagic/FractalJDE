@@ -22,7 +22,7 @@ package org.fractalmicro.ui;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
@@ -395,7 +395,7 @@ public final class FinderMenus implements NibLoader.Commands {
         if (path == null || path.isBlank()) return;
         File dir = new File(path.replace("~", System.getProperty("user.home")));
         if (!dir.isDirectory()) {
-            Alert.tell(FMLocalized.filled(NO_SUCH_FOLDER, FMString.of(path)),
+            FMAlert.tell(FMLocalized.filled(NO_SUCH_FOLDER, FMString.of(path)),
                        FMLocalized.of(CHECK_SPELLING));
             return;
         }

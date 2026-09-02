@@ -26,7 +26,7 @@ import org.fractalmicro.fs.Places;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.fs.Node;
 import org.fractalmicro.fs.Volumes;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
@@ -126,7 +126,7 @@ public class Sidebar extends JScrollPane {
         setPreferredSize(new Dimension(180, 400));
 
         rebuild();
-        Defaults.onChange((domain, key) -> rebuild());
+        FMUserDefaults.onChange((domain, key) -> rebuild());
         Volumes.onChange(this::rebuild);
     }
 

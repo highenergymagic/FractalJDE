@@ -224,8 +224,8 @@ public final class WindowServerTest {
                 for (String line : source.split("\n")) {
                     String t = line.trim();
                     if (t.startsWith("*") || t.startsWith("//")) continue;
-                    if (t.contains("Alert.ask(") || t.contains("Alert.tell(")
-                            || t.contains("Alert.confirm")) {
+                    if (t.contains("FMAlert.ask(") || t.contains("FMAlert.tell(")
+                            || t.contains("FMAlert.confirm")) {
                         found.add(file.getFileName() + " draws its own: " + t);
                     }
                 }

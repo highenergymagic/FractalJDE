@@ -50,10 +50,10 @@ public final class DockSettings {
         }
     }
 
-    private static Defaults dock() { return Defaults.of(Defaults.DOCK); }
+    private static FMUserDefaults dock() { return FMUserDefaults.of(FMUserDefaults.DOCK); }
 
     public static void installDefaults() {
-        Defaults d = dock();
+        FMUserDefaults d = dock();
         d.applyDefault(TILE_SIZE, 48.0);
         d.applyDefault(MAGNIFICATION, Boolean.FALSE);
         d.applyDefault(LARGE_SIZE, 128.0);

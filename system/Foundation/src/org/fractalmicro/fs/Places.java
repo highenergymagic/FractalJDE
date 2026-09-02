@@ -20,7 +20,7 @@
 package org.fractalmicro.fs;
 
 import org.fractalmicro.foundation.FMString;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 
 import java.io.File;
@@ -146,7 +146,7 @@ public final class Places {
     /** The folders somebody put in the sidebar themselves. */
     public static List<File> favourites() {
         List<File> out = new ArrayList<>();
-        String written = Defaults.of(FinderSettings.FRACTAL).string(FAVOURITES).toString();
+        String written = FMUserDefaults.of(FinderSettings.FRACTAL).string(FAVOURITES).toString();
         if (written.isBlank()) return out;
         for (String path : written.split("\\" + BETWEEN)) {
             File one = new File(path);
@@ -170,7 +170,7 @@ public final class Places {
     private static void write(List<File> folders) {
         List<String> paths = new ArrayList<>();
         for (File one : folders) paths.add(one.getAbsolutePath());
-        Defaults.of(FinderSettings.FRACTAL).set(FAVOURITES, String.join(BETWEEN, paths));
+        FMUserDefaults.of(FinderSettings.FRACTAL).set(FAVOURITES, String.join(BETWEEN, paths));
     }
 
     private static void add(List<Group> into, FMString heading, List<Place> places) {

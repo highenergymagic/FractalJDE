@@ -56,6 +56,6 @@ public final class Terminal {
     public static void open(FMURL where) {
         FMURL folder = where.isDirectory() ? where : where.deletingLastComponent();
         if (!folder.isDirectory()) folder = FMFileManager.defaultManager().home();
-        org.fractalmicro.core.Shell.openTerminal(folder.asFile());
+        org.fractalmicro.appkit.FMWorkspace.sharedWorkspace().openTerminal(folder);
     }
 }

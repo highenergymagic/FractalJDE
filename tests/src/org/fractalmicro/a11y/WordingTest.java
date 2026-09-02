@@ -77,9 +77,9 @@ public final class WordingTest {
             !containsWord("Machine", "Mac") && !containsWord("Applications", "Apple"));
 
         failures += check(out, "settings live under org.fractalmicro",
-            org.fractalmicro.os.Defaults.FINDER.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro"))
-            && org.fractalmicro.os.Defaults.DOCK.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro"))
-            && org.fractalmicro.os.Defaults.UNIVERSAL_ACCESS.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro")));
+            org.fractalmicro.os.FMUserDefaults.FINDER.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro"))
+            && org.fractalmicro.os.FMUserDefaults.DOCK.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro"))
+            && org.fractalmicro.os.FMUserDefaults.UNIVERSAL_ACCESS.beginsWith(org.fractalmicro.foundation.FMString.of("org.fractalmicro")));
 
         failures += check(out, "bundle identifiers start with org.fractalmicro",
             org.fractalmicro.bundle.Bundles.all().stream()
@@ -89,7 +89,7 @@ public final class WordingTest {
             "FMI ".equals(org.fractalmicro.bundle.Bundle.CREATOR));
 
         failures += check(out, "the settings files are named for this system",
-            org.fractalmicro.os.Defaults.of(org.fractalmicro.os.Defaults.FINDER).file()
+            org.fractalmicro.os.FMUserDefaults.of(org.fractalmicro.os.FMUserDefaults.FINDER).file()
                 .getFileName().toString().startsWith("org.fractalmicro"));
 
         out.println("      " + (failures == 0 ? "the terms hold" : failures + " failed"));

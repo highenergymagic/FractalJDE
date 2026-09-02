@@ -262,7 +262,7 @@ public final class Main {
             Progress.say("the volume is " + org.fractalmicro.os.OSPaths.ROOT);
             Progress.say("laying out the volume");
             org.fractalmicro.os.OSPaths.ensure();
-            org.fractalmicro.os.Defaults.migrate();
+            org.fractalmicro.os.FMUserDefaults.migrate();
             org.fractalmicro.bundle.Install.ensureInstalled();
             org.fractalmicro.bundle.Install.registerRunningFramework();
             org.fractalmicro.appkit.FMApplicationMain.install();

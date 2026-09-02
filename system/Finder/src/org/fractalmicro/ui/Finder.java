@@ -22,14 +22,14 @@ package org.fractalmicro.ui;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.core.Recent;
 import org.fractalmicro.core.Running;
 import org.fractalmicro.core.Shell;
 import org.fractalmicro.fs.*;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 import org.fractalmicro.win.Kernel32;
 
@@ -91,7 +91,7 @@ public final class Finder {
         if (bundle == null) return false;
         Recent.noteItem(n.file);
         if (!org.fractalmicro.bundle.Bundles.open(bundle, null)) {
-            Alert.tell(FMString.of("The application " + '“' + bundle.displayName() + '”' + (" can") + '’' + "t be opened."),
+            FMAlert.tell(FMString.of("The application " + '“' + bundle.displayName() + '”' + (" can") + '’' + "t be opened."),
 
                        FMString.of("Its bundle may be damaged or incomplete."));
         }
@@ -159,7 +159,7 @@ public final class Finder {
         if (next == null || next.isBlank() || next.equals(current)) return;
         File dest = new File(n.file.getParentFile(), next);
         if (dest.exists()) {
-            Alert.tell(FMString.of("The name " + '\u201c' + next + '\u201d' + " is already taken."),
+            FMAlert.tell(FMString.of("The name " + '\u201c' + next + '\u201d' + " is already taken."),
                        FMString.of("Please choose a different name."));
             return;
         }
@@ -269,7 +269,7 @@ public final class Finder {
     public static void emptyTrash(boolean secure) {
         if (Trash.isEmpty()) { beep(TRASH_EMPTY); return; }
         if (FinderSettings.warnOnEmptyTrash()) {
-            boolean go = Alert.confirm(Alert.Kind.CAUTION,
+            boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,
                 FMString.of("Are you sure you want to permanently erase the items in the Trash?"),
                 FMString.of("You can" + '\u2019' + "t undo this action."),
                 FMString.of(secure ? "Secure Empty Trash" : "Empty Trash"));
@@ -439,7 +439,7 @@ public final class Finder {
         if (path == null || path.isBlank()) return;
         File dir = new File(path);
         if (!dir.exists()) {
-            Alert.tell(FMString.of("There was a problem connecting to the server " + '“' + path + '”' + "."),
+            FMAlert.tell(FMString.of("There was a problem connecting to the server " + '“' + path + '”' + "."),
                        FMString.of("Check the server name or address and try again."));
             return;
         }
@@ -500,7 +500,7 @@ public final class Finder {
     /** Asks for one piece of text, with a button named for what it will do. */
     public static String prompt(String message, String fieldLabel, String initial,
                                 String actionButton) {
-        return Alert.ask(FMString.of(message), FMString.of(fieldLabel),
+        return FMAlert.ask(FMString.of(message), FMString.of(fieldLabel),
                          FMString.of(initial), FMString.of(actionButton)).toString();
     }
 

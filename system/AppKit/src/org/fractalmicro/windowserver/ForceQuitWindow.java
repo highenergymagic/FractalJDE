@@ -21,7 +21,7 @@ package org.fractalmicro.windowserver;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.core.Running;
@@ -101,7 +101,7 @@ public class ForceQuitWindow extends JInternalFrame {
             Desktop.beep("The Finder relaunches rather than quitting.");
             return;
         }
-        boolean go = Alert.confirm(Alert.Kind.CAUTION,
+        boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,
             FMString.of("Do you want to force " + '“' + name + '”' + " to quit?"),
             FMString.of("You will lose any unsaved changes."), FMString.of("Force Quit"));
         if (!go) return;

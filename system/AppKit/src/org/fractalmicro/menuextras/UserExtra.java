@@ -46,7 +46,7 @@ public final class UserExtra implements FMMenuExtra {
         m.add(MainMenu.item("Account Preferences…", null,
                             e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
         m.add(MainMenu.item("Login Window…", null, e -> {
-            int chose = org.fractalmicro.appkit.Alert.confirmIrreversible(
+            int chose = org.fractalmicro.appkit.FMAlert.confirmIrreversible(
                 FMString.of("Are you sure you want to quit all applications and log out now?"),
                 FMString.of("If you do nothing, you will be logged out automatically."),
                 FMString.of("Log Out"), FMString.of(null));

@@ -25,7 +25,8 @@ import org.fractalmicro.foundation.FMLog;
 import org.fractalmicro.foundation.FMMutableArray;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
-import org.fractalmicro.kernel.TaskServer;
+import org.fractalmicro.appkit.FMRunningApplication;
+import org.fractalmicro.appkit.FMWorkspace;
 
 /**
  * Activity Monitor: what is running.
@@ -60,7 +61,7 @@ public final class ActivityMonitor {
     private final FMApplication app = FMApplication.named(NAME);
 
     /** What is on each row, in the order the rows are shown, so a choice can be acted on. */
-    private FMArray<TaskServer.Row> showing = FMArray.empty();
+    private FMArray<FMRunningApplication> showing = FMArray.empty();
 
     public static void main(String[] arguments) {
         if (!FMApplication.serverAvailable()) {
@@ -113,9 +114,9 @@ public final class ActivityMonitor {
     /* -------------------------------------------------------------- the listing */
 
     private void reload() {
-        FMArray<TaskServer.Row> tasks = TaskServer.everything();
+        FMArray<FMRunningApplication> tasks = FMWorkspace.sharedWorkspace().runningApplications();
         FMMutableArray<FMString> rows = FMMutableArray.empty();
-        for (TaskServer.Row task : tasks) rows.add(lineFor(task));
+        for (FMRunningApplication task : tasks) rows.add(lineFor(task));
         showing = tasks;
         app.setRows(PROCESSES, rows.asArray());
     }
@@ -127,10 +128,10 @@ public final class ActivityMonitor {
      * listing is looking for; then what it is, whose it is, and where it is actually
      * running, which for a task inside another process is that process's own number.
      */
-    private static FMString lineFor(TaskServer.Row task) {
+    private static FMString lineFor(FMRunningApplication task) {
         return FMString.withFormat(COLUMNS,
-            task.pid(), task.parent(), trimmed(task.name(), 22), task.kind(),
-            task.where(), task.state());
+            task.processIdentifier(), task.parentProcessIdentifier(), trimmed(task.localizedName(), 22), task.kind(),
+            task.host(), task.state());
     }
 
     /** A name cut to fit a column, with a mark to say it was cut. */
@@ -148,23 +149,23 @@ public final class ActivityMonitor {
      * listing shows every task in the system including the ones holding the screen up.
      */
     private void quitChosen() {
-        TaskServer.Row chosen = chosenRow();
+        FMRunningApplication chosen = chosenRow();
         if (chosen == null) return;
         // Asked by the window server, not here: this program has a process of its own and
         // no screen in it, and a dialog drawn here would appear outside the desktop.
         boolean go = app.confirm(
-            FMLocalized.filled(QUIT_QUESTION, chosen.name()),
+            FMLocalized.filled(QUIT_QUESTION, chosen.localizedName()),
             FMLocalized.of(QUIT_WARNING), FMLocalized.of(QUIT_BUTTON));
         if (!go) return;
-        if (!TaskServer.kill(chosen.pid())) {
-            FMLog.say(FMString.of("task ").appending(FMString.describing(chosen.pid()))
+        if (!FMWorkspace.sharedWorkspace().terminateApplication(chosen.processIdentifier())) {
+            FMLog.say(FMString.of("task ").appending(FMString.describing(chosen.processIdentifier()))
                               .appending(FMString.of(" would not stop")));
         }
         reload();
     }
 
     /** Which task the chosen line is, found by the number it starts with. */
-    private TaskServer.Row chosenRow() {
+    private FMRunningApplication chosenRow() {
         FMString line = app.valueOf(PROCESSES);
         if (line.isBlank()) return null;
         FMArray<FMString> parts = line.trimmed().split(FMString.of(" "));
@@ -172,7 +173,7 @@ public final class ActivityMonitor {
         try {
             int pid = Integer.parseInt(parts.at(0).toString());
             for (int i = 0; i < showing.count(); i++) {
-                if (showing.at(i).pid() == pid) return showing.at(i);
+                if (showing.at(i).processIdentifier() == pid) return showing.at(i);
             }
         } catch (NumberFormatException notANumber) {
             return null;

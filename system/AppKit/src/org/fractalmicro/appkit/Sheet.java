@@ -60,12 +60,12 @@ public final class Sheet {
      * A window that is not on screen, during a check for instance, gets the free standing
      * alert instead, because a sheet with nothing to hang from cannot be answered.
      */
-    public static int show(JInternalFrame owner, Alert.Kind kind, FMString message,
+    public static int show(JInternalFrame owner, FMAlert.Kind kind, FMString message,
                            FMString informative, FMString... buttons) {
         if (owner == null || !owner.isShowing()) {
-            return Alert.show(kind, message, informative, buttons);
+            return FMAlert.show(kind, message, informative, buttons);
         }
-        if (buttons.length == 0) buttons = new FMString[]{Alert.OK};
+        if (buttons.length == 0) buttons = new FMString[]{FMAlert.OK};
 
         JLayeredPane layers = owner.getLayeredPane();
         int[] answer = {-1};
@@ -103,7 +103,7 @@ public final class Sheet {
         for (Component c : panel.getComponents()) attach(c, finish);
         collectButtons(panel).forEach(b -> b.addActionListener(e -> finish.run()));
 
-        int cancel = indexOf(buttons, Alert.CANCEL_BUTTON);
+        int cancel = indexOf(buttons, FMAlert.CANCEL_BUTTON);
         panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
              .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
         panel.getActionMap().put("cancel", new AbstractAction() {
@@ -190,7 +190,7 @@ public final class Sheet {
     }
 
     /** The panel a sheet puts up. Separated so it can be checked without a screen. */
-    public static JPanel panelFor(Alert.Kind kind, FMString message, FMString informative,
+    public static JPanel panelFor(FMAlert.Kind kind, FMString message, FMString informative,
                                   FMString[] buttons, int[] answer) {
         return build(kind, message, informative, buttons, answer);
     }
@@ -231,7 +231,7 @@ public final class Sheet {
 
     /* -------------------------------------------------------------- drawing */
 
-    private static JPanel build(Alert.Kind kind, FMString message, FMString informative,
+    private static JPanel build(FMAlert.Kind kind, FMString message, FMString informative,
                                 FMString[] buttons, int[] answer) {
         JPanel body = new JPanel(new BorderLayout(GROUP_GAP, 0)) {
             @Override protected void paintComponent(Graphics g0) {
@@ -247,7 +247,7 @@ public final class Sheet {
         body.setOpaque(false);
         body.setBorder(BorderFactory.createEmptyBorder(20, SIDE_MARGIN, BOTTOM_MARGIN,
                                                        SIDE_MARGIN));
-        body.add(Alert.iconLabel(kind), BorderLayout.WEST);
+        body.add(FMAlert.iconLabel(kind), BorderLayout.WEST);
 
         JPanel text = new JPanel();
         text.setOpaque(false);

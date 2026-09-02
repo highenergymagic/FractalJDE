@@ -35,15 +35,15 @@ public final class FMNotificationCenter {
 
     /** Something ended, started, or changed about what is running. */
     public static final FMString PROGRAMS_CHANGED =
-        FMString.of("FMProgramsChangedNotification");
+        FMString.of("FMProgramsDidChangeNotification");
 
     /** The volumes on this machine are not what they were. */
     public static final FMString VOLUMES_CHANGED =
-        FMString.of("FMVolumesChangedNotification");
+        FMString.of("FMVolumesDidChangeNotification");
 
     /** Something on disk that is being shown has changed. */
     public static final FMString FILES_CHANGED =
-        FMString.of("FMFilesChangedNotification");
+        FMString.of("FMFilesDidChangeNotification");
 
     private static final FMNotificationCenter SHARED = new FMNotificationCenter();
 

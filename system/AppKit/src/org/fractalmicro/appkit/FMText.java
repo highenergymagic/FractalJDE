@@ -280,7 +280,7 @@ public final class FMText {
                 org.fractalmicro.core.Shell.browse(DataDetectors.actionTarget(detection).toString());
             case PHONE -> java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                 new java.awt.datatransfer.StringSelection(detection.text().toString()), null);
-            case DATE -> org.fractalmicro.appkit.Alert.tell(detection.text(),
+            case DATE -> org.fractalmicro.appkit.FMAlert.tell(detection.text(),
                 FMString.of("This system has no calendar to put a date into."));
         }
     }

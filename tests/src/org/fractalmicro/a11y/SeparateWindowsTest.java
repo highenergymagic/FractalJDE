@@ -111,10 +111,10 @@ public final class SeparateWindowsTest {
 
     /** A desktop built with separate windows, without putting anything on the screen. */
     private static org.fractalmicro.windowserver.Desktop buildSeparate() throws Exception {
-        org.fractalmicro.foundation.FMString was = org.fractalmicro.os.Defaults
-            .of(org.fractalmicro.os.Defaults.GLOBAL)
+        org.fractalmicro.foundation.FMString was = org.fractalmicro.os.FMUserDefaults
+            .of(org.fractalmicro.os.FMUserDefaults.GLOBAL)
             .string(InterfaceStyle.WINDOW_KEY, InterfaceStyle.CONTAINED);
-        org.fractalmicro.os.Defaults.of(org.fractalmicro.os.Defaults.GLOBAL)
+        org.fractalmicro.os.FMUserDefaults.of(org.fractalmicro.os.FMUserDefaults.GLOBAL)
             .set(InterfaceStyle.WINDOW_KEY, InterfaceStyle.SEPARATE);
         try {
             // The forced setting is what the checking modes use; it has to be lifted for
@@ -133,7 +133,7 @@ public final class SeparateWindowsTest {
                 forced.set(null, before);
             }
         } finally {
-            org.fractalmicro.os.Defaults.of(org.fractalmicro.os.Defaults.GLOBAL)
+            org.fractalmicro.os.FMUserDefaults.of(org.fractalmicro.os.FMUserDefaults.GLOBAL)
                 .set(InterfaceStyle.WINDOW_KEY, was);
         }
     }

@@ -27,7 +27,7 @@ import org.fractalmicro.appkit.FocusGroup;
 import org.fractalmicro.core.Running;
 import org.fractalmicro.core.WindowList;
 import org.fractalmicro.fs.*;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.DockSettings;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
@@ -67,8 +67,8 @@ public class Dock extends JPanel {
         Running.onChange(this::rebuild);
         WindowList.onChange(this::rebuild);
         Trash.onChange(() -> { Icons.invalidateTrash(); rebuild(); });
-        Defaults.onChange((domain, key) -> {
-            if (Defaults.DOCK.equals(domain)) rebuild();
+        FMUserDefaults.onChange((domain, key) -> {
+            if (FMUserDefaults.DOCK.equals(domain)) rebuild();
         });
         rebuild();
     }

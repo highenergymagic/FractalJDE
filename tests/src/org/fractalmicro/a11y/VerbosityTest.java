@@ -119,7 +119,7 @@ public final class VerbosityTest {
                     // An alert says its own message in its description, which is the thing
                     // the alert is for rather than chrome around a control.
                     boolean isAlert = c.getClass().getName().contains("Sheet")
-                                   || c.getClass().getName().contains("Alert");
+                                   || c.getClass().getName().contains("FMAlert");
                     if (!isAlert && isLesson(description)) lessons.add(where);
                     if (!isAlert && description.length() > TOO_LONG) essays.add(where);
                 }

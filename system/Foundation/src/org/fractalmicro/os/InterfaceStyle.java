@@ -58,13 +58,13 @@ public final class InterfaceStyle {
 
     private static Boolean forcedContained;
 
-    private static Defaults global() { return Defaults.of(Defaults.GLOBAL); }
+    private static FMUserDefaults global() { return FMUserDefaults.of(FMUserDefaults.GLOBAL); }
 
     /** Set once the stored window style has been looked at by a version that can. */
     private static final FMString CHECKED_KEY = FMString.of("FractalWindowStyleChecked");
 
     public static void installDefaults() {
-        Defaults d = global();
+        FMUserDefaults d = global();
         d.applyDefault(MENU_KEY, MACINTOSH);
         d.applyDefault(WINDOW_KEY, CONTAINED);
 

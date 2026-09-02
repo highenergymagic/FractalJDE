@@ -23,7 +23,7 @@ import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMMutableArray;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.foundation.FMURL;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 
 /**
  * What TextEdit remembers between one time it runs and the next.
@@ -49,11 +49,11 @@ public final class Settings {
     /** How many are kept, which is what a menu can show without becoming a list. */
     public static final int RECENTS_KEPT = 10;
 
-    public static Defaults domain() { return Defaults.of(Defaults.TEXT_EDIT); }
+    public static FMUserDefaults domain() { return FMUserDefaults.of(FMUserDefaults.TEXT_EDIT); }
 
     /** Fills in the values a fresh install would have. */
     public static void installDefaults() {
-        Defaults d = domain();
+        FMUserDefaults d = domain();
         d.applyDefault(WIDTH_IN_CHARS, 75L);
         d.applyDefault(HEIGHT_IN_CHARS, 25L);
     }

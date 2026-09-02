@@ -24,7 +24,7 @@ import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.bundle.LaunchServices;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.appkit.AppWindow;
 
 import org.fractalmicro.os.DockSettings;
@@ -261,12 +261,12 @@ public class MainMenu extends JMenuBar {
             ? CLOSES_EVERYTHING : CLOSES_EVERYTHING_TOO);
         // Both of the answers that are not Cancel end something that cannot be brought
         // back, so this asks the way such things are asked: Cancel is the default.
-        int choice = Alert.confirmIrreversible(FMLocalized.of(question), detail,
+        int choice = FMAlert.confirmIrreversible(FMLocalized.of(question), detail,
                                                FMLocalized.of(verb),
                                                FMLocalized.of(QUIT_DESKTOP));
         if (choice == 0) {
             if (!action.getAsBoolean()) {
-                Alert.tell(FMLocalized.filled(WOULD_NOT, FMLocalized.of(verb)),
+                FMAlert.tell(FMLocalized.filled(WOULD_NOT, FMLocalized.of(verb)),
                            FMLocalized.of(REFUSED));
             }
         } else if (choice == 2) {

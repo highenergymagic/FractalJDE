@@ -21,7 +21,7 @@ package org.fractalmicro.ui;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 
 import org.fractalmicro.appkit.FMTextField;
 import org.fractalmicro.fs.FS;
@@ -162,12 +162,12 @@ public final class NameEditor {
         File from = node.file;
         File to = new File(from.getParentFile(), wanted);
         if (to.exists()) {
-            Alert.tell(FMString.of("The name " + '“' + wanted + '”' + " is already taken."),
+            FMAlert.tell(FMString.of("The name " + '“' + wanted + '”' + " is already taken."),
                        FMString.of("Please choose a different name."));
             return;
         }
         if (!from.renameTo(to)) {
-            Alert.tell(FMString.of("The item " + '\u201c' + from.getName() + '\u201d' + " could"
+            FMAlert.tell(FMString.of("The item " + '\u201c' + from.getName() + '\u201d' + " could"
                                    + '\u2019' + "t be renamed."),
                        FMString.of("It may be open, or you may not have permission to change it."));
             return;

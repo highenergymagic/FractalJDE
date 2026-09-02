@@ -21,7 +21,7 @@ package org.fractalmicro.a11y;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.appkit.Sheet;
 
 import javax.swing.*;
@@ -49,7 +49,7 @@ public final class SheetTest {
 
         FMString[] buttons = {FMString.of("Save"), FMString.of("Cancel"), FMString.of("Don’t Save")};
         int[] answer = {-1};
-        JPanel panel = Sheet.panelFor(Alert.Kind.CAUTION,
+        JPanel panel = Sheet.panelFor(FMAlert.Kind.CAUTION,
             FMString.of("Do you want to save the changes you made to this document?"),
             FMString.of("Your changes will be lost if you don’t save them."), buttons, answer);
         List<JButton> made = Sheet.buttonsOf(panel);

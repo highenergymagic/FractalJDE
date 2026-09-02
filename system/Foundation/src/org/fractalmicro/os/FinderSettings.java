@@ -40,7 +40,7 @@ public final class FinderSettings {
      * This program's own settings. They sit in the Finder domain beside the rest, since
      * the domain is this program's own now rather than borrowed.
      */
-    public static final FMString FRACTAL = Defaults.FINDER;
+    public static final FMString FRACTAL = FMUserDefaults.FINDER;
 
     // org.fractalmicro.finder
     public static final FMString SHOW_HARD_DRIVES     = FMString.of("ShowHardDrivesOnDesktop");
@@ -84,14 +84,14 @@ public final class FinderSettings {
     public static final FMString COLUMN_VIEW_STYLE = FMString.of("clmv");
     public static final FMString FLOW_VIEW_STYLE   = FMString.of("Flwv");
 
-    private static Defaults finder() { return Defaults.of(Defaults.FINDER); }
-    private static Defaults global() { return Defaults.of(Defaults.GLOBAL); }
-    private static Defaults access() { return Defaults.of(Defaults.UNIVERSAL_ACCESS); }
-    private static Defaults ours()   { return Defaults.of(FRACTAL); }
+    private static FMUserDefaults finder() { return FMUserDefaults.of(FMUserDefaults.FINDER); }
+    private static FMUserDefaults global() { return FMUserDefaults.of(FMUserDefaults.GLOBAL); }
+    private static FMUserDefaults access() { return FMUserDefaults.of(FMUserDefaults.UNIVERSAL_ACCESS); }
+    private static FMUserDefaults ours()   { return FMUserDefaults.of(FRACTAL); }
 
     /** Fills in the values a fresh install would have. */
     public static void installDefaults() {
-        Defaults f = finder();
+        FMUserDefaults f = finder();
         f.applyDefault(SHOW_HARD_DRIVES, Boolean.TRUE);
         f.applyDefault(SHOW_EXTERNAL_DRIVES, Boolean.TRUE);
         f.applyDefault(SHOW_REMOVABLE_MEDIA, Boolean.TRUE);
@@ -108,16 +108,16 @@ public final class FinderSettings {
         f.applyDefault(SORT_FOLDERS_FIRST, Boolean.TRUE);
         f.save();
 
-        Defaults g = global();
+        FMUserDefaults g = global();
         g.applyDefault(SHOW_ALL_EXTENSIONS, Boolean.FALSE);
         g.applyDefault(HIGHLIGHT_COLOUR, "0.220 0.459 0.847");
         g.save();
 
-        Defaults a = access();
+        FMUserDefaults a = access();
         a.applyDefault(WHITE_ON_BLACK, Boolean.FALSE);
         a.save();
 
-        Defaults o = ours();
+        FMUserDefaults o = ours();
         o.applyDefault(SYSTEM_ICONS, Boolean.TRUE);
         o.applyDefault(SIDEBAR_SHOW_DEVICES, Boolean.TRUE);
         o.applyDefault(SIDEBAR_SHOW_PLACES, Boolean.TRUE);

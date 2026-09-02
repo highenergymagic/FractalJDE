@@ -60,7 +60,7 @@ public final class Languages {
      * ones, and each of them is in a process of its own.
      */
     public static final FMString CHANGED =
-        FMString.of("org.fractalmicro.languagesChanged");
+        FMString.of("FMLanguagesDidChangeNotification");
 
     /** What was asked for last, so that asking is not a read of the preferences. */
     private static volatile FMArray<FMString> cached;
@@ -85,7 +85,7 @@ public final class Languages {
 
     private static FMArray<FMString> read() {
         FMMutableArray<FMString> out = FMMutableArray.empty();
-        for (Object one : Defaults.of(Defaults.GLOBAL).array(KEY)) {
+        for (Object one : FMUserDefaults.of(FMUserDefaults.GLOBAL).array(KEY)) {
             FMString code = FMString.describing(one);
             if (!code.isBlank() && !out.contains(code)) out.add(code);
         }
@@ -107,7 +107,7 @@ public final class Languages {
     public static void setPreferred(FMArray<FMString> languages) {
         java.util.List<Object> codes = new java.util.ArrayList<>();
         for (FMString one : languages) codes.add(one.toString());
-        Defaults.of(Defaults.GLOBAL).set(KEY, codes);
+        FMUserDefaults.of(FMUserDefaults.GLOBAL).set(KEY, codes);
         forget();
         org.fractalmicro.foundation.FMLocalized.reload();
         // Every other process is showing words in the language that was wanted a moment

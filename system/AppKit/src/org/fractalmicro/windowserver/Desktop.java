@@ -23,7 +23,7 @@ package org.fractalmicro.windowserver;
 import org.fractalmicro.appkit.AppFrame;
 import org.fractalmicro.appkit.AppWindow;
 
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.fs.*;
 
 import javax.swing.*;
@@ -178,16 +178,16 @@ public class Desktop extends JFrame {
         // does then is exactly what a change in this one does, because by the time
         // anything is told the value is already written and both are reading the same file.
         org.fractalmicro.foundation.FMDistributedNotificationCenter.defaultCenter().addObserver(
-            Defaults.CHANGED, (name, about) -> {
+            FMUserDefaults.CHANGED, (name, about) -> {
                 org.fractalmicro.foundation.FMArray<org.fractalmicro.foundation.FMString> parts =
                     about.split(org.fractalmicro.foundation.FMString.of(" "));
                 if (parts.count() >= 2) {
-                    Defaults.announce(parts.at(0).toString(), parts.at(1).toString());
+                    FMUserDefaults.announce(parts.at(0).toString(), parts.at(1).toString());
                 }
             });
 
-        Defaults.onChange((domain, key) -> {
-            if (Defaults.UNIVERSAL_ACCESS.equals(domain)) {
+        FMUserDefaults.onChange((domain, key) -> {
+            if (FMUserDefaults.UNIVERSAL_ACCESS.equals(domain)) {
                 Wallpaper.invalidate();
                 repaint();
             }

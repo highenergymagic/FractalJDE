@@ -23,7 +23,7 @@ import org.fractalmicro.foundation.FMArray;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 
 import java.awt.Color;
@@ -79,7 +79,7 @@ public final class Labels {
     /** The name of one label, as it is set now. */
     public static String nameOf(int label) {
         if (label <= 0 || label >= COUNT) return DEFAULT_NAMES[0];
-        FMArray<Object> names = Defaults.of(Defaults.FINDER).array(NAMES_KEY);
+        FMArray<Object> names = FMUserDefaults.of(FMUserDefaults.FINDER).array(NAMES_KEY);
         if (names.count() >= COUNT - 1) {
             Object name = names.at(label - 1);
             if (name instanceof FMString text && !text.isBlank()) return text.toString();
@@ -97,10 +97,10 @@ public final class Labels {
     /** Renames one label, the way the Labels pane of Finder preferences does. */
     public static void rename(int label, String name) {
         if (label <= 0 || label >= COUNT) return;
-        java.util.List<Object> names = new ArrayList<>(Defaults.of(Defaults.FINDER).array(NAMES_KEY).asList());
+        java.util.List<Object> names = new ArrayList<>(FMUserDefaults.of(FMUserDefaults.FINDER).array(NAMES_KEY).asList());
         while (names.size() < COUNT - 1) names.add(DEFAULT_NAMES[names.size() + 1]);
         names.set(label - 1, name);
-        Defaults.of(Defaults.FINDER).set(NAMES_KEY, names);
+        FMUserDefaults.of(FMUserDefaults.FINDER).set(NAMES_KEY, names);
     }
 
     /* --------------------------------------------------------- one file */

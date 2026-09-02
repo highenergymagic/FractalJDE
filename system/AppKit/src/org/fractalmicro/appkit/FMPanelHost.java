@@ -27,7 +27,7 @@ import org.fractalmicro.foundation.FMURL;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Kinds;
 import org.fractalmicro.fs.Node;
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.windowserver.Desktop;
 
@@ -464,18 +464,18 @@ final class FMPanelHost {
     /* ------------------------------------------------------------ what it remembers */
 
     private static boolean rememberedExpanded() {
-        return Defaults.of(Defaults.GLOBAL).bool(EXPANDED, false);
+        return FMUserDefaults.of(FMUserDefaults.GLOBAL).bool(EXPANDED, false);
     }
 
     private static void rememberExpanded(boolean expanded) {
-        Defaults.of(Defaults.GLOBAL).set(EXPANDED, expanded);
+        FMUserDefaults.of(FMUserDefaults.GLOBAL).set(EXPANDED, expanded);
     }
 
     /** Which of the three views the panel was last left in, kept between openings. */
     private static final FMString VIEW = FMString.of("NSNavPanelFileListModeForSaveMode");
 
     private static FMBrowser.Mode rememberedMode() {
-        String named = Defaults.of(Defaults.GLOBAL).string(VIEW).toString();
+        String named = FMUserDefaults.of(FMUserDefaults.GLOBAL).string(VIEW).toString();
         for (FMBrowser.Mode one : FMBrowser.Mode.values()) {
             if (one.name().equals(named)) return one;
         }
@@ -483,7 +483,7 @@ final class FMPanelHost {
     }
 
     static void rememberMode(FMBrowser.Mode mode) {
-        Defaults.of(Defaults.GLOBAL).set(VIEW, mode.name());
+        FMUserDefaults.of(FMUserDefaults.GLOBAL).set(VIEW, mode.name());
     }
 
     /* ------------------------------------------------------------- the panel's state */
@@ -646,7 +646,7 @@ final class FMPanelHost {
          * folder is said so rather than silently ignored.
          */
         void goToFolder() {
-            FMString typed = Alert.ask(FMLocalized.of(FMSavePanel.GO_TO_PROMPT),
+            FMString typed = FMAlert.ask(FMLocalized.of(FMSavePanel.GO_TO_PROMPT),
                                        FMLocalized.of(FMSavePanel.GO_TO_LABEL),
                                        FMString.EMPTY,
                                        FMLocalized.of(FMSavePanel.GO_TO_BUTTON));
@@ -656,7 +656,7 @@ final class FMPanelHost {
             if (asked.isDirectory()) {
                 goTo(asked, true);
             } else {
-                Alert.tell(FMLocalized.filled(FMSavePanel.NO_SUCH_FOLDER, typed),
+                FMAlert.tell(FMLocalized.filled(FMSavePanel.NO_SUCH_FOLDER, typed),
                            FMLocalized.of(FMSavePanel.CHECK_SPELLING));
             }
         }
@@ -732,7 +732,7 @@ final class FMPanelHost {
             FMURL where = panel.completing(
                 FMURL.of(folder).appending(FMString.of(name.getText().trim())));
             if (where.exists()) {
-                boolean over = Alert.confirm(Alert.Kind.CAUTION,
+                boolean over = FMAlert.confirm(FMAlert.Kind.CAUTION,
                     FMLocalized.filled(FMSavePanel.REPLACE_QUESTION, where.lastComponent()),
                     FMLocalized.of(FMSavePanel.REPLACE_WARNING),
                     FMLocalized.of(FMSavePanel.REPLACE_BUTTON));

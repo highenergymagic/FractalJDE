@@ -89,6 +89,19 @@ Where a framework does need a program, it opens it by bundle identifier and talk
 through `org.fractalmicro.appkit.FMApplicationDelegate`. Nothing in `system/` names a class
 in `apps/`.
 
+Everything published for a program to use carries the `FM` prefix, the way everything in
+Cocoa carries `NS`: `FMString`, `FMURL`, `FMApplication`, `FMSavePanel`, `FMWorkspace`,
+`FMProcessInfo`. Anything without it is the plumbing underneath. That is not a naming
+convention but the promise the system makes, because every class an application names is
+one that cannot then change without breaking it.
+
+It was not true until recently, and the applications are what showed it. Between them they
+named seventeen of this system's classes and only five were published: Activity Monitor
+reached into the task table, System Profiler into the file layer, Terminal into the shell.
+Cocoa has a name for every one of those questions, so they now have theirs, and
+`VocabularyTest` reads the applications on every run and says how many are still reaching
+inside. Three, and the list of which is written down.
+
 The images under `system/` are built in the order they depend on each other, so a library
 cannot use something above it even by accident. Packages are `org.fractalmicro.*`
 throughout, matching the bundle identifiers.

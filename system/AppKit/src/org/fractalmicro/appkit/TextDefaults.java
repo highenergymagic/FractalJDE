@@ -22,7 +22,7 @@ package org.fractalmicro.appkit;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.os.Defaults;
+import org.fractalmicro.os.FMUserDefaults;
 
 /**
  * The text settings that belong to the system rather than to one program.
@@ -46,10 +46,10 @@ public final class TextDefaults {
     public static final FMString DATA_DETECTORS = FMString.of("NSAutomaticDataDetectionEnabled");
     public static final FMString TEXT_REPLACEMENT = FMString.of("NSAutomaticTextReplacementEnabled");
 
-    private static Defaults global() { return Defaults.of(Defaults.GLOBAL); }
+    private static FMUserDefaults global() { return FMUserDefaults.of(FMUserDefaults.GLOBAL); }
 
     public static void installDefaults() {
-        Defaults d = global();
+        FMUserDefaults d = global();
         d.applyDefault(SPELLING, Boolean.TRUE);
         d.applyDefault(QUOTES, Boolean.FALSE);
         d.applyDefault(DASHES, Boolean.FALSE);

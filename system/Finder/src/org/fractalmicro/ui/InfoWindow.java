@@ -21,7 +21,7 @@ package org.fractalmicro.ui;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Kinds;
@@ -116,7 +116,7 @@ public class InfoWindow extends JInternalFrame {
             if (f == null) return;
             boolean ok = locked.isSelected() ? f.setReadOnly() : f.setWritable(true);
             if (!ok) {
-                Alert.tell(FMString.of("The lock on " + LEFT_QUOTE + node.name + RIGHT_QUOTE
+                FMAlert.tell(FMString.of("The lock on " + LEFT_QUOTE + node.name + RIGHT_QUOTE
                                    + " can" + APOSTROPHE + "t be changed."),
                            FMString.of("You may not have permission to change this item."));
             }

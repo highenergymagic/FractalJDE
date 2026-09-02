@@ -21,7 +21,7 @@ package org.fractalmicro.a11y;
 
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.appkit.Alert;
+import org.fractalmicro.appkit.FMAlert;
 
 import java.io.PrintStream;
 
@@ -53,29 +53,29 @@ public final class AlertTest {
 
         FMString[] ordinary = {FMString.of("Keep"), FMString.of("Cancel")};
         failures += check(out, "an ordinary question presses its action button on Return",
-            Alert.defaultButtonName(ordinary, 0).sameAs(FMString.of("Keep")));
+            FMAlert.defaultButtonName(ordinary, 0).sameAs(FMString.of("Keep")));
 
-        FMString[] session = Alert.irreversibleButtons(FMString.of("Log Out"), FMString.of("Quit FractalJDE"));
+        FMString[] session = FMAlert.irreversibleButtons(FMString.of("Log Out"), FMString.of("Quit FractalJDE"));
         failures += check(out, "an irreversible question puts its buttons in the usual order",
             session.length == 3 && session[0].sameAs(FMString.of("Log Out"))
             && session[1].sameAs(FMString.of("Cancel")) && session[2].sameAs(FMString.of("Quit FractalJDE")));
 
         failures += check(out, "and Cancel is the one Return presses",
-            Alert.defaultButtonName(session, Alert.CANCEL).sameAs(FMString.of("Cancel")));
+            FMAlert.defaultButtonName(session, FMAlert.CANCEL).sameAs(FMString.of("Cancel")));
 
-        FMString[] two = Alert.irreversibleButtons(FMString.of("Empty Trash"), null);
+        FMString[] two = FMAlert.irreversibleButtons(FMString.of("Empty Trash"), null);
         failures += check(out, "a question with two buttons still defaults to Cancel",
-            two.length == 2 && Alert.defaultButtonName(two, Alert.CANCEL).sameAs(FMString.of("Cancel")));
+            two.length == 2 && FMAlert.defaultButtonName(two, FMAlert.CANCEL).sameAs(FMString.of("Cancel")));
 
         failures += check(out, "Cancel is where the answers say it is",
-            Alert.CANCEL == 1
-            && session[Alert.CANCEL].sameAs(FMString.of("Cancel"))
-            && two[Alert.CANCEL].sameAs(FMString.of("Cancel")));
+            FMAlert.CANCEL == 1
+            && session[FMAlert.CANCEL].sameAs(FMString.of("Cancel"))
+            && two[FMAlert.CANCEL].sameAs(FMString.of("Cancel")));
 
         // The thing that went wrong: the action was the default and Return did it.
         failures += check(out, "no irreversible question makes its action the default",
-            !Alert.defaultButtonName(session, Alert.CANCEL).equals(session[0])
-            && !Alert.defaultButtonName(two, Alert.CANCEL).equals(two[0]));
+            !FMAlert.defaultButtonName(session, FMAlert.CANCEL).equals(session[0])
+            && !FMAlert.defaultButtonName(two, FMAlert.CANCEL).equals(two[0]));
 
         out.println("      " + (failures == 0 ? "Return presses the safe button"
                                               : failures + " failed"));
