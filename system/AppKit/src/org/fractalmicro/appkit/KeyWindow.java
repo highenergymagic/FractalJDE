@@ -24,27 +24,16 @@ import java.awt.Component;
 /**
  * A window that says where the keyboard lands inside it.
  *
- * Swing will find a window's first control by walking its focus policy, and for most
- * windows that is the right one. A window where it is not says so here: a file browser
- * opens on its files, not on the search field at the far end of its toolbar.
- *
- * This is an interface rather than the screen knowing which windows are which. The screen
- * used to ask whether the window was a Finder window and call a method on it, which meant
- * the layer that draws had to be able to name a class in the file manager, and so had to be
- * built after it. What it actually wanted was this question, and any window can answer it.
+ * Swing walks the focus policy and gets it right for most windows. A window where it does
+ * not says so here: a file browser opens on its files, not on the search field at the far
+ * end of its toolbar. An interface rather than the screen knowing which windows are which,
+ * so the layer that draws does not have to name a class in the file manager.
  */
 public interface KeyWindow {
 
-    /**
-     * What the keyboard goes to when the window opens, or null for the usual first control.
-     */
+    /** Null for the usual first control. */
     Component initialFirstResponder();
 
-    /**
-     * Puts the keyboard on the window's toolbar, the way Control F5 does on a Mac.
-     *
-     * Answers false when there is no toolbar showing, which is a thing to say out loud
-     * rather than a key that silently does nothing.
-     */
+    /** Control F5 on a Mac. False when there is no toolbar, rather than a key doing nothing. */
     default boolean focusToolbar() { return false; }
 }

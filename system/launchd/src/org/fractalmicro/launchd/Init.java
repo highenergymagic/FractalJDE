@@ -31,24 +31,16 @@ import java.util.List;
 /**
  * The first thing that runs, and the last thing left.
  *
- * The loader maps this and calls it, and from here everything else in the system is
- * started. It is task 1, which is not a convention so much as an arithmetic fact: numbers
- * are handed out in order and this one was first, so everything started afterwards is
- * descended from it.
+ * The loader maps this and calls it, and everything else starts from here. It is task 1,
+ * which is arithmetic rather than convention: numbers are handed out in order and this one
+ * was first, so everything else is descended from it.
  *
- * Three things belong to task 1 and to nothing else.
- *
- * It brings the system up, in an order it decides. The metadata server before the screen,
- * because searching should work the moment there is somewhere to type; the screen before
- * anything a person can open, because there is nowhere to put a window until then.
- *
- * It is the parent of last resort. When something ends while it still has children, those
- * children are handed here, because a task whose parent is gone would otherwise have
- * nobody to report to and would sit as a zombie forever, holding a number.
- *
- * And it reaps. A task that has ended keeps its number and its exit status until somebody
- * asks, and for anything orphaned that somebody is this. A system without that leaks a
- * number every time a program quits, and eventually cannot start one.
+ * Three things belong to task 1 and nothing else. It brings the system up in an order it
+ * decides: the metadata server before the screen, so searching works the moment there is
+ * somewhere to type, and the screen before anything a person can open. It is the parent of
+ * last resort, so a task whose parent has gone still has somebody to report to rather than
+ * sitting as a zombie holding a number. And it reaps, since a system that does not leaks a
+ * number every time a program quits and eventually cannot start one.
  *
  * It does not exit. If it did there would be no system.
  */

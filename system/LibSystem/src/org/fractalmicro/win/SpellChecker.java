@@ -34,12 +34,10 @@ import java.util.List;
  * words the user added in their own settings are the words this sees, which is the reason
  * to ask the system rather than ship a copy.
  *
- * The service is a set of component objects, so the calls go through a table of function
- * pointers rather than by name. An interface pointer points at a pointer to that table;
+ * Component objects, so calls go through a table of function pointers rather than by name:
  * each method is at a known place in it, the first three being the ones every component
- * has. So Check is the fifth entry of ISpellChecker, and calling it means reading the
- * table, taking that entry, and calling it with the interface pointer as its first
- * argument.
+ * has, and calling one means reading the table and passing the interface pointer as the
+ * first argument.
  *
  *   ISpellCheckerFactory   3 get_SupportedLanguages  4 IsSupported  5 CreateSpellChecker
  *   ISpellChecker          4 Check                   5 Suggest      6 Add   7 Ignore
@@ -48,8 +46,7 @@ import java.util.List;
  *                          6 get_Replacement
  *   IEnumString            3 Next
  *
- * A machine with no dictionary for the language says so through {@link #available()},
- * and nothing pretends to check anything.
+ * A machine with no dictionary for the language says so through {@link #available()}.
  */
 public final class SpellChecker {
     private SpellChecker() {}

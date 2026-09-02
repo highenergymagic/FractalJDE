@@ -24,14 +24,12 @@ import org.fractalmicro.foundation.FMString;
 /**
  * Something running, as a program looking at the list sees it.
  *
- * A copy rather than a handle on the thing itself, for the reason NSRunningApplication is
- * one: what is running is in another process, cannot be passed across, and by the time
- * anybody reads a line of a listing it may not be running any more. What a listing needs is
- * what was true when it was asked.
+ * A copy rather than a handle, for the reason NSRunningApplication is one: it is in another
+ * process, cannot be passed across, and may have stopped by the time anybody reads the line.
+ * What a listing needs is what was true when it was asked.
  *
- * The number is this system's own. Where it says it is running is the host system's number
- * for the process it is in, which for several tasks is the same process; both are shown
- * because both are real and hiding either makes the table harder to believe.
+ * The number is this system's own; the host is the host's number for the process it runs in,
+ * which for several tasks is the same process. Both are shown because both are real.
  */
 public record FMRunningApplication(int processIdentifier, int parentProcessIdentifier,
                                    FMString localizedName, FMString kind,

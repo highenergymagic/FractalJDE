@@ -68,49 +68,24 @@ public final class WindowServer {
     public static final String CLOSE = "closeWindow";
     public static final String SET = "setValue";
 
-    /**
-     * Replaces what is in a list.
-     *
-     * A value and a list of rows are different enough to be different messages. A
-     * program setting a value is saying what one control holds; a program setting rows
-     * is saying what a list is of, which is the thing that changes while a window is
-     * open and the reason a listing can show what is running rather than what was.
-     */
+    /** What a list is of, which is not the same question as what one control holds. */
     public static final String SET_ROWS = "setRows";
 
-    /**
-     * Shows or hides a control.
-     *
-     * A window with panes is one window, and the panes are all in it: they sit in the same
-     * place and one of them is shown. Describing a window per pane would mean a window that
-     * closes and reopens every time somebody clicks a name in the list, which is not what
-     * a pane is.
-     */
+    /** Shows or hides a control. A window with panes is one window with all of them in it. */
     public static final String SET_VISIBLE = "setVisible";
 
     /**
-     * Asks a control to do something to itself.
+     * Asks a control to do something to itself: cut, paste, bold, centre.
      *
-     * Cut, paste, bold, centre: every one of them is a thing done to the text in a view,
-     * by the view, and none of them is something a program can do from outside. On a Mac
-     * the program does not do them either. It sends the command, and it travels down the
-     * responder chain until it reaches something that knows what "bold" means, which is
-     * the text view. This is that chain, with a process boundary in the middle of it.
-     *
-     * What the names are is not this system's invention: the editor kits have had them
-     * since text views did, and using them means the actions are the ones already tested
-     * against every kind of selection somebody can make.
+     * None of those is something a program can do from outside, and on a Mac the program
+     * does not do them either. It sends the command and the responder chain carries it to
+     * whatever knows what "bold" means. This is that chain with a process boundary in it.
+     * The names are the editor kits' own, so the actions are ones already tested against
+     * every kind of selection somebody can make.
      */
     public static final String PERFORM = "perform";
 
-    /**
-     * Looking for something in a control that can look.
-     *
-     * Not setValue, because a browser has two things a program decides and they are not
-     * the same thing: where it is, and what is being looked for. Sending one message that
-     * meant either depending on the shape of the text would be a message nobody could read
-     * twice.
-     */
+    /** Where a browser is and what is being looked for are two questions, so two messages. */
     public static final String FIND = "find";
 
     /** Choosing a stretch of text, and asking what is chosen. */
@@ -120,12 +95,8 @@ public final class WindowServer {
     public static final String SET_TITLE = "setTitle";
 
     /**
-     * Says the window is holding changes that have not been written.
-     *
-     * A window property rather than something in the title, because that is where Mac OS X
-     * puts it: a dot in the close button, on the control that would lose the work. A
-     * program elsewhere knows whether its document has changed and nothing here does, so it
-     * says, the same way it says what the title is.
+     * Says the window is holding changes that have not been written. A dot in the close
+     * button, where Mac OS X puts it, on the control that would lose the work.
      */
     public static final String SET_EDITED = "setDocumentEdited";
     public static final String SET_ENABLED = "setEnabled";
@@ -135,49 +106,29 @@ public final class WindowServer {
     /**
      * Asking a person something, and telling them something.
      *
-     * A program in a process of its own cannot put up a dialog. It has no screen: the
-     * screen belongs to this process, and a window drawn anywhere else is a window sitting
-     * outside the desktop where nobody is looking for it. Save in TextEdit did exactly
-     * that for a while, and what it looked like from the outside was Save doing nothing.
-     *
-     * So the program asks and this answers, the same way it asks for a window. What comes
-     * back is what the person typed, or nothing if they cancelled.
+     * A program in its own process has no screen, and a dialog drawn anywhere else sits
+     * outside the desktop where nobody is looking for it. So the program asks and this
+     * answers, the same way it asks for a window.
      */
     public static final String ASK = "ask";
     public static final String TELL = "tell";
     public static final String CONFIRM = "confirm";
 
-    /**
-     * A question with three answers, one of which loses work.
-     *
-     * Save, Cancel, Don't Save: what a program asks when a document is being closed with
-     * changes in it. It answers with which was chosen, in the order the buttons are
-     * offered, because a program that only knew yes or no would have to ask twice.
-     */
+    /** Save, Cancel, Don't Save. Three answers, so not something yes or no could carry. */
     public static final String CHOOSE = "choose";
 
-    /**
-     * The save and open panels.
-     *
-     * Every program that saves asks the same question, so the panel belongs to the system
-     * rather than to any of them. It is built here for the same reason a window is: this is
-     * the process with a screen, and on a Mac the panel is drawn outside the asking program
-     * too.
-     */
+    /** Every program that saves asks the same question, so the panel belongs to the system. */
     public static final String SAVE_PANEL = "savePanel";
     public static final String OPEN_PANEL = "openPanel";
 
     /**
      * A described window, run as a sheet on one that is already open.
      *
-     * A sheet is not a window a program opens and later closes. It is a question asked of
-     * one window, which cannot be answered anywhere else and cannot be ignored, and the
-     * asking waits. So it is one message that goes out and comes back with the answer,
-     * rather than a window identifier the program then has to look after.
-     *
-     * What comes back is which button ended it and what everything in it held when it did,
-     * because a sheet exists to collect exactly that and a program that had to ask again
-     * afterwards would be asking a sheet that is no longer there.
+     * A sheet is a question asked of one window that cannot be answered anywhere else, and
+     * the asking waits. So it is one message out and back with the answer, rather than an
+     * identifier the program then has to look after. What comes back is which button ended
+     * it and what everything in it held, since asking again afterwards would be asking a
+     * sheet that is no longer there.
      */
     public static final String SHEET = "sheet";
 
@@ -188,37 +139,26 @@ public final class WindowServer {
     public static final String EVENT_MENU = "menu";
     /**
      * Somebody opened what they had chosen: a double click, or Return on a selection.
-     *
-     * Separate from an action, because choosing and opening are different answers to
-     * different questions and a program that could not tell them apart would open a folder
-     * every time somebody looked at one.
+     * Separate from an action, or a view would open a folder every time one was looked at.
      */
     public static final String EVENT_OPEN = "open";
 
     /**
-     * The program has been opened again, on some files.
-     *
-     * Not a control doing anything, which is why it is its own kind: nothing in the window
-     * was used, and there may not be a window yet. It is the system telling a program that
-     * somebody double-clicked a document it handles while it was already running.
+     * The program has been opened again, on some files. Its own kind because nothing in the
+     * window was used and there may not be a window: it is somebody double-clicking a
+     * document the program handles while it was already running.
      */
     public static final String EVENT_OPEN_FILES = "openFiles";
 
     /**
      * Which of these commands can be done right now?
      *
-     * Cocoa asks this by sending validateMenuItem: to whatever would perform the command,
-     * every time a menu is about to open. It can, because the menu and the program are in
-     * one process. Here the menu is drawn by the desktop and the program is somewhere else,
-     * so the question has to be carried, and it goes as an event like everything else:
-     * these are the commands in the menu somebody just clicked, say which of them are live.
+     * Cocoa sends validateMenuItem: to whatever would perform the command, which it can
+     * because the menu and the program are one process. Here they are not, so the question
+     * is carried as an event: these are the commands in the menu, say which are live. Once
+     * for a whole menu, since what matters is the number of round trips.
      *
-     * Asked once for a whole menu rather than once an item. A menu is opened by a mouse
-     * going down and has to be right by the time it is drawn, so what matters is the number
-     * of round trips and not the number of questions in one.
-     *
-     * The program never sees this. It answers from what it has said it can do, the same way
-     * a Cocoa program answers by having implemented the action or not, so nothing has to be
+     * The program never sees it. It answers from what it has said it can do, so nothing is
      * written twice and a menu cannot disagree with the program about what exists.
      */
     public static final String EVENT_VALIDATE = "validate";
@@ -822,15 +762,11 @@ public final class WindowServer {
     /**
      * Whether the value in a control is being set by the program that owns it.
      *
-     * A control that has been given a value has not been used, and telling the program
-     * otherwise is telling it a person did something they did not. Worse, it comes back to
-     * the program that just set it: a window that fills its controls in when it opens would
-     * hear that every one of them had been used, and a program that writes a setting when it
-     * hears that would write all of them back over themselves.
-     *
-     * Cocoa has the same rule and states it the same way: setting a control does not send
-     * its action. One flag rather than one per control, because every one of these happens
-     * on the thread that draws and nothing else can be between them.
+     * A control given a value has not been used, and the event goes back to the program
+     * that just set it: a window filling its controls in as it opens would hear that every
+     * one of them had been used. Cocoa states the same rule: setting a control does not
+     * send its action. One flag rather than one per control, since all of this happens on
+     * the thread that draws.
      */
     private boolean settingFromTheProgram;
 
@@ -852,17 +788,11 @@ public final class WindowServer {
     /**
      * Asks a program which of these commands it can do, and waits for the answer.
      *
-     * Waits, because the menu is opening: a menu that greyed its items a moment after a
-     * person could see them would be worse than one that never greyed them, since by then
-     * they may have clicked. Cocoa waits too; it is a method call there and the wait is
-     * nothing, and here it is a pipe and the wait is nearly nothing.
+     * Waits, because the menu is opening and greying items after a person can see them is
+     * worse than never greying them. A program that does not answer within a quarter of a
+     * second has stopped answering, and its menus stay as the description left them.
      *
-     * A program that does not answer in a quarter of a second is one that has stopped
-     * answering, and its menus stay as the description left them. That is the same thing a
-     * Mac does with a program that has stopped: the menus are still there and still say what
-     * the program said they would.
-     *
-     * Answers nothing at all when there was no answer, which is different from an answer
+     * Answers nothing at all when there was no answer, which is not the same as an answer
      * that nothing can be done.
      */
     private java.util.Set<String> whatCanBeDone(String application, List<String> actions) {
@@ -916,15 +846,13 @@ public final class WindowServer {
     /**
      * Tells a program that is already running that it has been opened on something.
      *
-     * This is NSApplication's application:openFiles:, and it exists because a program with
-     * a process of its own cannot be handed an object. Before it, opening a second document
-     * started a second copy of the program: two TextEdits, two Dock tiles, two of everything
-     * it had open. A Mac has never done that.
+     * NSApplication's application:openFiles:, which exists because a program in its own
+     * process cannot be handed an object. Without it, opening a second document started a
+     * second copy: two TextEdits, two Dock tiles, two of everything.
      *
-     * It needs no new channel. The program is already reading events from here and has been
-     * since it opened its window, so being opened again is one more of those. Answers
-     * whether there was anybody there to tell, which is how the caller knows whether to
-     * start one instead.
+     * It needs no new channel, since the program has been reading events since it opened
+     * its window. Answers whether there was anybody there to tell, which is how the caller
+     * knows whether to start one instead.
      */
     public boolean reopen(String application, List<String> paths) {
         return deliver(application, Message.of(EVENT)
@@ -1147,13 +1075,9 @@ public final class WindowServer {
     /**
      * Whether a value crossing the boundary means yes.
      *
-     * A tick is a truth, and a truth travels as any of the things a truth is written as: a
-     * boolean, a number that is not nought, or one of the words. Property lists have always
-     * had both `<true/>` and `1` and have always meant the same by them.
-     *
-     * It used to take only the boolean and the word, and a program sending a number sent a
-     * tick that never appeared. Every checkbox in System Preferences came up clear whatever
-     * the setting behind it said, which read as a program that had forgotten its settings.
+     * A boolean, a number that is not nought, or one of the words. Property lists have
+     * always had both `<true/>` and `1` and have always meant the same by them, and taking
+     * only the first had every checkbox in System Preferences come up clear.
      */
     private static boolean isTrue(Object value, String text) {
         if (value instanceof Boolean truth) return truth;

@@ -160,11 +160,10 @@ public final class Bundles {
     /**
      * Writes the built-in bundles, then reads everything that is installed.
      *
-     * Writing them needs somewhere to take their code from, and there is not always one. A
-     * system started from its own images is running from the images: there is no archive
-     * of everything to copy an application's classes out of, and rewriting the bundles
-     * without one would replace working programs with empty ones. So when there is no
-     * source, what is installed is left exactly as it is and only read.
+     * Writing them needs somewhere to take their code from. A system started from its own
+     * images has no archive to copy an application's classes out of, and rewriting the
+     * bundles without one would replace working programs with empty ones, so with no
+     * source what is installed is only read.
      */
     public static synchronized void install() {
         // Programs link against the framework, so it has to be there before they are
@@ -225,13 +224,10 @@ public final class Bundles {
     /**
      * Copies a program's own resources into its bundle.
      *
-     * The interface files and the words in each language, from where they are written to
-     * where the program will look for them. They are not code and do not belong in the
-     * executable: a translation is added by putting a directory in the bundle, and having
-     * to rebuild the program to add one would defeat the point of keeping them apart.
-     *
-     * Nothing to copy is the ordinary case for a program whose window is still described
-     * in code, so it is not an error.
+     * The interface files and the words in each language. They are not code: a translation
+     * is added by putting a directory in the bundle, and needing a rebuild to add one would
+     * defeat keeping them apart. Nothing to copy is ordinary for a program whose window is
+     * still described in code.
      */
     private static void copyResources(Spec spec, Bundle bundle) {
         File from = resourcesOf(spec);
@@ -247,13 +243,10 @@ public final class Bundles {
     /**
      * Where a program's resources are, whichever way this is running.
      *
-     * A build making a volume to ship says where it put the compiled code, and stages each
-     * program's resources beside it under the same name. Run out of a checkout instead,
-     * they are still in the tree: under apps for a program, and under system for the Finder
-     * and anything else that is part of the desktop rather than an application of its own.
-     *
-     * The staged copy is tried first, because a volume being built must not pick up
-     * whatever happens to be in the directory the build was started from.
+     * A build says where it put the compiled code and stages each program's resources
+     * beside it. Run out of a checkout they are still in the tree, under apps for a program
+     * and under system for the Finder. The staged copy is tried first, so a volume being
+     * built cannot pick up whatever is in the directory the build started from.
      */
     private static File resourcesOf(Spec spec) {
         String plain = spec.name().replace(" ", "");
@@ -304,11 +297,9 @@ public final class Bundles {
     /**
      * Removes a program that ships with the system from the folder a person's own live in.
      *
-     * These used to install into Applications, beside whatever somebody put there
-     * themselves. They ship in the system's own folder now, and the copy left behind is not
-     * a second program but the same one at an older version: because a person's copy hides
-     * the system's, that stale copy is the one that would open, carrying code compiled
-     * against a framework that has since moved on.
+     * These ship in the system's own folder now. A copy left in Applications is not a
+     * second program but the same one at an older version, and because a person's copy
+     * hides the system's it is the stale one that would open.
      */
     private static void retireMovedBuiltIns() {
         for (Spec spec : BUILT_IN) {
@@ -371,26 +362,20 @@ public final class Bundles {
     /**
      * Whether this program runs in a process of its own.
      *
-     * Cocoa has no such key, because on a Mac every application is its own process and the
-     * question does not arise. Here most are hosted by the desktop and a few are not, and
-     * the bundle is the honest place to say which. The day they have all moved out this key
-     * goes with them.
-     *
-     * There used to be a second class key instead of this, naming a class with a Java main
-     * in it. That was two answers to one question, and the second one existed only because
-     * the entry point of a program was a Java main rather than the thing Cocoa puts there.
+     * Cocoa has no such key, because on a Mac every application is its own process. Here
+     * most are hosted by the desktop and a few are not, and the bundle is the honest place
+     * to say which. The day they have all moved out this key goes with them.
      */
     public static final FMString OWN_PROCESS = FMString.of("FMRunsInOwnProcess");
 
     /**
      * What opening a program actually means, which is not this layer's business.
      *
-     * LaunchServices finds a program and knows what it claims about itself. Making the
-     * class named by NSPrincipalClass and sending it messages on the main thread belongs
-     * above here, with the windows, the way NSApplicationMain does on a Mac. AppKit puts
-     * one of these in place when the desktop starts; a program that runs without a desktop
-     * finds none, and a bundle wrapping something outside this system is opened by the
-     * host instead.
+     * LaunchServices finds a program and knows what it claims. Making the class named by
+     * NSPrincipalClass and sending it messages on the main thread belongs above here with
+     * the windows, the way NSApplicationMain does. AppKit puts one in place when the
+     * desktop starts; without a desktop there is none, and a bundle wrapping something
+     * outside this system is opened by the host.
      */
     public interface Launcher {
         boolean open(Bundle bundle, List<File> files);

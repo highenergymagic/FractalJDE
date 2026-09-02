@@ -171,6 +171,23 @@ no two menu items claim the same shortcut. It checks the wiring, not the pressin
 whether Escape actually lands back on the previous control is the one part still worth
 trying by hand.
 
+## Comments
+
+A comment says why. What the code does is in the code, and a comment repeating it is one
+more thing to keep true.
+
+Length is the part worth being strict about. A long comment is skipped, and a comment
+everybody skips is worse than none, because it also hides the ones worth reading. So a
+member's doc comment is a line or two, and anything longer belongs at the top of the class,
+once, where somebody arriving reads it before anything else.
+
+Two things do not belong in a comment at all. History, which is what the commit that made
+the change is for. And restating the name of the thing above it.
+
+There is more of this than the rule allows: `--selftest` counts the doc comments of ten
+lines or more and holds the number as a ratchet, so it comes down as files are worked on
+and cannot go back up.
+
 ## Version
 
 FractalJDE follows semantic versioning. The number lives in `version.properties` and is

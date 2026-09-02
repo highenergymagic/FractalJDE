@@ -39,10 +39,11 @@ public interface AppWindow {
     List<JMenu> applicationMenus();
 
     /**
-     * What the program menu's Preferences item opens. A program with no settings of its
-     * own leaves this alone and the system settings open instead.
+     * What the program menu's Preferences item opens. A program with no settings of its own
+     * leaves this alone and the settings open on their first pane, which is what naming no
+     * pane means. It used to name one called "system", which is not a pane.
      */
     default void showPreferences() {
-        org.fractalmicro.bundle.Bundles.openPart("org.fractalmicro.systempreferences", "system");
+        org.fractalmicro.bundle.Bundles.openPart("org.fractalmicro.systempreferences", "");
     }
 }

@@ -42,42 +42,25 @@ import org.w3c.dom.NodeList;
  * An interface, written down where a person can edit it.
  *
  * A window described in code is a window nobody can change without a compiler. Interface
- * Builder answered that by keeping the description in a file: the program says which file
- * it wants, and what is in the window is a separate question from what the program does
- * with it. That separation is the whole point, and it is why the file, not the code, is
- * what gets translated.
+ * Builder answered that by keeping the description in a file, and that separation is why
+ * the file rather than the code is what gets translated.
  *
- * The file is XML in the shape Interface Builder writes:
+ * XML in the shape Interface Builder writes it:
  *
- *     <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0">
- *       <objects>
- *         <window title="Calculator" id="window">
- *           <rect key="contentRect" x="196" y="240" width="232" height="300"/>
- *           <view key="contentView" id="content">
- *             <subviews>
- *               <button id="digit 7">
- *                 <rect key="frame" x="12" y="52" width="46" height="40"/>
- *                 <buttonCell key="cell" title="7"/>
- *                 <accessibility key="accessibilityLabel" label="Seven"/>
- *                 <connections><action selector="digit 7"/></connections>
- *               </button>
- *             </subviews>
- *           </view>
- *         </window>
- *       </objects>
- *     </document>
+ *     <button id="digit 7">
+ *       <rect key="frame" x="12" y="52" width="46" height="40"/>
+ *       <buttonCell key="cell" title="7"/>
+ *       <accessibility key="accessibilityLabel" label="Seven"/>
+ *       <connections><action selector="digit 7"/></connections>
+ *     </button>
  *
- * This is a subset of that format rather than all of it. Interface Builder writes a great
- * deal that describes how it was drawing at the time, and none of that is needed to say
- * what a window is. What is here is the part that is the window: the classes, the names,
- * the frames, the connections and the menus.
+ * A subset of that format. Interface Builder writes a great deal describing how it was
+ * drawing at the time, and what is here is only the part that is the window: classes,
+ * names, frames, connections and menus. Identifiers are words rather than numbers, since a
+ * file written by hand does better with the names the program already uses.
  *
- * Identifiers are words rather than numbers. Interface Builder numbers its objects because
- * it makes them by clicking; a file written by hand does better with names, and the names
- * are the ones the program already uses to refer to its controls.
- *
- * A compiled interface would be a nib. There is no compiler here, so the file that ships
- * is the file that was written, which is the arrangement the format had before ibtool.
+ * A compiled interface would be a nib. There is no compiler here, so what ships is what was
+ * written, which is the arrangement the format had before ibtool.
  */
 public final class Xib {
     private Xib() {}

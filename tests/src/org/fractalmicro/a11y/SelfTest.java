@@ -243,6 +243,10 @@ public final class SelfTest {
         int wordFailures = LocalizationTest.run(System.out);
         if (wordFailures > 0) failures.add(wordFailures + " localization checks failed");
 
+        steps += CommentTest.count();
+        int commentFailures = CommentTest.run(System.out);
+        if (commentFailures > 0) failures.add(commentFailures + " comment checks failed");
+
         steps += PanelTest.count();
         int panelFailures = PanelTest.run(System.out);
         if (panelFailures > 0) failures.add(panelFailures + " save panel checks failed");

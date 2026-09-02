@@ -231,13 +231,10 @@ public final class Bundle {
     /**
      * The bundle the running program came out of.
      *
-     * Everything a program needs that is not code is in here: the interface files, the
-     * words in each language, the icon. A program asks for its own bundle rather than
-     * being told where it is, because it is the one thing about its own installation it
-     * can work out and the one thing that would otherwise have to be passed to it.
-     *
-     * The executable is at Contents/Fractal/Name, so the bundle is three directories up.
-     * A program the loader did not start has no bundle, and answers so.
+     * Everything that is not code: interface files, the words in each language, the icon.
+     * A program works this out rather than being told, since the executable is at
+     * Contents/Fractal/Name and the bundle is three directories up. A program the loader
+     * did not start has none, and says so.
      */
     public static Bundle main() {
         String executable = System.getProperty(
@@ -254,16 +251,11 @@ public final class Bundle {
     /**
      * A resource inside the bundle, in the language this account reads.
      *
-     * A bundle keeps one directory per language, named for it and ending in .lproj, and
-     * anything that differs between languages lives in those rather than beside them. The
-     * search is the one every system doing this uses: each language the account asks for,
-     * in the order it asked, then the language the program was written in, then the
-     * resource sitting outside the language directories altogether.
-     *
-     * The last of those is what makes a program with no translations work at all. A window
-     * description that is the same in every language has no business being copied once per
-     * language, and a program that never gets translated should not have to have an
-     * en.lproj to hold its one copy of everything.
+     * One directory per language, ending in .lproj. Searched in the usual order: each
+     * language the account asked for, then the one the program was written in, then the
+     * resource outside the language directories altogether. That last is what makes a
+     * program with no translations work, and stops a description that is the same in every
+     * language being copied once per language.
      */
     public File resource(FMString name, FMString type) {
         File resources = new File(root, "Contents/Resources");
@@ -568,16 +560,13 @@ public final class Bundle {
      * for, and a .cmd, which is what Windows actually runs. Both start the loader on the
      * executable, which is the same thing the system does when it opens a program.
      *
-     * Neither may contain an absolute path. A launcher naming the JDK it was built
-     * against, one account's home directory, or the directory a release was staged in
-     * works on the machine it was written on and nowhere else, and the way that fails is
-     * that somebody unpacks a release and every program is dead.
+     * Neither may contain an absolute path. One naming the JDK it was built against, or a
+     * home directory, works on the machine it was written on and nowhere else, and how
+     * that fails is somebody unpacking a release to find every program dead.
      *
-     * So the volume is found rather than named: the launcher walks up from where it is
-     * until it sees usr/lib/dyld. That also settles the question of which volume, which
-     * naming it never could. A bundle copied onto another volume runs against that one,
-     * and a bundle copied somewhere that is not a volume says so instead of starting a
-     * program against half a system.
+     * So the volume is found rather than named: the launcher walks up until it sees
+     * usr/lib/dyld. A bundle copied onto another volume runs against that one, and one
+     * copied somewhere that is not a volume says so.
      */
     private static void writeLaunchers(File where, String name, String arguments)
             throws IOException {

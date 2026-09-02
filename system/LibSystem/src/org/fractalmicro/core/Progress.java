@@ -35,19 +35,14 @@ import java.util.Locale;
  * </pre>
  *
  * The number is seconds since the machine started, not since this process did. Three
- * processes are involved in a boot and each one's own clock starts when it does, so
- * measuring locally would make the times run backwards halfway through. Whoever starts a
- * process passes the moment on, in {@link #SINCE_PROPERTY}.
+ * processes are involved in a boot and each one's clock starts when it does, so measuring
+ * locally would make the times run backwards halfway through; whoever starts a process
+ * passes the moment on in {@link #SINCE_PROPERTY}.
  *
- * Two things read these lines. A terminal, where they are the whole of it. And the boot
- * screen, which is a program watching this output and drawing what it says; it knows the
- * system is up because the last line is {@code ready}. One narration, two readers, so
- * there is no second copy of it to keep true.
- *
- * They go to the error stream, like the rest of what is said on the way up: the log is a
- * file on a volume that may not be there yet, and whoever is watching a machine start is
- * watching a terminal. They also go to the log once there is one, because started from a
- * launcher there is no terminal to have watched.
+ * A terminal reads these, and so does the boot screen, which knows the system is up
+ * because the last line is {@code ready}. One narration and two readers, so there is no
+ * second copy to keep true. They go to the error stream, since the log is a file on a
+ * volume that may not be there yet, and to the log as well once there is one.
  */
 public final class Progress {
     private Progress() {}

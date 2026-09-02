@@ -26,36 +26,25 @@ import javax.swing.JMenu;
 /**
  * Something that puts an indicator at the right of the menu bar.
  *
- * The clock, the volume, the network. They are not part of anybody's menus: the menus on
- * the left belong to whichever program is in front and change as the front program
- * changes, while these stay where they are no matter what is running. That is why they are
- * a different kind of thing with a different owner.
+ * The clock, the volume, the network. Not part of anybody's menus: the menus on the left
+ * belong to whichever program is in front and change with it, while these stay put whatever
+ * is running.
  *
- * A menu extra is a bundle: a directory ending in .menu, kept in Menu Extras, whose
- * principal class is one of these. It is loaded the same way an application is, by the loader, out of
- * its own executable, which is what lets one be added without the bar knowing it exists.
- *
- * Implementations need a constructor taking no arguments.
+ * A bundle like any other, a directory ending in .menu kept in Menu Extras, loaded out of
+ * its own executable by the loader. That is what lets one be added without the bar knowing
+ * it exists. Implementations need a constructor taking no arguments.
  */
 public interface FMMenuExtra {
 
-    /** What it is called, which is also what the settings order them by. */
+    /** Also what the settings order them by. */
     FMString title();
 
-    /**
-     * The menu it shows, made once.
-     *
-     * Whatever the extra wants to keep, it keeps itself: a timer for a clock, a listener
-     * for a volume. Nothing asks for this twice.
-     */
+    /** Asked for once. Whatever the extra keeps, a timer or a listener, it keeps itself. */
     JMenu menu();
 
     /**
-     * Where it sits among the others, lower numbers further right.
-     *
-     * The clock is furthest right on the system this imitates, so it asks for the lowest
-     * number. Two extras asking for the same place are ordered by name, so that the bar is
-     * the same on every start-up.
+     * Lower numbers further right, so the clock asks for the lowest. Two asking for the
+     * same place are ordered by name, so the bar is the same on every start-up.
      */
     default int position() { return 100; }
 }

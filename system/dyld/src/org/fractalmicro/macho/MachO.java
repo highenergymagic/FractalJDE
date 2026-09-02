@@ -70,11 +70,9 @@ public final class MachO {
     /**
      * The other kinds of Mach-O this system writes.
      *
-     * A file says what it is in its header, and on Mac OS X these are not
-     * interchangeable: a dynamic library is MH_DYLIB, a loadable bundle is MH_BUNDLE, and
-     * the loader itself is MH_DYLINKER, which is its own type and not any of the others.
-     * Every executable names the loader in an LC_LOAD_DYLINKER command; the loader names
-     * itself with LC_ID_DYLINKER.
+     * Not interchangeable: a dynamic library is MH_DYLIB, a loadable bundle is MH_BUNDLE,
+     * and the loader is MH_DYLINKER. Executables name the loader in LC_LOAD_DYLINKER; the
+     * loader names itself with LC_ID_DYLINKER.
      */
     public static final int MH_DYLIB = 6;
     public static final int MH_DYLINKER = 7;
@@ -97,11 +95,10 @@ public final class MachO {
     /**
      * How a library says what it is called, and how an umbrella passes one on.
      *
-     * A library's install name is its own idea of where it lives, and it is that name a
-     * client records when it links: what ends up in the client's LC_LOAD_DYLIB is copied
-     * from the library's LC_ID_DYLIB, not from wherever the file happened to be at the
-     * time. An umbrella re-exports what it covers, so a program that links CoreServices
-     * gets LaunchServices too without naming it.
+     * A library's install name is its own idea of where it lives, and that is what a
+     * client records: LC_LOAD_DYLIB is copied from the library's LC_ID_DYLIB, not from
+     * where the file happened to be. An umbrella re-exports what it covers, so linking
+     * CoreServices brings LaunchServices without naming it.
      */
     public static final int LC_ID_DYLIB = 0xD;
     public static final int LC_REEXPORT_DYLIB = LC_REQ_DYLD | 0x1F;
@@ -109,11 +106,9 @@ public final class MachO {
     /**
      * Where to look when a name begins with @rpath.
      *
-     * @rpath means nothing on its own: it is a placeholder, and each image says what it
-     * stands for by carrying LC_RPATH commands. dyld tries them in order until the library
-     * turns up. That is what lets one library be found in the system's frameworks on one
-     * machine and inside an application on another, without either recording an absolute
-     * path.
+     * A placeholder. Each image says what it stands for with LC_RPATH commands, tried in
+     * order, which is what lets a library be found in the system frameworks on one machine
+     * and inside an application on another without either recording an absolute path.
      */
     public static final int LC_RPATH = LC_REQ_DYLD | 0x1C;
 
@@ -141,10 +136,9 @@ public final class MachO {
     /**
      * Which library an undefined symbol is expected to come from.
      *
-     * This is the two level namespace, and it is one byte. An undefined symbol does not
-     * merely say "this is missing"; it says which of this image's load commands is meant
-     * to supply it, counting from one in the order the commands appear. The loader looks
-     * there and nowhere else, so two libraries exporting the same name is not a conflict.
+     * The two level namespace, in one byte: which of this image's load commands supplies
+     * it, counting from one. The loader looks there and nowhere else, so two libraries
+     * exporting the same name is not a conflict.
      */
     public static final int SELF_LIBRARY_ORDINAL = 0;
     public static final int DYNAMIC_LOOKUP_ORDINAL = 254;

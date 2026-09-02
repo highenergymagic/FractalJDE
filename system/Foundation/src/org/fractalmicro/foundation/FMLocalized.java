@@ -39,25 +39,21 @@ import java.util.Map;
  * Localizable.strings, in the language the account asked for, inside whichever bundle the
  * text belongs to.
  *
- * That is the whole rule, and it is worth being strict about. Text written into the source
- * is text that cannot be translated by anyone who is not also a programmer, cannot be
- * corrected without a build, and cannot be found at all without reading every file. Once a
- * sentence lives in a strings file it can be counted, checked and handed to somebody who
- * speaks the language.
+ * Text written into the source cannot be translated by anyone who is not also a programmer,
+ * cannot be corrected without a build, and cannot be found without reading every file.
  *
  * Where it looks, in order:
  *
  *   the running program's bundle       Contents/Resources/<language>.lproj/
  *   each framework it is running with  Versions/A/Resources/<language>.lproj/
  *
- * The program first, so a program can say something differently from the framework it got
- * it from without either of them arranging it. This is the same order a program's own
- * resources are found in, and it is why a translation can be added to a program that was
- * built without one.
+ * The program first, so it can say something differently from the framework it got it from
+ * without either of them arranging it, and so a translation can be added to a program that
+ * was built without one.
  *
- * A key with no entry answers with itself. That keeps an untranslated program readable
- * rather than empty, and it is a defect rather than a design: {@code LocalizationTest}
- * reads every key the source asks for and fails when the English table does not have it.
+ * A key with no entry answers with itself, which keeps an untranslated program readable
+ * rather than empty. That is a defect rather than a design: {@code LocalizationTest} fails
+ * when the English table has no words for a key the source asks for.
  */
 public final class FMLocalized {
     private FMLocalized() {}

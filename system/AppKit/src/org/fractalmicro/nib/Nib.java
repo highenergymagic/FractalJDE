@@ -109,23 +109,18 @@ public final class Nib {
         /**
          * A folder, shown as icons, as a list, or as columns.
          *
-         * The first control here that is a view of something the program does not send.
-         * A description says which folder and how to show it; the folder itself is read on
-         * this side, where the icons, the kinds and the dates already are. Sending a
-         * listing across instead would mean sending a picture for every file in it, and a
-         * program would be maintaining a copy of the disk to draw a window with.
+         * The first control here that views something the program does not send. The
+         * description says which folder and how to show it, and the folder is read on this
+         * side, where the icons and kinds already are. Sending the listing instead would
+         * have a program keeping a copy of the disk to draw a window with.
          */
         FMBrowser("a folder, shown as icons, a list or columns"),
         /**
          * Two things side by side, with a divider somebody can move.
          *
-         * The first control here that holds others. What is in it is said by the controls
-         * themselves: each names the one it is inside, which keeps the description a list
-         * rather than a tree and means nothing that reads one has to walk it.
-         *
-         * Its first child's width is where the divider starts, because a description that
-         * says how wide the sidebar is has already said where the divider goes and saying
-         * it twice is two chances to disagree.
+         * The first control here that holds others. Each child names the one it is inside,
+         * which keeps the description a list rather than a tree. The first child's width
+         * is where the divider starts, since saying both would be two chances to disagree.
          */
         FMSplitView("two things side by side, with a divider between them"),
         /**
@@ -303,12 +298,10 @@ public final class Nib {
         /**
          * A control being described a piece at a time.
          *
-         * Fourteen things make up a control and most of them are nothing most of the time,
-         * so writing one out in full is fourteen arguments in an order nobody remembers
-         * with six of them holding a blank. Objective-C does not have that problem, because
-         * every argument of a message is labelled where it is passed; Java has no such
-         * thing and this is the nearest it gets. Each piece is named where it is given, and
-         * the ones not mentioned are the ones that are nothing.
+         * Most of a control is nothing most of the time, so writing one out in full is
+         * sixteen arguments in an order nobody remembers with six of them blank. Every
+         * argument of an Objective-C message is labelled where it is passed; this is the
+         * nearest Java gets.
          *
          * <pre>
          *   Control.of(FMBrowser, FILES).named("Files").showing(folder)

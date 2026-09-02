@@ -25,18 +25,13 @@ import org.fractalmicro.foundation.FMURL;
 /**
  * A mounted disk, as a program asking about one sees it.
  *
- * Cocoa answers this with resource values on a URL: the volume's name, its format, how big
- * it is and how much is left. The same four things, said once rather than as four separate
- * lookups, because a program listing the disks wants all of them for each and asking four
+ * Cocoa reads these as resource values on a URL, one lookup each. All four at once here,
+ * because a program listing the disks wants all of them for every disk and asking four
  * times is four chances for the disk to be pulled out in between.
- *
- * A disk with no capacity is a drive with nothing in it. That is not an error and not a
- * zero: it is a name in the list for somewhere a disk could go, which is what an empty
- * optical drive is.
  */
 public record FMVolume(FMString name, FMURL url, FMString fileSystem,
                        long totalCapacity, long availableCapacity) {
 
-    /** Whether there is a disk in it to ask about. */
+    /** A drive with nothing in it has no capacity, which is not an error and not a zero. */
     public boolean isReady() { return totalCapacity > 0; }
 }
