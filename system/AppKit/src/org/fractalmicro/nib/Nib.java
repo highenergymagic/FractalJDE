@@ -93,6 +93,16 @@ public final class Nib {
         FMSlider("a value between two ends"),
         FMProgressIndicator("how far along something is"),
         FMTableView("rows of things"),
+        /**
+         * A folder, shown as icons, as a list, or as columns.
+         *
+         * The first control here that is a view of something the program does not send.
+         * A description says which folder and how to show it; the folder itself is read on
+         * this side, where the icons, the kinds and the dates already are. Sending a
+         * listing across instead would mean sending a picture for every file in it, and a
+         * program would be maintaining a copy of the disk to draw a window with.
+         */
+        FMBrowser("a folder, shown as icons, a list or columns"),
         FMSeparator("a line between groups");
 
         private final FMString what;

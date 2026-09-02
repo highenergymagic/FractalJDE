@@ -93,6 +93,41 @@ public final class FMBrowser extends JPanel {
         add(scroller, BorderLayout.CENTER);
         getAccessibleContext().setAccessibleName(
             FMLocalized.of(FMSavePanel.FILES).toString());
+        installActions();
+    }
+
+    /* ------------------------------------------------------------ what it can do */
+
+    /** Showing it as icons, as a list, as columns, and going up a level. */
+    public static final String AS_ICONS = "viewAsIcons";
+    public static final String AS_LIST = "viewAsList";
+    public static final String AS_COLUMNS = "viewAsColumns";
+    public static final String ENCLOSING_FOLDER = "goUp";
+
+    /**
+     * The four things a browser can be asked to do, in its own action map.
+     *
+     * Named rather than called, so that one name reaches them from three directions: a
+     * menu item in an interface file, a key bound in this window, and a program in another
+     * process saying perform. None of the three needs a method on this class, and the
+     * program in the other process could not have one anyway.
+     *
+     * They are the selectors the Finder's menus already use, because these are those
+     * commands. A second set of names for the same four things would be a second set to
+     * keep in step.
+     */
+    private void installActions() {
+        ActionMap actions = getActionMap();
+        actions.put(AS_ICONS, does(() -> setMode(Mode.ICON)));
+        actions.put(AS_LIST, does(() -> setMode(Mode.LIST)));
+        actions.put(AS_COLUMNS, does(() -> setMode(Mode.COLUMN)));
+        actions.put(ENCLOSING_FOLDER, does(this::goUp));
+    }
+
+    private static Action does(Runnable what) {
+        return new AbstractAction() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) { what.run(); }
+        };
     }
 
     /** Which of the three ways this browser is showing things. */

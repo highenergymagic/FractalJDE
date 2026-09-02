@@ -194,10 +194,10 @@ worked out at start-up.
   own bundles. Each one moves out as the description protocol grows to carry what it draws.
 - The Finder and the Dock are among them, and the Finder is the furthest along: nothing
   above it names a class in it any more, and it is compiled as its own image against
-  AppKit. What is left is that its windows cannot be described. A description carries
-  eleven kinds of control and no split view, no toolbar, no file browser and no way to
-  send a picture, and a Finder window is all four of those. The description protocol is
-  the whole of what stands between here and a Finder in a process of its own.
+  AppKit. What is left is that its windows cannot yet be described in full. The file
+  browser can be, as of this version, which is most of what is inside a Finder window; the
+  split view and the toolbar around it cannot, and neither can a sheet. Those are what
+  stands between here and a Finder in a process of its own.
 - Burn folders, burning to disc and the clipboard viewer are named but do nothing.
 - `Fractal.exe` starts a session and waits for it, and does not start another if that one
   ends. That is fine started by hand and not fine as the Windows shell, where the answer

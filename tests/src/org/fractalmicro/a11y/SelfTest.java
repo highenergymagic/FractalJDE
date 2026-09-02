@@ -169,6 +169,10 @@ public final class SelfTest {
         int windowFailures = WindowServerTest.run(desktop, System.out);
         if (windowFailures > 0) failures.add(windowFailures + " window server checks failed");
 
+        steps += BrowserTest.count();
+        int browserFailures = BrowserTest.run(desktop, System.out);
+        if (browserFailures > 0) failures.add(browserFailures + " file browser checks failed");
+
         steps += TaskTest.count();
         int taskFailures = TaskTest.run(System.out);
         if (taskFailures > 0) failures.add(taskFailures + " task checks failed");

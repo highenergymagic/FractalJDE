@@ -101,6 +101,9 @@ public final class Xib {
         {"FMSlider", "slider"},
         {"FMProgressIndicator", "progressIndicator"},
         {"FMTableView", "tableView"},
+        // The element NSBrowser has always been written as, so a file browser in an
+        // interface file is spelled the way Interface Builder spells one.
+        {"FMBrowser", "browser"},
         {"FMSeparator", "box"},
     };
 

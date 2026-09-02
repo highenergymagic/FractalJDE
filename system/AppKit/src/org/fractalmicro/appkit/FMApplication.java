@@ -75,7 +75,7 @@ public final class FMApplication implements AutoCloseable {
 
     /** One thing that happened: which control or command, and what it was for. */
     public record Event(FMString kind, int window, FMString control, FMString action,
-                        Object value) {
+                        Object value, FMString where) {
 
         /** What the control held, as text, which is what most handlers want. */
         public FMString text() {
@@ -88,6 +88,16 @@ public final class FMApplication implements AutoCloseable {
 
         /** Whether this came from a menu rather than from something in the window. */
         public boolean isMenu() { return kind.sameAs(FMString.of(WindowServer.EVENT_MENU)); }
+
+        /**
+         * Whether somebody opened what they had chosen, rather than merely choosing it.
+         *
+         * A double click, or Return on a selection. The difference matters to anything
+         * showing a folder: choosing one is looking at it, opening it is going into it.
+         */
+        public boolean isOpen() {
+            return kind.sameAs(FMString.of(WindowServer.EVENT_OPEN));
+        }
     }
 
     private FMApplication(FMString name) {
@@ -430,6 +440,24 @@ public final class FMApplication implements AutoCloseable {
         }
     }
 
+    /**
+     * Looks for something in a control that can look, answering whether it could.
+     *
+     * Nothing to look for ends the search and puts back what was being shown, which is
+     * what emptying a search field means everywhere else.
+     */
+    public boolean find(FMString control, FMString text) {
+        try {
+            Message reply = connection().send(Message.of(WindowServer.FIND)
+                .put("window", (long) window).put("control", control.toString())
+                .put("text", text == null ? "" : text.toString()));
+            if (reply.isError()) throw new IOException(reply.errorText());
+            return true;
+        } catch (IOException e) {
+            return failed(e);
+        }
+    }
+
     /** Where a control's selection starts and ends, and what is in it. */
     public record Selection(int from, int to, FMString text) {
         public boolean isEmpty() { return from >= to; }
@@ -637,7 +665,8 @@ public final class FMApplication implements AutoCloseable {
         // system's. The message boundary is where one becomes the other.
         return new Event(FMString.of(kind), (int) reply.integer("window", -1),
                          FMString.of(from), FMString.of(reply.string("action", "")),
-                         reply.get("value"));
+                         reply.get("value"),
+                         FMString.of(reply.string("folder", "")));
     }
 
     /** Hands one event to whatever said it wanted it. */

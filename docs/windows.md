@@ -36,9 +36,39 @@ Window     Title, Width, Height, Resizable
 Controls   Class, Identifier, AccessibleName, Text, Action, X, Y, Width, Height
 ```
 
-The classes are `FMButton`, `FMLabel`, `FMTextField`, `FMTextView`, `FMCheckBox`,
-`FMPopUpButton`, `FMSlider`, `FMProgressIndicator`, `FMTableView` and `FMSeparator`. Every
-one becomes the real Swing control it names, drawn by the Aqua delegates like anything else.
+The classes are `FMButton`, `FMLabel`, `FMTextField`, `FMTextView`, `FMRichText`,
+`FMCheckBox`, `FMPopUpButton`, `FMSlider`, `FMProgressIndicator`, `FMTableView`,
+`FMBrowser` and `FMSeparator`. Every one becomes the real Swing control it names, drawn by
+the Aqua delegates like anything else.
+
+### A folder
+
+`FMBrowser` is the first of them that is a view of something the program never sends. The
+others hold what they were given: a label holds its words, a list holds its rows. A folder
+holds what is on the disk, and the disk is on the drawing side along with the icons, the
+kinds and the dates. So the description says which folder and how to show it, and that is
+all that crosses. A window on a folder with a hundred thousand files in it is the same
+short message as a window on an empty one.
+
+What goes back the other way is small too:
+
+| | |
+|---|---|
+| `setValue` | a path: show me this folder |
+| `getValue` | what is chosen, or where it is when nothing is |
+| `perform` | `viewAsIcons`, `viewAsList`, `viewAsColumns`, `goUp` |
+| `find` | what to look for, and nothing to stop looking |
+
+and two events, because choosing and opening are different questions. An action event says
+somebody selected something; an `open` event says they asked for it. A program that could
+not tell them apart would open a folder every time somebody looked at one. Both carry the
+path chosen and the folder the browser was in, so a program never has to ask afterwards to
+draw its own title.
+
+The four things `perform` names are the selectors the Finder's menus already use, and they
+are the browser's own action map rather than methods on it. One name therefore reaches
+them from three directions: a menu item in an interface file, a key bound in the window,
+and a program in another process with no way to hold a reference to anything.
 
 ## A program
 

@@ -103,6 +103,16 @@ public final class WindowServer {
      */
     public static final String PERFORM = "perform";
 
+    /**
+     * Looking for something in a control that can look.
+     *
+     * Not setValue, because a browser has two things a program decides and they are not
+     * the same thing: where it is, and what is being looked for. Sending one message that
+     * meant either depending on the shape of the text would be a message nobody could read
+     * twice.
+     */
+    public static final String FIND = "find";
+
     /** Choosing a stretch of text, and asking what is chosen. */
     public static final String SELECT_RANGE = "selectRange";
     public static final String SELECTION = "selection";
@@ -152,6 +162,14 @@ public final class WindowServer {
     public static final String EVENT_ACTION = "action";
     public static final String EVENT_CLOSED = "windowClosed";
     public static final String EVENT_MENU = "menu";
+    /**
+     * Somebody opened what they had chosen: a double click, or Return on a selection.
+     *
+     * Separate from an action, because choosing and opening are different answers to
+     * different questions and a program that could not tell them apart would open a folder
+     * every time somebody looked at one.
+     */
+    public static final String EVENT_OPEN = "open";
     public static final String EVENT_NONE = "none";
 
     private static WindowServer instance;
@@ -327,6 +345,7 @@ public final class WindowServer {
                 case SET_ROWS -> setRows(request);
                 case SET_VISIBLE -> setVisible(request);
                 case PERFORM -> perform(request);
+                case FIND -> search(request);
                 case SELECT_RANGE -> selectRange(request);
                 case SELECTION -> selection(request);
                 case GET -> getValue(request);
@@ -528,6 +547,26 @@ public final class WindowServer {
                 window.lists.put(control.identifier().toString(), model);
                 return scroll;
             }
+            case FMBrowser -> {
+                org.fractalmicro.appkit.FMBrowser browser =
+                    new org.fractalmicro.appkit.FMBrowser();
+                browser.setMode(modeNamed(control.value()));
+                // Selecting is not opening. A program wants to know about both and they
+                // mean different things: one says what somebody is looking at, the other
+                // says what they asked for. Where the browser is goes with each, because
+                // a program that has to ask afterwards has already drawn the wrong title.
+                browser.onChosen(file -> post(window.application,
+                    actionEvent(window, control)
+                        .put("value", file == null ? "" : file.getAbsolutePath())
+                        .put("folder", folderOf(browser))));
+                browser.onOpened(file -> post(window.application,
+                    actionEvent(window, control)
+                        .put("event", EVENT_OPEN)
+                        .put("value", file == null ? "" : file.getAbsolutePath())
+                        .put("folder", folderOf(browser))));
+                browser.setRoot(folderNamed(text));
+                return browser;
+            }
             case FMSeparator -> {
                 return new JSeparator();
             }
@@ -535,6 +574,33 @@ public final class WindowServer {
                 return null;
             }
         }
+    }
+
+    /**
+     * The folder named in a description, or the home directory when it names none.
+     *
+     * A description that says nothing about where to start is not an error: most windows
+     * open where a person was last, and home is where a person starts.
+     */
+    private static java.io.File folderNamed(String path) {
+        if (path == null || path.isBlank()) return org.fractalmicro.fs.FS.home();
+        java.io.File named = new java.io.File(path);
+        return named.isDirectory() ? named : org.fractalmicro.fs.FS.home();
+    }
+
+    /** Which of the three views a description asked for, columns when it did not say. */
+    private static org.fractalmicro.appkit.FMBrowser.Mode modeNamed(Object said) {
+        String name = said == null ? "" : String.valueOf(said).trim();
+        for (org.fractalmicro.appkit.FMBrowser.Mode one
+                : org.fractalmicro.appkit.FMBrowser.Mode.values()) {
+            if (one.name().equalsIgnoreCase(name)) return one;
+        }
+        return org.fractalmicro.appkit.FMBrowser.Mode.COLUMN;
+    }
+
+    private static String folderOf(org.fractalmicro.appkit.FMBrowser browser) {
+        java.io.File where = browser.currentFolder();
+        return where == null ? "" : where.getAbsolutePath();
     }
 
     private Message actionEvent(Window window, Nib.Control control) {
@@ -782,6 +848,10 @@ public final class WindowServer {
             slider.setValue(value instanceof Number n ? n.intValue() : 0);
         } else if (control instanceof JComboBox<?> popup) {
             popup.setSelectedItem(text);
+        } else if (control instanceof org.fractalmicro.appkit.FMBrowser browser) {
+            // A path, and it means show me this. Where a browser is, is the one thing
+            // about it a program decides; everything else it works out from the disk.
+            browser.show(folderNamed(text));
         } else if (control instanceof AbstractButton button) {
             button.setText(text);
         }
@@ -795,6 +865,14 @@ public final class WindowServer {
     }
 
     private Object read(JComponent control) {
+        if (control instanceof org.fractalmicro.appkit.FMBrowser browser) {
+            // What is chosen, and where it is when nothing is. Both are paths and a
+            // program asking a browser what it holds means one of the two: the file it
+            // would act on, or the folder it would act in.
+            java.io.File chosen = browser.selection();
+            if (chosen == null) chosen = browser.currentFolder();
+            return chosen == null ? "" : chosen.getAbsolutePath();
+        }
         if (control instanceof javax.swing.JTextPane pane) return richOf(pane);
         if (control instanceof javax.swing.text.JTextComponent field) return field.getText();
         if (control instanceof JCheckBox box) return box.isSelected();
@@ -808,6 +886,22 @@ public final class WindowServer {
         if (control instanceof AbstractButton button) return button.getText();
         if (control instanceof JLabel label) return label.getText();
         return "";
+    }
+
+    /**
+     * Looks for something in a control that can look for things.
+     *
+     * Asking with nothing to look for is how a search is ended, which is what clearing the
+     * field does and what a program would mean by it.
+     */
+    private Message search(Message request) throws Exception {
+        JComponent control = find(request);
+        FMString text = FMString.of(request.string("text", ""));
+        if (!(control instanceof org.fractalmicro.appkit.FMBrowser browser)) {
+            return Message.error("that control does not look for things");
+        }
+        onSwing(() -> browser.search(text));
+        return Message.of(FIND).put("ok", Boolean.TRUE);
     }
 
     private Message setTitle(Message request) throws Exception {

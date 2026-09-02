@@ -58,6 +58,11 @@ same keys as a Finder window, because it is the same choice.
 Switching changes how the folder is drawn and never which folder you are in. That is what
 makes the three interchangeable rather than three places to be.
 
+It is also a control a description can name, so a program in a process of its own can put
+a folder in a window without drawing one. [windows.md](windows.md) has what crosses. That
+is the piece the Finder needs before it can be a program like any other, since a Finder
+window is a browser with a sidebar and a toolbar around it, and those are still to come.
+
 Columns are the default and the reason the browser exists. One column per level, side by
 side; choosing a folder opens the next beside it, and everything to the right goes because
 it described a route no longer being taken. What is on screen is the whole route rather
