@@ -23,6 +23,7 @@ import org.fractalmicro.appkit.FMDragOperation;
 import org.fractalmicro.appkit.FMFileDragging;
 import org.fractalmicro.fs.Node;
 import org.fractalmicro.fs.Trash;
+import org.fractalmicro.theme.Icons;
 
 import javax.swing.JList;
 import javax.swing.JTable;
@@ -58,8 +59,16 @@ public final class FileDrops {
 
     /** Dragging out of and into a list of files. */
     public static void install(JList<Node> list, Supplier<File> showing) {
+        Ghosts ghosts = new Ghosts(list);
         FMFileDragging.install(list,
-            () -> filesOf(list.getSelectedValuesList()),
+            new Carrying(ghosts) {
+                @Override public List<File> filesToDrag() {
+                    List<Node> chosen = list.getSelectedValuesList();
+                    ghosts.of(chosen, index -> list.getCellBounds(index, index),
+                              list.getSelectedIndices());
+                    return filesOf(chosen);
+                }
+            },
             new IntoNodes(list, showing) {
                 @Override protected Node nodeAt(Point where) {
                     int i = list.locationToIndex(where);
@@ -72,14 +81,19 @@ public final class FileDrops {
 
     /** The same, for a view that shows its files as rows. */
     public static void install(JTable table, IntFunction<Node> rowAt, Supplier<File> showing) {
+        Ghosts ghosts = new Ghosts(table);
         FMFileDragging.install(table,
-            () -> {
-                List<Node> chosen = new ArrayList<>();
-                for (int row : table.getSelectedRows()) {
-                    Node n = rowAt.apply(table.convertRowIndexToModel(row));
-                    if (n != null) chosen.add(n);
+            new Carrying(ghosts) {
+                @Override public List<File> filesToDrag() {
+                    List<Node> chosen = new ArrayList<>();
+                    for (int row : table.getSelectedRows()) {
+                        Node n = rowAt.apply(table.convertRowIndexToModel(row));
+                        if (n != null) chosen.add(n);
+                    }
+                    ghosts.of(chosen, row -> table.getCellRect(row, 0, true),
+                              table.getSelectedRows());
+                    return filesOf(chosen);
                 }
-                return filesOf(chosen);
             },
             new IntoNodes(table, showing) {
                 @Override protected Node nodeAt(Point where) {
@@ -115,6 +129,109 @@ public final class FileDrops {
                 return true;
             }
         };
+    }
+
+    /* --------------------------------------------------- what the drag looks like */
+
+    /** A source that carries files and draws them while they are being carried. */
+    private abstract static class Carrying implements FMFileDragging.Source {
+        private final Ghosts ghosts;
+
+        Carrying(Ghosts ghosts) { this.ghosts = ghosts; }
+
+        @Override public java.awt.Image pictureOfTheDrag() { return ghosts.picture(); }
+        @Override public Point pointerInThePicture() { return ghosts.pointer(); }
+    }
+
+    /**
+     * The ghosts of the files being dragged.
+     *
+     * A Mac drags translucent copies of the things being carried, each where it was when it
+     * was picked up. That is more than decoration: it is the only thing that says what is in
+     * your hand. A drag of one file and a drag of forty look the same otherwise, and so do a
+     * drag of the file you meant and a drag of the one next to it.
+     *
+     * Drawn from the view's own cells, so the arrangement is the arrangement on the screen:
+     * a row of icons stays a row, a column of rows stays a column, and nothing has to know
+     * which kind of view it came from.
+     */
+    private static final class Ghosts {
+        /** How see-through they are. A Mac's are faint enough to read the desktop through. */
+        private static final float FAINTNESS = 0.55f;
+
+        /** Big enough for any selection somebody can see, and no bigger. */
+        private static final int WIDEST = 1200;
+        private static final int TALLEST = 1200;
+
+        private java.awt.Image picture;
+        private Point pointer = new Point(0, 0);
+        private Point pickedUpAt = new Point(0, 0);
+
+        Ghosts(javax.swing.JComponent view) {
+            // Where the drag began, which is where the pointer has to stay in the picture.
+            // Without it the icons jump to sit beside the pointer the moment the drag
+            // starts, which looks like dropping them and picking up something else.
+            view.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override public void mousePressed(java.awt.event.MouseEvent e) {
+                    pickedUpAt = e.getPoint();
+                }
+            });
+        }
+
+        java.awt.Image picture() { return picture; }
+
+        Point pointer() { return pointer; }
+
+        /** Draws them, from where each one is in the view. */
+        void of(List<Node> chosen, IntFunction<java.awt.Rectangle> cellOf, int[] indices) {
+            picture = null;
+            if (chosen == null || chosen.isEmpty() || indices.length == 0) return;
+
+            java.awt.Rectangle all = null;
+            for (int index : indices) {
+                java.awt.Rectangle cell = cellOf.apply(index);
+                if (cell == null) continue;
+                all = all == null ? new java.awt.Rectangle(cell) : all.union(cell);
+            }
+            if (all == null || all.width <= 0 || all.height <= 0) return;
+            if (all.width > WIDEST || all.height > TALLEST) return;
+
+            java.awt.image.BufferedImage made = new java.awt.image.BufferedImage(
+                all.width, all.height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = made.createGraphics();
+            org.fractalmicro.theme.Aqua.antialias(g);
+            g.setComposite(java.awt.AlphaComposite.getInstance(
+                java.awt.AlphaComposite.SRC_OVER, FAINTNESS));
+            int size = Math.min(64, Math.max(16, smallestCellHeight(cellOf, indices) - 4));
+            for (int i = 0; i < indices.length && i < chosen.size(); i++) {
+                java.awt.Rectangle cell = cellOf.apply(indices[i]);
+                if (cell == null) continue;
+                java.awt.Image icon = Icons.forNode(chosen.get(i), size);
+                g.drawImage(icon, cell.x - all.x + (cell.width - size) / 2,
+                            cell.y - all.y + (cell.height - size) / 2, null);
+            }
+            g.dispose();
+
+            picture = made;
+            pointer = new Point(pickedUpAt.x - all.x, pickedUpAt.y - all.y);
+        }
+
+        /**
+         * How big to draw them.
+         *
+         * From the shortest cell, so a list of twenty-pixel rows gets sixteen-pixel icons
+         * and a grid of icons gets the size it is already showing. Taking the tallest
+         * instead would have one big cell make every icon in the drag too large for its
+         * place, which is the arrangement no longer being the arrangement.
+         */
+        private static int smallestCellHeight(IntFunction<java.awt.Rectangle> cellOf, int[] indices) {
+            int shortest = Integer.MAX_VALUE;
+            for (int index : indices) {
+                java.awt.Rectangle cell = cellOf.apply(index);
+                if (cell != null) shortest = Math.min(shortest, cell.height);
+            }
+            return shortest == Integer.MAX_VALUE ? 32 : shortest;
+        }
     }
 
     /* ------------------------------------------------------------------- inside */

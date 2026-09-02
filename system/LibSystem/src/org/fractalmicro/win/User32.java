@@ -320,6 +320,34 @@ public final class User32 {
         }
     }
 
+    /** The space bar, which is the one key this system has to read while a drag is going. */
+    public static final int VK_SPACE = 0x20;
+
+    private static final MethodHandle GET_ASYNC_KEY_STATE = Native.handle(U32,
+        "GetAsyncKeyState", FunctionDescriptor.of(ValueLayout.JAVA_SHORT,
+            ValueLayout.JAVA_INT));
+
+    /**
+     * Whether a key is down right now.
+     *
+     * Asked rather than waited for, because there are moments when nothing is delivering key
+     * events to this program and it still needs to know. A drag is one: while the mouse is
+     * down the pointer and the keyboard belong to the drag, and a program that only knew
+     * what its own windows were told could not find out that the space bar was being held.
+     *
+     * The top bit of the answer is whether it is down. The bottom bit is whether it has been
+     * pressed since this was last asked, which is not what anybody wants here and is why the
+     * answer has to be masked rather than tested for being non-zero.
+     */
+    public static boolean isKeyDown(int virtualKey) {
+        try {
+            short state = (short) GET_ASYNC_KEY_STATE.invokeExact(virtualKey);
+            return (state & 0x8000) != 0;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /** The process a window belongs to. */
     public static long processOf(long handle) {
         try (Arena arena = Arena.ofConfined()) {

@@ -53,7 +53,7 @@ import java.util.List;
 public final class DragTest {
     private DragTest() {}
 
-    public static int count() { return 32; }
+    public static int count() { return 35; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -379,6 +379,15 @@ public final class DragTest {
 
         failures += check(out, "resting on a folder opens it, unless it is turned off",
             org.fractalmicro.os.FinderSettings.springLoaded());
+
+        // Space opens one straight away, without the wait. It has to be read rather than
+        // waited for: while the mouse is down the keyboard belongs to the drag and no key
+        // event reaches this program at all. Checked by asking about a key that cannot be
+        // held, since asking about the space bar during a check would depend on what the
+        // person at the machine happens to be leaning on.
+        failures += check(out, "a key can be asked about while a drag has the keyboard",
+            !org.fractalmicro.win.User32.isKeyDown(0)
+            && org.fractalmicro.win.User32.VK_SPACE == 0x20);
         double delay = org.fractalmicro.os.FinderSettings.springDelay();
         failures += check(out, "and the wait is a length of time somebody would wait",
             delay >= 0.2 && delay <= 2.0);
@@ -417,6 +426,23 @@ public final class DragTest {
                 onTheFolder != null && inside.equals(view.wouldSpringOpen(onTheFolder)));
             failures += check(out, "and a file is not",
                 onTheFile == null || view.wouldSpringOpen(onTheFile) == null);
+
+            // What is under the pointer while it is being carried. Without it a drag of one
+            // file and a drag of forty look the same, and so do a drag of the file somebody
+            // meant and a drag of the one next to it.
+            rows.setRowSelectionInterval(0, rows.getRowCount() - 1);
+            FMFileDragging.Source carried = dragging.source();
+            List<File> dragged = carried.filesToDrag();
+            java.awt.Image ghosts = carried.pictureOfTheDrag();
+            failures += check(out, "a drag carries a picture of what is in it",
+                dragged.size() == 2 && ghosts != null
+                && ghosts.getWidth(null) > 0 && ghosts.getHeight(null) > 0);
+
+            Point grabbed = carried.pointerInThePicture();
+            failures += check(out, "and the pointer stays where it took hold of them",
+                grabbed != null && grabbed.x >= 0 && grabbed.y >= 0
+                && grabbed.x <= ghosts.getWidth(null)
+                && grabbed.y <= ghosts.getHeight(null));
 
             view.springOpen(inside);
             drain();

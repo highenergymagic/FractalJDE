@@ -165,7 +165,30 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
         app.on(FMString.of("quit"), event -> app.stop());
         app.on(FMString.of("close"), event -> app.stop());
 
-        showPane(PANE_NAMES.contains(opening) ? opening : DESKTOP);
+        showPane(paneNamed(opening));
+    }
+
+    /**
+     * The pane a name asks for.
+     *
+     * Matched without regard for case, because every other part name in this system is
+     * written in lower case and a pane is a part like any other: the file manager asks for
+     * "desktop" and the list here says "Desktop", and those are the same pane.
+     *
+     * A name that is nothing at all opens the first pane, which is what opening the
+     * settings with nothing more to say means. A name that is something and is not a pane
+     * says so and then opens the first one, because silently showing somebody a different
+     * pane from the one they asked for is how a wrong name goes unnoticed: it was doing
+     * exactly that for the file manager's own Preferences item, which asked for a pane
+     * called "finder" and got the desktop without a word.
+     */
+    private static FMString paneNamed(FMString asked) {
+        if (asked == null || asked.isBlank()) return DESKTOP;
+        for (FMString pane : PANE_NAMES) {
+            if (pane.toString().equalsIgnoreCase(asked.toString())) return pane;
+        }
+        FMLog.say(FMString.of("there is no settings pane called ").appending(asked));
+        return DESKTOP;
     }
 
     /** Shows one pane's controls and hides the rest. */

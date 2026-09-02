@@ -47,6 +47,25 @@ Dropping onto the white space is the one people use without noticing, and it has
 the edges: a window showing four files is mostly empty space, and every part of it that is
 not an icon is the folder.
 
+## What the drag looks like
+
+Ghosts of the files being carried, each where it was when it was picked up, which is what a
+Mac drags. Swing's own answer is a plain rectangle, and a rectangle says only that something
+is happening: a drag of one file and a drag of forty look the same, and so do a drag of the
+file you meant and a drag of the one next to it.
+
+Drawn from the view's own cells, so the arrangement on the pointer is the arrangement on the
+screen. A row of icons stays a row and a column of rows stays a column, and nothing has to
+know which kind of view the drag came from. The icons are sized from the shortest cell, so a
+list of twenty-pixel rows gets sixteen-pixel icons rather than one big cell making every icon
+in the drag too large for its place.
+
+The pointer stays where it took hold. Without that the icons jump to sit beside the pointer
+the moment the drag starts, which looks like dropping them and picking up something else.
+
+There is no number on it. Later versions of Mac OS X put a red badge with a count on a drag;
+Snow Leopard does not, and neither does this.
+
 ## What a drop refuses
 
 A folder cannot be dropped into itself, or into anything inside itself. That is the case
@@ -78,6 +97,11 @@ what springing opened is put back: a window that was already there returns to th
 was showing, and one that springing opened is shut. That half is the half people notice.
 Without it a drag through four folders leaves four windows open, which is the thing spring
 loading exists to save them from.
+
+Pressing the space bar opens it straight away, without the wait. That key has to be read
+rather than waited for: while the mouse is down the pointer and the keyboard both belong to
+the drag, and no key event reaches the program at all, so it is asked for with
+`GetAsyncKeyState` on the same tick that is counting the wait.
 
 It is on by default with a delay of half a second, both in Finder → Preferences → Advanced
 and under the names Mac OS X keeps them at, `SpringingEnabled` and `SpringingDelay`. The

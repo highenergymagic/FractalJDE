@@ -47,7 +47,7 @@ import java.io.PrintStream;
 public final class XibTest {
     private XibTest() {}
 
-    public static int count() { return 8; }
+    public static int count() { return 9; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -152,6 +152,34 @@ public final class XibTest {
         out.println("      " + keys.count() + " keys offered for translation");
         failures += check(out, "and every key offered changes something",
             keys.count() > 0 && reachable > read.controls().count() / 2);
+
+        /* ------------------------------------- and every pane somebody asks for exists */
+
+        // The file manager's Preferences item names a settings pane, and the settings list
+        // their panes in their own interface file. Nothing puts the two together at run
+        // time: a name that is not a pane opens the first one instead, so the item went on
+        // working and went on opening the wrong thing. It asked for one called "finder",
+        // which is not a pane, for as long as the item had existed.
+        File settings = new File("apps/SystemPreferences/resources/SystemPreferences.xib");
+        java.util.List<String> panes = new java.util.ArrayList<>();
+        if (settings.isFile()) {
+            try {
+                for (Nib.Control control : Xib.read(FMURL.of(settings)).controls()) {
+                    if (control.kind() != Nib.ControlClass.FMTableView) continue;
+                    for (FMString choice : control.choices()) panes.add(choice.toString());
+                }
+            } catch (Exception cannotRead) {
+                out.println("      the settings could not be read: " + cannotRead);
+            }
+        }
+        boolean named = false;
+        for (String pane : panes) {
+            if (pane.equalsIgnoreCase(org.fractalmicro.ui.FinderMenus.SETTINGS_PANE)) named = true;
+        }
+        out.println("      the settings offer " + panes.size() + " panes; Preferences asks for "
+                    + org.fractalmicro.ui.FinderMenus.SETTINGS_PANE);
+        failures += check(out, "the pane Preferences opens is one the settings have",
+            panes.isEmpty() || named);
 
         out.println("      " + (failures == 0
             ? "the file is the window, and the words are beside it"

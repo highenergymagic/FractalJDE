@@ -67,6 +67,16 @@ public final class FinderMenus implements NibLoader.Commands {
 
     private static final String SYSTEM_PREFERENCES = "org.fractalmicro.systempreferences";
 
+    /**
+     * The settings pane the file manager's own Preferences item opens.
+     *
+     * Named here rather than written into the command, so that a check can put the two
+     * halves side by side. It used to ask for a pane called "finder", which is not one of
+     * them, and the settings quietly showed the first pane instead: a wrong name that
+     * nothing said anything about and nobody could see.
+     */
+    public static final String SETTINGS_PANE = "desktop";
+
     /** The interface file the bar is built from, inside the Finder's own bundle. */
     private static final FMString INTERFACE = FMString.of("FinderMenus");
 
@@ -270,7 +280,11 @@ public final class FinderMenus implements NibLoader.Commands {
         switch (action.toString()) {
             /* ------------------------------------------------------------- Finder */
             case "aboutFinder" -> AboutWindow.showAboutFinder();
-            case "preferences" -> Bundles.openPart(SYSTEM_PREFERENCES, "finder");
+            // The pane about the desktop, which is the file manager's own settings and the
+            // nearest thing here to the General tab a Mac opens on. It used to ask for one
+            // called "finder", which is not a pane, and landed on the desktop anyway
+            // without anybody being told the name meant nothing.
+            case "preferences" -> Bundles.openPart(SYSTEM_PREFERENCES, SETTINGS_PANE);
             case "emptyTrash" -> Finder.emptyTrash(false);
             case "secureEmptyTrash" -> Finder.emptyTrash(true);
             case "revealInExplorer" -> {

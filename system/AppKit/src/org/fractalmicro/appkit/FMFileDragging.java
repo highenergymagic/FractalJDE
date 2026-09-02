@@ -57,6 +57,22 @@ public class FMFileDragging extends TransferHandler {
     public interface Source {
         /** The files a drag starting now would carry, empty for a drag that should not start. */
         List<File> filesToDrag();
+
+        /**
+         * What is drawn under the pointer while the drag is going, and where the pointer is
+         * in it.
+         *
+         * A Mac drags ghosts of the things being carried, sitting where they were when they
+         * were picked up, so a drag of six files looks like those six files rather than
+         * like an outline of nothing. Swing's own answer is a plain rectangle, which says
+         * only that something is happening.
+         *
+         * A view that has nothing to say leaves this alone and gets the rectangle. The
+         * offset is where in the picture the pointer is, so the icons stay under the finger
+         * that picked them up instead of jumping to sit beside it.
+         */
+        default java.awt.Image pictureOfTheDrag() { return null; }
+        default Point pointerInThePicture() { return new Point(0, 0); }
     }
 
     /** A view something can be dropped into. */
@@ -227,6 +243,9 @@ public class FMFileDragging extends TransferHandler {
     /** What answers for this view: what a drop would do, and what resting would open. */
     public Destination destination() { return destination; }
 
+    /** And what it hands over when a drag starts. */
+    public Source source() { return source; }
+
     protected FMFileDragging(Source source, Destination destination) {
         this.source = source;
         this.destination = destination;
@@ -242,6 +261,13 @@ public class FMFileDragging extends TransferHandler {
         if (source == null) return null;
         List<File> files = source.filesToDrag();
         if (files == null || files.isEmpty()) return null;
+        // Asked for here, at the one moment it is true: the picture is of what is being
+        // carried, and what is being carried is not settled until the drag begins.
+        java.awt.Image picture = source.pictureOfTheDrag();
+        if (picture != null) {
+            setDragImage(picture);
+            setDragImageOffset(source.pointerInThePicture());
+        }
         return FMPasteboard.carrying(files);
     }
 
@@ -278,8 +304,19 @@ public class FMFileDragging extends TransferHandler {
 
     /* ------------------------------------------------------- resting on a folder */
 
+    /**
+     * How often the wait is looked at.
+     *
+     * Often enough that the space bar feels immediate and rarely enough to cost nothing. It
+     * has to be a tick rather than one alarm set for the end of the wait, because the space
+     * bar can be pressed at any point during it and pressing a key is not something that
+     * arrives here: while the mouse is down the keyboard belongs to the drag.
+     */
+    private static final int TICK_MILLIS = 50;
+
     private javax.swing.Timer resting;
     private File restingOn;
+    private long restingSince;
 
     /**
      * Notices that the pointer has stopped over something that would open.
@@ -293,16 +330,17 @@ public class FMFileDragging extends TransferHandler {
         if (java.util.Objects.equals(wouldOpen, restingOn)) return;
         restingOn = wouldOpen;
         stopWaiting();
-        if (wouldOpen == null) return;
-        int delay = (int) Math.round(
-            org.fractalmicro.os.FinderSettings.springDelay() * 1000);
-        if (!org.fractalmicro.os.FinderSettings.springLoaded()) return;
-        resting = new javax.swing.Timer(delay, e -> {
+        if (wouldOpen == null || !org.fractalmicro.os.FinderSettings.springLoaded()) return;
+        long waitFor = Math.round(org.fractalmicro.os.FinderSettings.springDelay() * 1000);
+        restingSince = System.currentTimeMillis();
+        resting = new javax.swing.Timer(TICK_MILLIS, e -> {
+            boolean asked = org.fractalmicro.win.User32.isKeyDown(
+                org.fractalmicro.win.User32.VK_SPACE);
+            if (!asked && System.currentTimeMillis() - restingSince < waitFor) return;
             stopWaiting();
             File open = restingOn;
             if (open != null) destination.springOpen(open);
         });
-        resting.setRepeats(false);
         resting.start();
     }
 
