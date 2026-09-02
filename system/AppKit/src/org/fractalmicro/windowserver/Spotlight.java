@@ -128,7 +128,7 @@ public class Spotlight extends JDialog {
     }
 
     public static void open() {
-        Desktop d = Desktop.get();
+        Desktop d = Desktop.sharedDesktop();
         if (d == null) return;
         if (instance == null) instance = new Spotlight(d);
         Rectangle b = d.getBounds();

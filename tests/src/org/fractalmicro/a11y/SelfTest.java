@@ -429,7 +429,7 @@ public final class SelfTest {
         // application runs in a process of its own and hands over a description. What is
         // being checked is the handover of the bar, so the description is a small one made
         // here rather than a real program started for the purpose.
-        org.fractalmicro.windowserver.WindowServer server = org.fractalmicro.windowserver.WindowServer.get();
+        org.fractalmicro.windowserver.WindowServer server = org.fractalmicro.windowserver.WindowServer.sharedServer();
         server.start();
 
         try (org.fractalmicro.appkit.FMApplication app =
@@ -630,7 +630,7 @@ public final class SelfTest {
     private static void checkGlobalShortcuts() {
         System.out.println();
         System.out.println("system wide shortcuts:");
-        org.fractalmicro.win.MessageWindow window = org.fractalmicro.win.MessageWindow.get();
+        org.fractalmicro.win.MessageWindow window = org.fractalmicro.win.MessageWindow.sharedWindow();
         step("the message window is running", () -> {
             if (!window.isRunning()) throw new IllegalStateException("no message window");
         });

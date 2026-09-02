@@ -39,7 +39,8 @@ public class Desktop extends JFrame {
 
     private static Desktop instance;
 
-    public static Desktop get() { return instance; }
+    /** The one on this machine, as NSApplication has always handed back the one program. */
+    public static Desktop sharedDesktop() { return instance; }
 
     /**
      * How big the screen is, or how big it is being asked to pretend to be.
@@ -114,7 +115,7 @@ public class Desktop extends JFrame {
      */
     public static void beep(String message) {
         java.awt.Toolkit.getDefaultToolkit().beep();
-        Desktop d = get();
+        Desktop d = sharedDesktop();
         if (d != null) d.setStatus(message);
     }
 

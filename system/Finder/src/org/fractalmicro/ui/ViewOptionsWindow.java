@@ -99,7 +99,7 @@ public class ViewOptionsWindow extends JInternalFrame {
     public static void open() {
         if (instance == null || instance.isClosed()) {
             instance = new ViewOptionsWindow();
-            Desktop.get().addWindow(instance);
+            Desktop.sharedDesktop().addWindow(instance);
         } else {
             instance.toFront();
             try { instance.setSelected(true); } catch (java.beans.PropertyVetoException ignored) { }

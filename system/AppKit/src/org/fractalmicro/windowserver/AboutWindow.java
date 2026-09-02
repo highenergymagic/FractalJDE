@@ -113,7 +113,7 @@ public class AboutWindow extends JInternalFrame {
         p.add(Box.createVerticalStrut(12));
         p.add(centred(SystemProfile.VENDOR, Aqua.smallFont()));
 
-        Desktop.get().addWindow(new AboutWindow("About This Computer", p, 400, 380));
+        Desktop.sharedDesktop().addWindow(new AboutWindow("About This Computer", p, 400, 380));
     }
 
     public static void showAboutFinder() {
@@ -128,7 +128,7 @@ public class AboutWindow extends JInternalFrame {
         p.add(centred("Finder", Aqua.titleFont().deriveFont(Font.PLAIN, 18f)));
         p.add(centred("Version " + SystemProfile.version()
             + " (" + SystemProfile.build() + ")", Aqua.smallFont()));
-        Desktop.get().addWindow(new AboutWindow("About Finder", p, 320, 240));
+        Desktop.sharedDesktop().addWindow(new AboutWindow("About Finder", p, 320, 240));
     }
 
     /** The same panel for any other program, named for whichever one asked. */
@@ -148,7 +148,7 @@ public class AboutWindow extends JInternalFrame {
             + " (" + SystemProfile.build() + ")", Aqua.smallFont()));
         p.add(Box.createVerticalStrut(12));
         p.add(centred(SystemProfile.VENDOR, Aqua.smallFont()));
-        Desktop.get().addWindow(new AboutWindow("About " + application, p, 320, 260));
+        Desktop.sharedDesktop().addWindow(new AboutWindow("About " + application, p, 320, 260));
     }
 
     private static JLabel centred(String text, Font font) {

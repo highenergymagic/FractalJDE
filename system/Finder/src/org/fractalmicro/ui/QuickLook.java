@@ -95,7 +95,7 @@ public class QuickLook extends JInternalFrame {
             p.add(detail);
             body = p;
         }
-        Desktop.get().addWindow(new QuickLook(node, body));
+        Desktop.sharedDesktop().addWindow(new QuickLook(node, body));
     }
 
     private static boolean isImage(String name) {

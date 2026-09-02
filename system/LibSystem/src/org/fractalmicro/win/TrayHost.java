@@ -125,7 +125,7 @@ public final class TrayHost {
         if (started) return;
         started = true;
 
-        MessageWindow window = MessageWindow.get();
+        MessageWindow window = MessageWindow.sharedWindow();
         window.addHandler(TrayHost::handle);
 
         trayWindow = window.createWindow("Shell_TrayWnd", null, WS_POPUP, 0);

@@ -152,7 +152,7 @@ public class Dock extends JPanel {
             Component back = focusCameFrom != null ? focusCameFrom : focus.cameFrom();
             focusCameFrom = null;
             if (back != null && back.isShowing()) back.requestFocusInWindow();
-            else Desktop.get().icons().requestFocusInWindow();
+            else Desktop.sharedDesktop().icons().requestFocusInWindow();
         });
 
         revalidate();

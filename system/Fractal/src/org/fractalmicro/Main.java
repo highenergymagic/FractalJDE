@@ -322,7 +322,7 @@ public final class Main {
             // out as an empty desktop, with nothing having failed.
             if (!offscreen || doSelfTest || appToOpen != null) {
                 Progress.say("the window server");
-                org.fractalmicro.windowserver.WindowServer.get().start();
+                org.fractalmicro.windowserver.WindowServer.sharedServer().start();
             }
             if (doProbe) {
                 // A real, laid-out, showing window that cannot be seen or take the

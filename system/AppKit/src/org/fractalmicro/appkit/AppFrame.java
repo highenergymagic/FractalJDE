@@ -106,7 +106,7 @@ public class AppFrame extends JFrame {
                 window.doDefaultCloseAction();
             }
             @Override public void windowActivated(java.awt.event.WindowEvent e) {
-                Desktop desktop = Desktop.get();
+                Desktop desktop = Desktop.sharedDesktop();
                 if (desktop != null) desktop.frameActivated(AppFrame.this);
             }
         });

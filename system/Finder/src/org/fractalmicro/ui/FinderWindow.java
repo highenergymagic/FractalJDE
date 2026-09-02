@@ -143,10 +143,10 @@ public class FinderWindow extends JInternalFrame
 
         addInternalFrameListener(new InternalFrameAdapter() {
             @Override public void internalFrameClosed(InternalFrameEvent e) {
-                if (Desktop.get() != null) Desktop.get().mainMenu().windowsChanged();
+                if (Desktop.sharedDesktop() != null) Desktop.sharedDesktop().mainMenu().windowsChanged();
             }
             @Override public void internalFrameActivated(InternalFrameEvent e) {
-                if (Desktop.get() != null) Desktop.get().mainMenu().windowsChanged();
+                if (Desktop.sharedDesktop() != null) Desktop.sharedDesktop().mainMenu().windowsChanged();
             }
         });
 
@@ -321,7 +321,7 @@ public class FinderWindow extends JInternalFrame
         push(new Location(Mode.FOLDER, dir, titleFor(dir)));
         applyLocation();
         Recent.noteFolder(dir);
-        Desktop.get().mainMenu().rebuildRecents();
+        Desktop.sharedDesktop().mainMenu().rebuildRecents();
     }
 
     public void showApplications(boolean utilities) {

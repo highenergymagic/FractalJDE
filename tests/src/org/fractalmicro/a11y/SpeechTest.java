@@ -72,7 +72,7 @@ public final class SpeechTest {
         String inFinder = Announcer.phraseFor(quit);
         // A program in front, which is now always a program in another process. What is
         // being checked is what the words say, so any program with a window will do.
-        org.fractalmicro.windowserver.WindowServer.get().start();
+        org.fractalmicro.windowserver.WindowServer.sharedServer().start();
         String inTextEdit;
         try (org.fractalmicro.appkit.FMApplication app = org.fractalmicro.appkit.FMApplication.named(
                  org.fractalmicro.foundation.FMString.of("TextEdit"))) {

@@ -71,7 +71,7 @@ final class FMPanelHost {
      * is the other side of that, and the side the desktop's own parts use directly.
      */
     static int run(FMSavePanel panel) {
-        if (Desktop.get() == null) return FMSavePanel.CANCELLED;
+        if (Desktop.sharedDesktop() == null) return FMSavePanel.CANCELLED;
         int[] answer = new int[]{FMSavePanel.CANCELLED};
         try {
             onSwing(() -> answer[0] = show(panel));
@@ -106,7 +106,7 @@ final class FMPanelHost {
 
         // Nothing to hang it from: a program with no window yet, or a check with no
         // screen. It stands on its own instead.
-        JDialog dialog = new JDialog(Desktop.get(), panel.title().toString(),
+        JDialog dialog = new JDialog(Desktop.sharedDesktop(), panel.title().toString(),
                                      Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setResizable(false);
         state.dialog = dialog;
@@ -118,7 +118,7 @@ final class FMPanelHost {
         dialog.getAccessibleContext().setAccessibleName(state.body
             .getAccessibleContext().getAccessibleName());
         state.applyExpanded(state.expanded);
-        dialog.setLocationRelativeTo(Desktop.get());
+        dialog.setLocationRelativeTo(Desktop.sharedDesktop());
         dialog.setVisible(true);
         return state.answer;
     }
@@ -153,7 +153,7 @@ final class FMPanelHost {
 
     /** The window a sheet would belong to: whichever one is in front. */
     private static JInternalFrame frontWindow() {
-        Desktop desktop = Desktop.get();
+        Desktop desktop = Desktop.sharedDesktop();
         return desktop == null ? null : desktop.activeWindow();
     }
 

@@ -159,7 +159,7 @@ public final class LayoutDescriptionTest {
 
     private static int checkWindow(Desktop desktop, PrintStream out) {
         int failures = 0;
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         if (!server.start() && !server.isRunning()) {
             out.println("FAIL  the window server is not running, so nothing can be shown");
             return 6;
@@ -237,7 +237,7 @@ public final class LayoutDescriptionTest {
      */
     private static int checkSheet(Desktop desktop, PrintStream out) {
         int failures = 0;
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         try (FMApplication app = FMApplication.named(FMString.of("Asking"))) {
             app.showWindow(new Nib.Builder().title(FMString.of("Asking")).size(300, 200)
                 .add(ControlClass.FMLabel, FMString.of("nothing"), FMString.of("Nothing"),

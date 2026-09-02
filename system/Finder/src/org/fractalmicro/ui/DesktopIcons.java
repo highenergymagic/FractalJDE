@@ -116,7 +116,7 @@ public class DesktopIcons extends JList<Node> {
         addListSelectionListener(e -> {
             selectedAt = System.currentTimeMillis();
             org.fractalmicro.windowserver.Desktop desktop =
-                org.fractalmicro.windowserver.Desktop.get();
+                org.fractalmicro.windowserver.Desktop.sharedDesktop();
             if (!e.getValueIsAdjusting() && desktop != null) desktop.setStatus(statusLine());
         });
 

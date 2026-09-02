@@ -59,7 +59,7 @@ public final class FinderApp implements FMApplicationDelegate {
             // the desktop are what this program draws when nothing of its own is in front.
             case LaunchServices.DESKTOP ->
                 org.fractalmicro.ui.FinderMenus.install(
-                    org.fractalmicro.windowserver.Desktop.get());
+                    org.fractalmicro.windowserver.Desktop.sharedDesktop());
             case LaunchServices.TRASH -> Finder.openTrash();
             case LaunchServices.EMPTY_TRASH -> Finder.emptyTrash(false);
             case LaunchServices.EMPTY_TRASH_SECURELY -> Finder.emptyTrash(true);

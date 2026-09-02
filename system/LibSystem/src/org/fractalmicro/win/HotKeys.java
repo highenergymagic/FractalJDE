@@ -90,7 +90,7 @@ public final class HotKeys {
      */
     public static synchronized Registration register(int modifiers, int keyCode,
                                                      String name, Runnable action) {
-        MessageWindow window = MessageWindow.get();
+        MessageWindow window = MessageWindow.sharedWindow();
         listen(window);
 
         Registration registration = new Registration(nextId++, modifiers | MOD_NOREPEAT,
@@ -154,7 +154,7 @@ public final class HotKeys {
 
     /** Gives every claimed combination back to the rest of the system. */
     public static synchronized void releaseAll() {
-        MessageWindow window = MessageWindow.get();
+        MessageWindow window = MessageWindow.sharedWindow();
         for (Registration registration : BY_ID.values()) {
             if (!registration.claimed) continue;
             window.invoke(() -> {

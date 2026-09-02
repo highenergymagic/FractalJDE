@@ -96,7 +96,7 @@ public final class MenuBridgeTest {
                 KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, MainMenu.CMD)));
 
         /* --------------------------------------------------------- across the wire */
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         server.start();
         String wasInFront = desktop.mainMenu().currentApplication();
 

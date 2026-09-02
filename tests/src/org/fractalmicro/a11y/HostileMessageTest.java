@@ -132,7 +132,7 @@ public final class HostileMessageTest {
      */
     private static int windowServerChecks(PrintStream out) {
         int failures = 0;
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         server.start();
 
         // Asking for the next event names the program asking. If that name is what decides
@@ -179,7 +179,7 @@ public final class HostileMessageTest {
     }
 
     private static javax.swing.JInternalFrame frameTitled(String title) {
-        for (javax.swing.JInternalFrame f : org.fractalmicro.windowserver.Desktop.get().windows()) {
+        for (javax.swing.JInternalFrame f : org.fractalmicro.windowserver.Desktop.sharedDesktop().windows()) {
             if (title.equals(f.getTitle())) return f;
         }
         return null;

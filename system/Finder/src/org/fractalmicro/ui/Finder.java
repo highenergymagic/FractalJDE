@@ -58,16 +58,16 @@ public final class Finder {
             && FinderSettings.newWindowTargetCode().sameAs(org.fractalmicro.foundation.FMString.of("PfCm"));
         if (dir == null) dir = FinderSettings.newWindowTarget();
         FinderWindow w = new FinderWindow(dir);
-        Desktop.get().addWindow(w);
+        Desktop.sharedDesktop().addWindow(w);
         if (computer) w.showComputer();
         return w;
     }
 
     /** The frontmost Finder window, skipping Info and preference windows. */
     public static FinderWindow frontWindow() {
-        JInternalFrame active = Desktop.get().activeWindow();
+        JInternalFrame active = Desktop.sharedDesktop().activeWindow();
         if (active instanceof FinderWindow) return (FinderWindow) active;
-        for (JInternalFrame f : Desktop.get().windows()) {
+        for (JInternalFrame f : Desktop.sharedDesktop().windows()) {
             if (f instanceof FinderWindow && f.isVisible() && !f.isClosed()) return (FinderWindow) f;
         }
         return null;
@@ -121,7 +121,7 @@ public final class Finder {
     public static void openTrash() {
         FinderWindow w = new FinderWindow(null);
         w.showTrash();
-        Desktop.get().addWindow(w);
+        Desktop.sharedDesktop().addWindow(w);
     }
 
     public static void goTo(File dir) {
@@ -379,7 +379,7 @@ public final class Finder {
         JFileChooser chooser = new JFileChooser(
             programs == null ? org.fractalmicro.fs.Volumes.systemDrive() : programs);
         chooser.setDialogTitle("Choose Application");
-        if (chooser.showOpenDialog(Desktop.get()) != JFileChooser.APPROVE_OPTION) return;
+        if (chooser.showOpenDialog(Desktop.sharedDesktop()) != JFileChooser.APPROVE_OPTION) return;
         File app = chooser.getSelectedFile();
         List<String> command = new ArrayList<>();
         command.add(app.getAbsolutePath());
@@ -406,7 +406,7 @@ public final class Finder {
 
     public static void getInfo(Node n) {
         if (n == null) { beep(SELECT_SOMETHING); return; }
-        Desktop.get().addWindow(new InfoWindow(n));
+        Desktop.sharedDesktop().addWindow(new InfoWindow(n));
     }
 
     public static void eject(Node volume) {
@@ -456,7 +456,7 @@ public final class Finder {
      * been taken over, and on a screen where it never was.
      */
     public static DesktopIcons desktopIcons() {
-        Desktop d = Desktop.get();
+        Desktop d = Desktop.sharedDesktop();
         return d != null && d.icons() instanceof DesktopIcons view ? view : null;
     }
 
@@ -468,7 +468,7 @@ public final class Finder {
 
     public static void refreshAll() {
         SwingUtilities.invokeLater(() -> {
-            Desktop d = Desktop.get();
+            Desktop d = Desktop.sharedDesktop();
             if (d == null) return;
             DesktopIcons icons = desktopIcons();
             if (icons != null) icons.refresh();

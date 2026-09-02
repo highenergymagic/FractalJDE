@@ -120,7 +120,7 @@ public final class SpellingPanel extends JInternalFrame {
         if (panel == null) {
             panel = new SpellingPanel(text, spelling);
             OPEN.put(text, panel);
-            Desktop.get().addWindow(panel);
+            Desktop.sharedDesktop().addWindow(panel);
         } else {
             try {
                 panel.setSelected(true);

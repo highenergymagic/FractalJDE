@@ -88,7 +88,7 @@ public final class FMAlert {
     public static int show(Kind kind, FMString message, FMString informative,
                            int defaultButton, FMString... buttons) {
         if (buttons.length == 0) buttons = new FMString[]{OK};
-        Desktop desktop = Desktop.get();
+        Desktop desktop = Desktop.sharedDesktop();
         Window owner = desktop == null ? null : desktop;
 
         JDialog dialog = new JDialog(owner, "", Dialog.ModalityType.APPLICATION_MODAL);
@@ -307,7 +307,7 @@ public final class FMAlert {
      */
     public static FMString ask(FMString message, FMString fieldLabel, FMString initial,
                                FMString actionButton) {
-        Desktop desktop = Desktop.get();
+        Desktop desktop = Desktop.sharedDesktop();
         JDialog dialog = new JDialog(desktop, "", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setUndecorated(true);
         dialog.setResizable(false);

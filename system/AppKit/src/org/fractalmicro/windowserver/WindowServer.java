@@ -325,7 +325,8 @@ public final class WindowServer {
         return code == 0 ? null : KeyStroke.getKeyStroke(code, modifiers);
     }
 
-    public static synchronized WindowServer get() {
+    /** The one in this process, since a process has one screen to serve. */
+    public static synchronized WindowServer sharedServer() {
         if (instance == null) instance = new WindowServer();
         return instance;
     }
@@ -490,7 +491,7 @@ public final class WindowServer {
                     .put("event", EVENT_CLOSED).put("window", (long) id));
             }
         });
-        Desktop.get().addWindow(frame);
+        Desktop.sharedDesktop().addWindow(frame);
         return window;
     }
 

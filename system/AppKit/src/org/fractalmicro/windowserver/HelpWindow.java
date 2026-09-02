@@ -51,7 +51,7 @@ public class HelpWindow extends JInternalFrame {
         text.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
         text.setCaretPosition(0);
         text.getAccessibleContext().setAccessibleName("Fractal Help");
-        Desktop.get().addWindow(new HelpWindow("Fractal Help", new JScrollPane(text), 560, 460));
+        Desktop.sharedDesktop().addWindow(new HelpWindow("Fractal Help", new JScrollPane(text), 560, 460));
     }
 
     public static void showShortcuts() {
@@ -65,7 +65,7 @@ public class HelpWindow extends JInternalFrame {
         table.getColumnModel().getColumn(0).setPreferredWidth(200);
         table.getColumnModel().getColumn(1).setPreferredWidth(340);
         table.getAccessibleContext().setAccessibleName("Keyboard shortcuts");
-        Desktop.get().addWindow(new HelpWindow("Keyboard Shortcuts", new JScrollPane(table), 600, 500));
+        Desktop.sharedDesktop().addWindow(new HelpWindow("Keyboard Shortcuts", new JScrollPane(table), 600, 500));
     }
 
     private static final String HELP =

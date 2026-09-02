@@ -86,7 +86,7 @@ public final class WindowServerTest {
             refused(unknownClass()));
 
         /* -------------------------------------------------------- the server */
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         boolean serving = server.start();
         failures += check(out, "the window server serves its name",
             serving && server.isRunning() && FMApplication.serverAvailable());

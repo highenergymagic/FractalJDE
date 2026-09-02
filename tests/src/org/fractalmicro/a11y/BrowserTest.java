@@ -131,7 +131,7 @@ public final class BrowserTest {
 
     private static int checkWindow(Desktop desktop, PrintStream out, Path folder) {
         int failures = 0;
-        WindowServer server = WindowServer.get();
+        WindowServer server = WindowServer.sharedServer();
         if (!server.start() && !server.isRunning()) {
             out.println("FAIL  the window server is not running, so nothing can be shown");
             return count() - 2;

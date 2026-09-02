@@ -116,7 +116,8 @@ public final class MessageWindow {
     private MessageWindow() {}
 
     /** The one message window, started on first use. */
-    public static synchronized MessageWindow get() {
+    /** The one this process listens on, made the first time anything asks for it. */
+    public static synchronized MessageWindow sharedWindow() {
         if (instance == null) {
             instance = new MessageWindow();
             instance.start();

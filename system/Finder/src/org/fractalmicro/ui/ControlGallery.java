@@ -183,7 +183,7 @@ public class ControlGallery extends JInternalFrame {
     }
 
     public static void open() {
-        Desktop.get().addWindow(new ControlGallery());
+        Desktop.sharedDesktop().addWindow(new ControlGallery());
     }
 
     private JLabel heading(String text) {

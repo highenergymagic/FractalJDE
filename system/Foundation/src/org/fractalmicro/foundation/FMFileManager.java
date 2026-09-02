@@ -61,8 +61,15 @@ public final class FMFileManager {
         return url == null || !url.asFile().isFile() ? -1 : url.asFile().length();
     }
 
-    /** What is in a directory, in no particular order. Empty when it is not one. */
-    public FMArray<FMURL> contentsOf(FMURL directory) {
+    /**
+     * What is in a directory, in no particular order. Empty when it is not one.
+     *
+     * Named for what it answers rather than overloaded with the one below it. They used to
+     * be one name told apart by a boolean nothing read, which is a parameter that exists to
+     * be ignored: a caller had to pass something meaningless and then remember which of the
+     * two it had asked for. Cocoa gives them two names for the same reason.
+     */
+    public FMArray<FMURL> contentsOfDirectory(FMURL directory) {
         if (directory == null) return FMArray.empty();
         java.io.File[] kids = directory.asFile().listFiles();
         if (kids == null) return FMArray.empty();
@@ -71,7 +78,8 @@ public final class FMFileManager {
         return out.asArray();
     }
 
-    public FMData contentsOf(FMURL url, boolean unusedOverload) {
+    /** What is in a file, as bytes. Nothing when it cannot be read. */
+    public FMData contentsAt(FMURL url) {
         return FMData.withContentsOf(url);
     }
 
