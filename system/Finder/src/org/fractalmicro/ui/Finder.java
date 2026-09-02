@@ -573,6 +573,27 @@ public final class Finder {
         refreshAll();
     }
 
+    /**
+     * The programs that can open what is selected, for the Open With menu.
+     *
+     * Asked of the file's type rather than its name, so an editor that declared
+     * public.text is offered for a kind of text it never heard of. Empty for most files,
+     * and the menu still has the host's default and Choose under it.
+     */
+    public static List<org.fractalmicro.bundle.Bundle> canOpen(List<Node> nodes) {
+        Node first = first(nodes);
+        if (first == null || first.file == null || first.file.isDirectory()) return List.of();
+        return org.fractalmicro.bundle.LaunchServices.applicationsFor(first.file);
+    }
+
+    /** Opens the selection with one named program, which is what choosing one means. */
+    public static void openWith(org.fractalmicro.bundle.Bundle program, List<Node> nodes) {
+        List<File> files = new ArrayList<>();
+        for (Node n : nodes) if (n.file != null) files.add(n.file);
+        if (program == null || files.isEmpty()) { beep(); return; }
+        org.fractalmicro.bundle.Bundles.openFiles(program.identifier().toString(), files);
+    }
+
     public static void openWithChosen(List<Node> nodes) {
         if (nodes.isEmpty()) { beep(); return; }
         String programs = System.getenv("ProgramFiles");

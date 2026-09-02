@@ -79,10 +79,14 @@ public final class Bundles {
                  Where.SYSTEM_UTILITIES, "What is running", false,
                  java.util.List.of("org.fractalmicro.activitymonitor"), Frameworks.COCOA,
                  true),
+        // The one program here that opens documents, so the one that says which. Everything
+        // that conforms to public.text, which is the plain kinds, the marked up ones and
+        // every kind of source: an editor that can open a .txt can open a .java, and saying
+        // so by naming the family is the difference between a type and a list of extensions.
         new Spec("TextEdit", PREFIX + "textedit", "org.fractalmicro.textedit.TextEdit",
                  Where.SYSTEM_APPLICATIONS, "A text editor", false,
                  java.util.List.of("org.fractalmicro.textedit"), Frameworks.COCOA,
-                 true),
+                 true, java.util.List.of("public.text", "public.rtf")),
         new Spec("Terminal", PREFIX + "terminal", "org.fractalmicro.terminal.Terminal",
                  Where.SYSTEM_UTILITIES, "A command line", false,
                  java.util.List.of("org.fractalmicro.terminal"), Frameworks.COCOA,
@@ -128,18 +132,26 @@ public final class Bundles {
     private record Spec(String name, String identifier, String principalClass,
                         Where where, String description, boolean background,
                         java.util.List<String> own, java.util.List<String> linked,
-                        boolean ownProcess) {
+                        boolean ownProcess, java.util.List<String> opens) {
         Spec(String name, String identifier, String principalClass,
              Where where, String description, boolean background) {
             this(name, identifier, principalClass, where, description, background,
-                 java.util.List.of(), Frameworks.COCOA, false);
+                 java.util.List.of(), Frameworks.COCOA, false, java.util.List.of());
         }
 
         Spec(String name, String identifier, String principalClass,
              Where where, String description, boolean background,
              java.util.List<String> own) {
             this(name, identifier, principalClass, where, description, background,
-                 own, Frameworks.COCOA, false);
+                 own, Frameworks.COCOA, false, java.util.List.of());
+        }
+
+        Spec(String name, String identifier, String principalClass,
+             Where where, String description, boolean background,
+             java.util.List<String> own, java.util.List<String> linked,
+             boolean ownProcess) {
+            this(name, identifier, principalClass, where, description, background,
+                 own, linked, ownProcess, java.util.List.of());
         }
     }
 
@@ -198,6 +210,9 @@ public final class Bundles {
                 info.set(Bundle.CATEGORY, "public.app-category.utilities");
                 if (spec.ownProcess()) info.set(OWN_PROCESS, Boolean.TRUE);
                 if (spec.background()) info.set(Bundle.BACKGROUND_ONLY, Boolean.TRUE);
+                if (!spec.opens().isEmpty()) {
+                    info.set(Bundle.DOCUMENT_TYPES, documentTypes(spec));
+                }
 
                 Bundle bundle = spec.where() == Where.MENU_EXTRAS
                     ? Bundle.create(parent, spec.name(), info, "", spec.own(), ".menu",
@@ -217,6 +232,21 @@ public final class Bundles {
         retireMovedBuiltIns();
         scan();
         Log.info("bundles installed: " + BY_IDENTIFIER.size());
+    }
+
+    /**
+     * What a program says it opens, in the shape a bundle says it.
+     *
+     * One entry, because a built-in program handles one family. A program with several
+     * kinds of document writes several, which is why this is a list.
+     */
+    private static java.util.List<Object> documentTypes(Spec spec) {
+        FMMutableDictionary one = FMMutableDictionary.empty();
+        one.set(Bundle.TYPE_NAME, spec.name() + " document");
+        one.set(Bundle.TYPE_ROLE, "Editor");
+        one.set(Bundle.HANDLER_RANK, "Default");
+        one.set(Bundle.CONTENT_TYPES, java.util.List.copyOf(spec.opens()));
+        return java.util.List.of(one.asDictionary().asMap());
     }
 
     /**

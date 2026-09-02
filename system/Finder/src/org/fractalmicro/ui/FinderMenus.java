@@ -157,6 +157,49 @@ public final class FinderMenus implements NibLoader.Commands {
                          indexAfter(menu, "goDownloads"));
             }
         }
+        findOpenWith();
+    }
+
+    /**
+     * The Open With submenu, and the two items the file always keeps at the bottom of it.
+     *
+     * What goes above them is not in the file and cannot be: whichever installed programs
+     * can open what happens to be selected is a question about the machine.
+     */
+    private JMenu openWith;
+    private JMenuItem hostDefault;
+    private JMenuItem chooseOne;
+
+    private void findOpenWith() {
+        hostDefault = loaded.item(FMString.of("openWithDefault"));
+        chooseOne = loaded.item(FMString.of("openWithChosen"));
+        if (hostDefault == null) return;
+        if (hostDefault.getParent() instanceof javax.swing.JPopupMenu popup
+                && popup.getInvoker() instanceof JMenu holding) {
+            openWith = holding;
+        }
+    }
+
+    /**
+     * Fills Open With from what can actually open the selection.
+     *
+     * The programs that declared a type this file conforms to come first, best claim at
+     * the top the way a Mac puts the default there, then the host's answer and Choose.
+     */
+    private void fillOpenWith() {
+        if (openWith == null) return;
+        openWith.removeAll();
+        List<Node> chosen = selection();
+        boolean any = false;
+        for (org.fractalmicro.bundle.Bundle program : Finder.canOpen(chosen)) {
+            JMenuItem item = new JMenuItem(program.displayName().toString());
+            item.addActionListener(e -> Finder.openWith(program, selection()));
+            openWith.add(item);
+            any = true;
+        }
+        if (any) openWith.addSeparator();
+        if (hostDefault != null) openWith.add(hostDefault);
+        if (chooseOne != null) openWith.add(chooseOne);
     }
 
     private boolean isNamed(JMenu menu, String action) {
@@ -196,6 +239,7 @@ public final class FinderMenus implements NibLoader.Commands {
                     // file to be asked about, but the question is the same question, so
                     // that a check can put it and get the answer the menu will show.
                     if (labels != null) labels.setEnabled(canPerform(FMString.of("label")));
+                    fillOpenWith();
                 }
                 @Override public void menuDeselected(javax.swing.event.MenuEvent e) { }
                 @Override public void menuCanceled(javax.swing.event.MenuEvent e) { }

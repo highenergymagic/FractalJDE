@@ -100,6 +100,19 @@ public final class Bundle {
     public static final FMString BACKGROUND_ONLY = FMString.of("LSBackgroundOnly");
     public static final FMString CATEGORY = FMString.of("LSApplicationCategoryType");
 
+    /**
+     * What a program says it can open, and how it says it.
+     *
+     * One entry per kind of document, naming types rather than extensions, so a program
+     * that opens text opens a kind of text nobody had heard of when it was written. The
+     * role says whether it can change one, and the rank how strong a claim it makes.
+     */
+    public static final FMString DOCUMENT_TYPES = FMString.of("CFBundleDocumentTypes");
+    public static final FMString TYPE_NAME = FMString.of("CFBundleTypeName");
+    public static final FMString TYPE_ROLE = FMString.of("CFBundleTypeRole");
+    public static final FMString CONTENT_TYPES = FMString.of("LSItemContentTypes");
+    public static final FMString HANDLER_RANK = FMString.of("LSHandlerRank");
+
     private final File root;
     private final Map<String, Object> info;
 

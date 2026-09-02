@@ -22,7 +22,10 @@ package org.fractalmicro.bundle;
 import org.fractalmicro.core.Recent;
 import org.fractalmicro.core.Running;
 import org.fractalmicro.core.Shell;
+import org.fractalmicro.foundation.FMDictionary;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.fs.Node;
+import org.fractalmicro.uti.UTTypes;
 
 import java.io.File;
 import java.util.List;
@@ -131,6 +134,96 @@ public final class LaunchServices {
     /** A named part of the file manager: its Trash window, emptying it, looking again. */
     public static boolean tellFileBrowser(String part) {
         return Bundles.openPart(FILE_BROWSER, part);
+    }
+
+    /* ------------------------------------------------- who can open what */
+
+    /**
+     * Every installed program that says it can open this file, best claim first.
+     *
+     * Asked of the file's type rather than its name, so a program that declared
+     * public.text is offered for a .java it never heard of. An exact claim ranks before a
+     * claim on a family the type belongs to.
+     */
+    public static java.util.List<Bundle> applicationsFor(File file) {
+        FMString type = typeOf(file);
+        java.util.List<Bundle> found = new java.util.ArrayList<>();
+        java.util.Map<Bundle, Integer> rank = new java.util.HashMap<>();
+        for (Bundle bundle : Bundles.all()) {
+            int best = claim(bundle, type);
+            if (best < 0) continue;
+            found.add(bundle);
+            rank.put(bundle, best);
+        }
+        found.sort((a, b) -> {
+            int byRank = Integer.compare(rank.get(a), rank.get(b));
+            return byRank != 0 ? byRank
+                : a.displayName().toString().compareToIgnoreCase(b.displayName().toString());
+        });
+        return found;
+    }
+
+    /** The one that would open it, or nothing at all when nothing installed can. */
+    public static Bundle defaultApplicationFor(File file) {
+        java.util.List<Bundle> able = applicationsFor(file);
+        return able.isEmpty() ? null : able.get(0);
+    }
+
+    /**
+     * How strong a claim a program makes on a type, lower being stronger, or -1 for none.
+     *
+     * An exact match beats a claim on a family the type belongs to, so an editor that names
+     * public.plain-text is offered before one that only says public.text. The rank a program
+     * declares breaks the tie after that.
+     */
+    private static int claim(Bundle bundle, FMString type) {
+        int best = -1;
+        for (Object entry : bundle.info().array(Bundle.DOCUMENT_TYPES)) {
+            FMDictionary one = asDictionary(entry);
+            if (one == null) continue;
+            int declared = rankOf(one.string(Bundle.HANDLER_RANK, FMString.EMPTY));
+            for (Object named : one.array(Bundle.CONTENT_TYPES)) {
+                FMString handles = FMString.describing(named);
+                if (handles.sameAs(type)) {
+                    best = best < 0 ? declared : Math.min(best, declared);
+                } else if (UTTypes.conforms(type, handles)) {
+                    int loose = declared + 10;
+                    best = best < 0 ? loose : Math.min(best, loose);
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Owner, Default, Alternate, None, which is the order Launch Services puts them in. */
+    private static int rankOf(FMString declared) {
+        String rank = declared.toString();
+        if (rank.equalsIgnoreCase("Owner")) return 0;
+        if (rank.equalsIgnoreCase("Alternate")) return 2;
+        if (rank.equalsIgnoreCase("None")) return 8;
+        return 1;
+    }
+
+    /** What kind of thing a file is, which is the question everything above asks. */
+    public static FMString typeOf(File file) {
+        if (file == null) return UTTypes.UNKNOWN;
+        if (Bundle.looksLikeBundle(file)) return UTTypes.APPLICATION;
+        if (file.isDirectory()) return UTTypes.FOLDER;
+        String name = file.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) return UTTypes.UNKNOWN;
+        FMString found = UTTypes.preferredType(FMString.of(name.substring(dot + 1)));
+        return found == null ? UTTypes.UNKNOWN : found;
+    }
+
+    private static FMDictionary asDictionary(Object value) {
+        if (value instanceof FMDictionary already) return already;
+        if (!(value instanceof java.util.Map<?, ?> map)) return null;
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<?, ?> one : map.entrySet()) {
+            out.put(String.valueOf(one.getKey()), one.getValue());
+        }
+        return FMDictionary.fromMap(out);
     }
 
     private static boolean openProgram(File bundleFolder) {

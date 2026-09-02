@@ -66,6 +66,38 @@ that was there first.
 A declaration is data, and data can say that a type conforms to itself. The walk up the tree
 has a limit for that reason: one bad declaration should not hang the Kind column.
 
+## Who can open what
+
+A program says what it opens in its own Info.plist, by type:
+
+```xml
+<key>CFBundleDocumentTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeName</key><string>TextEdit document</string>
+        <key>CFBundleTypeRole</key><string>Editor</string>
+        <key>LSHandlerRank</key><string>Default</string>
+        <key>LSItemContentTypes</key>
+        <array><string>public.text</string><string>public.rtf</string></array>
+    </dict>
+</array>
+```
+
+Naming the family rather than the extensions is the whole point. TextEdit says
+`public.text` and has never heard of Java, and a `.java` file is offered to it anyway,
+because that is what the type says a `.java` is.
+
+The Open With submenu is that list. It used to be two fixed items in the interface file,
+which is what a submenu looks like when nothing knows the answer. What can open the selection
+is a question about the machine, so it cannot be in the file: the programs come first, best
+claim at the top the way a Mac puts the default there, then the host's own answer and Choose
+underneath.
+
+Claims are ranked the way Launch Services ranks them. An exact match on the type beats a
+claim on a family it belongs to, so an editor naming `public.plain-text` is offered before
+one that only says `public.text`, and `LSHandlerRank` (Owner, Default, Alternate, None)
+breaks the tie after that.
+
 ## What does not have a type
 
 `public.data`. A file nothing has declared a type for is still data, and something asking

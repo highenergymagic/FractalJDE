@@ -47,7 +47,7 @@ import java.nio.file.Path;
 public final class TypeTest {
     private TypeTest() {}
 
-    public static int count() { return 12; }
+    public static int count() { return 15; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -129,6 +129,28 @@ public final class TypeTest {
             failures += check(out, "and something nothing declared is still data",
                 UTTypes.DATA.sameAs(workspace.typeOfFile(FMURL.of(nothing)))
                 && workspace.type(workspace.typeOfFile(FMURL.of(nothing)), UTTypes.ITEM));
+
+            /* ------------------------------------------------- and who can open it */
+
+            // The point of the tree, from the other end. TextEdit declared public.text and
+            // nothing about Java, so a .java file it has never heard of is offered to it
+            // because that is what the type says a .java is.
+            File source = new File(folder.toFile(), "Thing.java");
+            Files.writeString(source.toPath(), "class Thing { }");
+            failures += check(out, "a program is offered a kind of file it never named",
+                named(org.fractalmicro.bundle.LaunchServices.applicationsFor(source))
+                    .contains("TextEdit"));
+
+            File plain = new File(folder.toFile(), "Notes.txt");
+            Files.writeString(plain.toPath(), "a note");
+            failures += check(out, "and is the one that would open it",
+                org.fractalmicro.bundle.LaunchServices.defaultApplicationFor(plain) != null
+                && "TextEdit".equals(org.fractalmicro.bundle.LaunchServices
+                    .defaultApplicationFor(plain).displayName().toString()));
+
+            failures += check(out, "while nothing is offered for a kind nobody handles",
+                named(org.fractalmicro.bundle.LaunchServices.applicationsFor(picture))
+                    .isEmpty());
         } catch (Exception e) {
             out.println("FAIL  what a file resolves to: " + e);
             failures++;
@@ -139,6 +161,14 @@ public final class TypeTest {
         out.println("      " + (failures == 0 ? "a file knows what it is"
                                               : failures + " failed"));
         return failures;
+    }
+
+    /** The names of the programs a list of bundles is. */
+    private static java.util.List<String> named(
+            java.util.List<org.fractalmicro.bundle.Bundle> bundles) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (org.fractalmicro.bundle.Bundle one : bundles) out.add(one.displayName().toString());
+        return out;
     }
 
     private static void deleteTree(File file) {
