@@ -261,6 +261,10 @@ public final class SelfTest {
         int valueFailures = ValueTest.run(System.out);
         if (valueFailures > 0) failures.add(valueFailures + " value checks failed");
 
+        steps += TypeTest.count();
+        int typeFailures = TypeTest.run(System.out);
+        if (typeFailures > 0) failures.add(typeFailures + " type checks failed");
+
         steps += LinkingTest.count();
         int linkFailures = LinkingTest.run(System.out);
         if (linkFailures > 0) failures.add(linkFailures + " linking checks failed");

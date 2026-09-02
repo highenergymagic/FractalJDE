@@ -277,14 +277,16 @@ public final class LocalizationTest {
     }
 
     /**
-     * Whether a dotted name is a bundle naming itself rather than a key.
+     * Whether a dotted name is something naming itself rather than a key.
      *
-     * A bundle identifier is a domain backwards, and this system keeps them in the same
-     * kind of constant as everything else. The two are told apart by the first word, which
-     * is what the convention exists for.
+     * A bundle identifier is a domain backwards, and so is a type identifier, and this
+     * system keeps both in the same kind of constant as everything else. They are told
+     * apart from a key by the first word, which is what the convention exists for.
+     * public. is the domain the types everybody shares are in.
      */
     private static boolean isReverseDomain(String key) {
-        for (String prefix : new String[]{"org.", "com.", "net.", "io.", "java.", "javax."}) {
+        for (String prefix : new String[]{"org.", "com.", "net.", "io.", "java.", "javax.",
+                                          "public.", "dev."}) {
             if (key.startsWith(prefix)) return true;
         }
         return false;

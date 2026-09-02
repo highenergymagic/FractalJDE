@@ -214,3 +214,14 @@
 "browser.dateModified" = "Date Modified";
 "browser.size" = "Size";
 "browser.kind" = "Kind";
+
+/* The types a whole family of files is one of. A file is one of these when nothing more
+   particular has been declared for it, and something asking whether it is an image is
+   asking whether its type conforms to one of them. */
+"kind.image" = "image";
+"kind.audio" = "audio file";
+"kind.movie" = "movie";
+"kind.archive" = "archive";
+"kind.sourceCode" = "source file";
+"kind.script" = "script";
+"kind.styleSheet" = "style sheet";

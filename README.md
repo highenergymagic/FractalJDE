@@ -61,6 +61,7 @@ The rest is in `docs/`, roughly in the order it makes sense to read.
 | [architecture.md](docs/architecture.md) | images, the loader, processes, the task table |
 | [booting.md](docs/booting.md) | starting: the order, the boot screen, the process tree |
 | [volume.md](docs/volume.md) | the volume, bundles, installing, icons, packaging |
+| [types.md](docs/types.md) | what a file is, and how everything finds out |
 | [windows.md](docs/windows.md) | the window server, descriptions, the menu bar, the desktop |
 | [interfaces.md](docs/interfaces.md) | interface files, and the words in them |
 | [panels.md](docs/panels.md) | the save and open panels, and the file browser |

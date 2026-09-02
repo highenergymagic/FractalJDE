@@ -24,6 +24,7 @@ import org.fractalmicro.bundle.LaunchServices;
 import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMMutableArray;
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.uti.UTTypes;
 import org.fractalmicro.foundation.FMURL;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
@@ -75,10 +76,9 @@ public final class FMWorkspace {
     /**
      * Opens a web address in whatever the machine browses with.
      *
-     * Its own method rather than the one above, because FMURL here is a file and nothing
-     * else. NSURL is any address and NSWorkspace -openURL: therefore covers both; making
-     * that true here means teaching a URL about schemes, hosts and queries, which is a
-     * larger thing than this and is not pretended at by taking a string that says http.
+     * Its own method because FMURL here is a file and nothing else. NSURL is any address
+     * and NSWorkspace -openURL: covers both; making that true here means teaching a URL
+     * about schemes and hosts, which is not pretended at by taking a string saying http.
      */
     public boolean browse(FMString address) {
         if (address == null || address.isEmpty()) return false;
@@ -177,6 +177,43 @@ public final class FMWorkspace {
 
     /** How many things are in it, for anything that draws it full or empty. */
     public int trashCount() { return Trash.count(); }
+
+    /* ------------------------------------------------------------------ types */
+
+    /**
+     * What kind of thing a file is, as a type identifier.
+     *
+     * NSWorkspace answers this with typeOfFile:error:, and the answer is a name in a tree
+     * rather than an extension: public.png, com.adobe.pdf, org.fractalmicro.application. A
+     * file nothing has declared a type for is data, since it is still data.
+     */
+    public FMString typeOfFile(FMURL file) {
+        if (file == null) return UTTypes.UNKNOWN;
+        java.io.File at = file.asFile();
+        if (org.fractalmicro.bundle.Bundle.looksLikeBundle(at)) return UTTypes.APPLICATION;
+        if (at.isDirectory()) return UTTypes.FOLDER;
+        String name = at.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) return UTTypes.UNKNOWN;
+        FMString found = UTTypes.preferredType(FMString.of(name.substring(dot + 1)));
+        return found == null ? UTTypes.UNKNOWN : found;
+    }
+
+    /**
+     * Whether a type is another type, or a kind of it.
+     *
+     * NSWorkspace's type:conformsToType:. This is the question worth asking of a file
+     * instead of what its extension is, because it stays right for kinds of image nobody
+     * had heard of when the question was written.
+     */
+    public boolean type(FMString type, FMString conformsTo) {
+        return UTTypes.conforms(type, conformsTo);
+    }
+
+    /** Everything a type is, from itself up to the root. */
+    public FMArray<FMString> typeConformance(FMString type) {
+        return UTTypes.conformance(type);
+    }
 
     /* ----------------------------------------------------------- what is running */
 

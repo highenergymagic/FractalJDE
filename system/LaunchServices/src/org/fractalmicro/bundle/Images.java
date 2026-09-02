@@ -65,8 +65,8 @@ public final class Images {
      * is wrapped in a framework, and for a program, where it starts.
      *
      * A library has no entry point because nothing runs it. A program has one written into
-     * the image rather than known by whatever starts it, which is the only way a program
-     * can be started by something that has never heard of it.
+     * the image rather than known by whatever starts it, which is the only way something
+     * that has never heard of a program can start it.
      */
     private record Image(String name, Path binary, int fileType, boolean framework,
                          String entry) {
@@ -402,9 +402,8 @@ public final class Images {
      * The metadata server, inside the framework whose work it does.
      *
      * Mac OS X keeps it at Metadata.framework/Versions/A/Support/mds, a plain executable
-     * rather than a program a person opens. It says where it starts, as every program
-     * image does: without that the loader has nothing to run and launchd starts it again
-     * every ten seconds for as long as the machine is on.
+     * rather than a program a person opens. It says where it starts, as every program image
+     * does: without that the loader has nothing to run and launchd retries for ever.
      */
     private static void metadataSupport(Path built, Linker linker) throws IOException {
         Path support = OSPaths.frameworkSupport(
@@ -439,6 +438,31 @@ public final class Images {
         info.set(Bundle.SHORT_VERSION, Version.number());
         info.set(Bundle.VERSION, Version.build());
         info.set(Bundle.INFO_DICTIONARY_VERSION, "6.0");
+        for (FMString key : declaredTypes(name).keys()) {
+            info.set(key, declaredTypes(name).value(key));
+        }
         return info.asDictionary();
+    }
+
+    /**
+     * The types a framework declares, read out of the resources it ships.
+     *
+     * A framework with a UTCoreTypes.plist beside its words is declaring types, and what is
+     * in that file goes into its Info.plist, where a bundle declares them and where Launch
+     * Services looks. A file rather than code, because a list of what a PNG is called is
+     * data and belongs somewhere a person can read without a compiler.
+     */
+    private static FMDictionary declaredTypes(String name) {
+        Path built = builtImages();
+        if (built == null) return FMDictionary.EMPTY;
+        Path file = built.resolve(name + ".resources").resolve("UTCoreTypes.plist");
+        if (!Files.isReadable(file)) return FMDictionary.EMPTY;
+        try {
+            return Plist.dictionary(file);
+        } catch (IOException unreadable) {
+            Log.info("the type declarations for " + name + " could not be read: "
+                     + unreadable.getMessage());
+            return FMDictionary.EMPTY;
+        }
     }
 }
