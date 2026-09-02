@@ -458,6 +458,56 @@ public final class FMApplication implements AutoCloseable {
         }
     }
 
+    /**
+     * What a sheet came back with: the button that ended it, and what was in it.
+     *
+     * A sheet is a question, so its answer is one value and not a window to look after
+     * afterwards. Nothing was chosen when the sheet was dismissed without a button, which
+     * is what Escape does.
+     */
+    public record Answer(FMString action, FMArray<FMString> controls,
+                         FMArray<FMString> values) {
+
+        public boolean isNothing() { return action.isEmpty(); }
+
+        /** What one control in the sheet held, by the identifier the description gave it. */
+        public FMString valueOf(FMString control) {
+            for (int i = 0; i < controls.count() && i < values.count(); i++) {
+                if (controls.at(i).sameAs(control)) return values.at(i);
+            }
+            return FMString.EMPTY;
+        }
+    }
+
+    /**
+     * Runs a described window as a sheet on this program's window, and waits for it.
+     *
+     * The waiting is what makes it a sheet rather than a second window. It hangs off one
+     * window, that window cannot be used until it is answered, and the program asking is
+     * not doing anything else meanwhile either.
+     */
+    public Answer sheet(Nib description) {
+        try {
+            Message reply = connection().send(Message.of(WindowServer.SHEET)
+                .put("window", (long) window)
+                .put("description", description.toBytes().asBytes()));
+            if (reply.isError()) throw new IOException(reply.errorText());
+            return new Answer(FMString.of(reply.string("action", "")),
+                              names(reply.strings("controls")),
+                              names(reply.strings("values")));
+        } catch (IOException e) {
+            failed(e);
+            return new Answer(FMString.EMPTY, FMArray.empty(), FMArray.empty());
+        }
+    }
+
+    private static FMArray<FMString> names(java.util.List<String> said) {
+        org.fractalmicro.foundation.FMMutableArray<FMString> out =
+            org.fractalmicro.foundation.FMMutableArray.empty();
+        for (String one : said) out.add(FMString.of(one));
+        return out.asArray();
+    }
+
     /** Where a control's selection starts and ends, and what is in it. */
     public record Selection(int from, int to, FMString text) {
         public boolean isEmpty() { return from >= to; }

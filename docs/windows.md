@@ -38,8 +38,28 @@ Controls   Class, Identifier, AccessibleName, Text, Action, X, Y, Width, Height
 
 The classes are `FMButton`, `FMLabel`, `FMTextField`, `FMTextView`, `FMRichText`,
 `FMCheckBox`, `FMPopUpButton`, `FMSlider`, `FMProgressIndicator`, `FMTableView`,
-`FMBrowser` and `FMSeparator`. Every one becomes the real Swing control it names, drawn by
-the Aqua delegates like anything else.
+`FMBrowser`, `FMSplitView`, `FMToolbar` and `FMSeparator`. Every one becomes the real
+Swing control it names, drawn by the Aqua delegates like anything else.
+
+### Things that hold other things
+
+A control may say which one it sits inside, with `In`. That keeps a description a flat
+list: everything that reads one reads a list, and nothing has to walk a tree. An interface
+file nests instead, because that is what a view holding views looks like written down and
+what Interface Builder writes, and the reader turns one shape into the other. They say the
+same thing and the checks write one out as the other to prove it.
+
+`FMSplitView` takes two, in the order they were described, and its divider starts where the
+first one's width puts it. A description that says how wide the sidebar is has already said
+where the divider goes; saying it twice is two chances to disagree.
+
+`FMToolbar` takes as many as it is given, and an `FMSeparator` inside one is flexible space,
+which is what `NSToolbarFlexibleSpaceItem` is. What comes before it goes left, what comes
+after goes right. That is how a search field reaches the far end of a toolbar without
+anybody measuring the window.
+
+That is enough for the shape of a file browser window, which is a toolbar over a split view
+with a list on one side and a folder on the other.
 
 ### A folder
 
@@ -224,3 +244,15 @@ bar, stops that window taking clicks while it is up, and leaves every other wind
 It waits for the answer on a secondary event loop, so painting and the keyboard keep
 working; a window that is not on screen falls back to the free standing alert, because a
 sheet with nothing to hang from cannot be answered.
+
+A program in another process can put one up too, and the shape of that is the point. It is
+not a window it opens and later closes: it is one message, `sheet`, carrying a description
+and going out on the program's own window, and the reply is the answer. The reply says
+which button ended it and what everything in it held at that moment, because a sheet exists
+to collect exactly that and a program that had to ask afterwards would be asking a sheet
+that is no longer there.
+
+Every button in a described sheet ends it, which is what a button on a sheet is for. The
+sheet's controls are its own rather than the window's: a sheet asking for a name and a
+window holding a name would otherwise be two controls with one identifier, and the sheet's
+would quietly become the one the program meant afterwards.

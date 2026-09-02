@@ -104,6 +104,8 @@ public final class Xib {
         // The element NSBrowser has always been written as, so a file browser in an
         // interface file is spelled the way Interface Builder spells one.
         {"FMBrowser", "browser"},
+        {"FMSplitView", "splitView"},
+        {"FMToolbar", "toolbar"},
         {"FMSeparator", "box"},
     };
 
@@ -149,9 +151,7 @@ public final class Xib {
             Element subviews = content == null ? null : firstChild(content, "subviews");
 
             FMMutableArray<Nib.Control> controls = FMMutableArray.empty();
-            if (subviews != null) {
-                for (Element one : children(subviews)) controls.add(controlIn(one));
-            }
+            if (subviews != null) collect(subviews, FMString.EMPTY, controls);
 
             FMMutableArray<Nib.Menu> menus = FMMutableArray.empty();
             Element bar = firstChild(objects, "mainMenu");
@@ -168,6 +168,25 @@ public final class Xib {
         } catch (Exception notReadable) {
             throw new IOException("this interface could not be read: "
                                   + notReadable.getMessage());
+        }
+    }
+
+    /**
+     * Every control under a list of subviews, and every control under those.
+     *
+     * An interface file nests, because that is what a view holding views looks like written
+     * down and it is what Interface Builder writes. A description does not: it is a flat
+     * list where a control names the one it sits inside. The two say the same thing and
+     * this is where one becomes the other, which is the only place either shape has to be
+     * understood in terms of the other.
+     */
+    private static void collect(Element subviews, FMString parent,
+                                FMMutableArray<Nib.Control> into) throws IOException {
+        for (Element one : children(subviews)) {
+            Nib.Control made = controlIn(one);
+            into.add(parent.isEmpty() ? made : made.within(parent));
+            Element inside = firstChild(one, "subviews");
+            if (inside != null) collect(inside, made.identifier(), into);
         }
     }
 
@@ -307,7 +326,9 @@ public final class Xib {
           .append(nib.width()).append("\" height=\"").append(nib.height()).append("\"/>\n");
         sb.append("            <view key=\"contentView\" id=\"content\">\n");
         sb.append("                <subviews>\n");
-        for (Nib.Control control : nib.controls()) writeControl(sb, control);
+        for (Nib.Control control : nib.controls()) {
+            if (control.isLoose()) writeControl(sb, control, nib);
+        }
         sb.append("                </subviews>\n");
         sb.append("            </view>\n");
         sb.append("        </window>\n");
@@ -321,7 +342,7 @@ public final class Xib {
         return FMData.of(FMString.of(sb.toString()));
     }
 
-    private static void writeControl(StringBuilder sb, Nib.Control c) {
+    private static void writeControl(StringBuilder sb, Nib.Control c, Nib nib) {
         String tag = elementFor(c.kind());
         sb.append("                    <").append(tag)
           .append(" id=\"").append(quote(c.identifier().toString())).append("\"");
@@ -361,6 +382,19 @@ public final class Xib {
             sb.append("                        <connections><action selector=\"")
               .append(quote(c.action().toString())).append("\"/></connections>\n");
         }
+        // What is inside it, nested, because that is how a view holding views is written.
+        // The description this came from is flat and each child names its parent; here the
+        // shape goes back the way an interface file has it.
+        boolean any = false;
+        for (Nib.Control child : nib.controls()) {
+            if (!child.in().sameAs(c.identifier())) continue;
+            if (!any) {
+                sb.append("                        <subviews>\n");
+                any = true;
+            }
+            writeControl(sb, child, nib);
+        }
+        if (any) sb.append("                        </subviews>\n");
         sb.append("                    </").append(tag).append(">\n");
     }
 

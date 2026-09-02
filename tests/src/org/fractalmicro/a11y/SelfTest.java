@@ -173,6 +173,10 @@ public final class SelfTest {
         int browserFailures = BrowserTest.run(desktop, System.out);
         if (browserFailures > 0) failures.add(browserFailures + " file browser checks failed");
 
+        steps += LayoutDescriptionTest.count();
+        int shapeFailures = LayoutDescriptionTest.run(desktop, System.out);
+        if (shapeFailures > 0) failures.add(shapeFailures + " described layout checks failed");
+
         steps += TaskTest.count();
         int taskFailures = TaskTest.run(System.out);
         if (taskFailures > 0) failures.add(taskFailures + " task checks failed");

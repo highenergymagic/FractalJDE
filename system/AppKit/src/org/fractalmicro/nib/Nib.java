@@ -72,6 +72,8 @@ public final class Nib {
     public static final FMString VALUE = FMString.of("Value");
     public static final FMString CHOICES = FMString.of("Choices");
     public static final FMString DEFAULT_BUTTON = FMString.of("DefaultButton");
+    /** Which control this one sits inside, when it is not the window itself. */
+    public static final FMString IN = FMString.of("In");
 
     public static final FMString MENUS = FMString.of("Menus");
     public static final FMString ITEMS = FMString.of("Items");
@@ -103,6 +105,26 @@ public final class Nib {
          * program would be maintaining a copy of the disk to draw a window with.
          */
         FMBrowser("a folder, shown as icons, a list or columns"),
+        /**
+         * Two things side by side, with a divider somebody can move.
+         *
+         * The first control here that holds others. What is in it is said by the controls
+         * themselves: each names the one it is inside, which keeps the description a list
+         * rather than a tree and means nothing that reads one has to walk it.
+         *
+         * Its first child's width is where the divider starts, because a description that
+         * says how wide the sidebar is has already said where the divider goes and saying
+         * it twice is two chances to disagree.
+         */
+        FMSplitView("two things side by side, with a divider between them"),
+        /**
+         * The row of controls along the top of a window.
+         *
+         * A separator inside one is flexible space, which is what NSToolbarFlexibleSpaceItem
+         * is: everything before it is pushed left and everything after it right. That is how
+         * a search field ends up at the far end of a toolbar without anybody measuring.
+         */
+        FMToolbar("the row of controls along the top of a window"),
         FMSeparator("a line between groups");
 
         private final FMString what;
@@ -249,7 +271,31 @@ public final class Nib {
     public record Control(ControlClass kind, FMString identifier, FMString name,
                           FMString description, FMString text, FMString action,
                           int x, int y, int width, int height,
-                          Object value, FMArray<FMString> choices, boolean defaultButton) {
+                          Object value, FMArray<FMString> choices, boolean defaultButton,
+                          FMString in) {
+
+        /**
+         * The same, in the window rather than inside something else.
+         *
+         * Most controls are, so this is the shape most descriptions are written in and the
+         * one everything written before there were containers still uses.
+         */
+        public Control(ControlClass kind, FMString identifier, FMString name,
+                       FMString description, FMString text, FMString action,
+                       int x, int y, int width, int height,
+                       Object value, FMArray<FMString> choices, boolean defaultButton) {
+            this(kind, identifier, name, description, text, action, x, y, width, height,
+                 value, choices, defaultButton, FMString.EMPTY);
+        }
+
+        /** The same control, inside the one named. */
+        public Control within(FMString parent) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, choices, defaultButton, parent);
+        }
+
+        /** Whether it goes in the window itself rather than inside another control. */
+        public boolean isLoose() { return in == null || in.isEmpty(); }
 
         public FMDictionary toPlist() {
             FMMutableDictionary out = FMMutableDictionary.empty();
@@ -266,6 +312,7 @@ public final class Nib {
             if (value != null) out.set(VALUE, value);
             if (choices != null && choices.count() > 0) out.set(CHOICES, choices);
             if (defaultButton) out.set(DEFAULT_BUTTON, true);
+            if (!isLoose()) out.set(IN, in);
             return out.asDictionary();
         }
 
@@ -279,7 +326,8 @@ public final class Nib {
                 (int) values.whole(X, 0), (int) values.whole(Y, 0),
                 (int) values.whole(WIDTH, 100), (int) values.whole(HEIGHT, 22),
                 values.value(VALUE), textList(values, CHOICES),
-                values.truth(DEFAULT_BUTTON, false));
+                values.truth(DEFAULT_BUTTON, false),
+                values.string(IN));
         }
     }
 

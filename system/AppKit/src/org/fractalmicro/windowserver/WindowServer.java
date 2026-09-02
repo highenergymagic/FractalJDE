@@ -157,6 +157,20 @@ public final class WindowServer {
     public static final String SAVE_PANEL = "savePanel";
     public static final String OPEN_PANEL = "openPanel";
 
+    /**
+     * A described window, run as a sheet on one that is already open.
+     *
+     * A sheet is not a window a program opens and later closes. It is a question asked of
+     * one window, which cannot be answered anywhere else and cannot be ignored, and the
+     * asking waits. So it is one message that goes out and comes back with the answer,
+     * rather than a window identifier the program then has to look after.
+     *
+     * What comes back is which button ended it and what everything in it held when it did,
+     * because a sheet exists to collect exactly that and a program that had to ask again
+     * afterwards would be asking a sheet that is no longer there.
+     */
+    public static final String SHEET = "sheet";
+
     /* What comes back as an event. */
     public static final String EVENT = "event";
     public static final String EVENT_ACTION = "action";
@@ -359,6 +373,7 @@ public final class WindowServer {
                 case CHOOSE -> choose(request);
                 case SAVE_PANEL -> panel(request, false);
                 case OPEN_PANEL -> panel(request, true);
+                case SHEET -> sheet(request);
                 default -> Message.error("the window server does not answer " + request.type());
             };
         } catch (Exception e) {
@@ -417,27 +432,56 @@ public final class WindowServer {
         body.setBackground(Aqua.WINDOW_BG);
         Window window = new Window(id, application, frame);
 
+        // Everything is made first and put in place afterwards, because a control can name
+        // the one it sits inside and a description is a list rather than a tree: the child
+        // may be written before the parent, and only when both exist is it known where the
+        // child goes.
+        Map<String, JComponent> made = new LinkedHashMap<>();
         JButton defaultButton = null;
         for (Nib.Control control : nib.controls()) {
-            JComponent made = make(control, window);
-            if (made == null) continue;
-            made.setBounds(clamped(control.x()), clamped(control.y()),
-                           clamped(control.width()), clamped(control.height()));
+            JComponent one = make(control, window);
+            if (one == null) continue;
+            one.setBounds(clamped(control.x()), clamped(control.y()),
+                          clamped(control.width()), clamped(control.height()));
+            one.setPreferredSize(new java.awt.Dimension(
+                clamped(control.width()), clamped(control.height())));
             if (!control.name().isBlank()) {
-                made.getAccessibleContext().setAccessibleName(control.name().toString());
+                one.getAccessibleContext().setAccessibleName(control.name().toString());
             }
             if (control.description() != null && !control.description().isBlank()) {
-                made.getAccessibleContext().setAccessibleDescription(control.description().toString());
+                one.getAccessibleContext().setAccessibleDescription(control.description().toString());
             }
-            body.add(made);
-            window.controls.put(control.identifier().toString(), made);
-            if (control.defaultButton() && made instanceof JButton button) defaultButton = button;
+            made.put(control.identifier().toString(), one);
+            window.controls.put(control.identifier().toString(), one);
+            if (control.defaultButton() && one instanceof JButton button) defaultButton = button;
+        }
+        Map<JSplitPane, Integer> dividers = new LinkedHashMap<>();
+        for (Nib.Control control : nib.controls()) {
+            JComponent one = made.get(control.identifier().toString());
+            if (one == null) continue;
+            JComponent parent = control.isLoose() ? null : made.get(control.in().toString());
+            if (parent == null) {
+                body.add(one);
+            } else {
+                if (parent instanceof JSplitPane split) {
+                    dividers.putIfAbsent(split, clamped(
+                        split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT
+                            ? control.width() : control.height()));
+                }
+                putInside(parent, one);
+            }
         }
 
         frame.setContentPane(new JScrollPane(body,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
         if (defaultButton != null) frame.getRootPane().setDefaultButton(defaultButton);
+        // After the window has been laid out, because a divider asked for before there is
+        // anything to divide is a divider the layout puts back in the middle.
+        if (!dividers.isEmpty()) {
+            SwingUtilities.invokeLater(() ->
+                dividers.forEach((split, at) -> split.setDividerLocation(at)));
+        }
 
         frame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
             @Override public void internalFrameClosed(javax.swing.event.InternalFrameEvent e) {
@@ -448,6 +492,70 @@ public final class WindowServer {
         });
         Desktop.get().addWindow(frame);
         return window;
+    }
+
+    /** How many sides of a split view have been given something. A split view takes two. */
+    private static final String SIDES_FILLED = "org.fractalmicro.sidesFilled";
+
+    /**
+     * Puts a control inside another one, in whatever way that other one holds things.
+     *
+     * A split view takes two and no more, in the order they were described. A toolbar takes
+     * as many as it is given, and a separator in it is flexible space: what comes before is
+     * pushed left and what comes after is pushed right, which is how a search field ends up
+     * at the far end of one without anybody measuring. Anything else that is asked to hold
+     * a control simply does, at the place the description gave it.
+     */
+    private static void putInside(JComponent parent, JComponent child) {
+        if (parent instanceof JSplitPane split) {
+            // Counted rather than worked out from what is already in there, because what is
+            // already in there starts as two empty panels and a child that happens to be an
+            // empty panel too would look exactly like one of them.
+            Object held = split.getClientProperty(SIDES_FILLED);
+            int filled = held instanceof Integer count ? count : 0;
+            if (filled == 0) split.setLeftComponent(child);
+            else split.setRightComponent(child);
+            split.putClientProperty(SIDES_FILLED, filled + 1);
+            return;
+        }
+        if (parent instanceof Toolbar toolbar) {
+            toolbar.put(child);
+            return;
+        }
+        parent.add(child);
+    }
+
+    /**
+     * The row along the top of a window.
+     *
+     * Its own class rather than a panel with a layout set on it, because what a toolbar
+     * does with a separator is not something any layout manager knows: everything before it
+     * goes left, everything after it goes right, and the gap between them is whatever is
+     * left over.
+     */
+    private static final class Toolbar extends JPanel {
+        private final JPanel left = new JPanel(new java.awt.FlowLayout(
+            java.awt.FlowLayout.LEFT, 6, 4));
+        private final JPanel right = new JPanel(new java.awt.FlowLayout(
+            java.awt.FlowLayout.RIGHT, 6, 4));
+        private boolean pastTheGap;
+
+        Toolbar() {
+            super(new java.awt.BorderLayout());
+            setOpaque(false);
+            left.setOpaque(false);
+            right.setOpaque(false);
+            add(left, java.awt.BorderLayout.WEST);
+            add(right, java.awt.BorderLayout.EAST);
+        }
+
+        void put(JComponent one) {
+            if (one instanceof JSeparator) {
+                pastTheGap = true;
+                return;
+            }
+            (pastTheGap ? right : left).add(one);
+        }
     }
 
     /** One control, as the real thing it names. */
@@ -566,6 +674,23 @@ public final class WindowServer {
                         .put("folder", folderOf(browser))));
                 browser.setRoot(folderNamed(text));
                 return browser;
+            }
+            case FMSplitView -> {
+                // The divider starts where the first child's width puts it. A description
+                // that says how wide the sidebar is has already said where the divider
+                // goes, and saying it twice is two chances to disagree.
+                JSplitPane split = new JSplitPane(
+                    "vertical".equalsIgnoreCase(String.valueOf(control.value()))
+                        ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT,
+                    new JPanel(), new JPanel());
+                split.setContinuousLayout(true);
+                split.setOneTouchExpandable(false);
+                split.setBorder(null);
+                split.setDividerSize(6);
+                return split;
+            }
+            case FMToolbar -> {
+                return new Toolbar();
             }
             case FMSeparator -> {
                 return new JSeparator();
@@ -1021,6 +1146,107 @@ public final class WindowServer {
             said(request, "message"), said(request, "informative"),
             said(request, "action"), said(request, "other")));
         return Message.of(CHOOSE).put("chosen", (long) chosen[0]);
+    }
+
+    /**
+     * Runs a description as a sheet on a window that is already open, and waits.
+     *
+     * The waiting is the point. A sheet belongs to one window and stops it being used until
+     * it is answered, so the program that asked is stopped too: it sent one message and the
+     * answer to it is what the person did.
+     */
+    private Message sheet(Message request) throws Exception {
+        Window owner = windowOf(request);
+        Nib nib = Nib.parse(org.fractalmicro.foundation.FMData.of(describedIn(request)));
+        String[] chosen = {""};
+        boolean[] shown = {false};
+        List<String> names = new ArrayList<>();
+        List<Object> held = new ArrayList<>();
+
+        onSwing(() -> {
+            Map<String, JComponent> made = new LinkedHashMap<>();
+            // A window of its own, with the owner's name on it so that anything the sheet
+            // sends reaches the same program. Its controls are its own: a sheet asking for
+            // a name and a window holding a name would otherwise be two controls with one
+            // identifier, and the sheet's would quietly become the one the program means.
+            JPanel panel = sheetPanel(nib, new Window(owner.id, owner.application,
+                                                      owner.frame), made, chosen);
+            shown[0] = org.fractalmicro.appkit.Sheet.present(owner.frame, panel,
+                closer -> panel.putClientProperty(SHEET_CLOSER, closer));
+            for (Map.Entry<String, JComponent> one : made.entrySet()) {
+                names.add(one.getKey());
+                held.add(read(one.getValue()));
+            }
+        });
+
+        if (!shown[0]) {
+            return Message.error("window " + owner.id + " is not on screen, so it cannot "
+                                 + "carry a sheet");
+        }
+        return Message.of(SHEET).put("action", chosen[0])
+                                .put("controls", names).put("values", held);
+    }
+
+    /** Where the sheet keeps the way to take itself down, put there by the thing that shows it. */
+    private static final String SHEET_CLOSER = "org.fractalmicro.sheetCloser";
+
+    /**
+     * The panel a described sheet puts up, built and wired but not shown.
+     *
+     * Separated from showing it for the reason the alerts are: a sheet needs a window that
+     * is on the screen and a check has none, so what can be checked without one is checked
+     * without one. Every button in it ends the sheet, because that is what a button on a
+     * sheet is for; which one was pressed is the answer.
+     */
+    JPanel sheetPanel(Nib nib, Window owner, Map<String, JComponent> made, String[] chosen) {
+        JPanel panel = new JPanel(null);
+        panel.setBackground(Aqua.WINDOW_BG);
+        panel.setPreferredSize(new java.awt.Dimension(clamped(nib.width()),
+                                                      clamped(nib.height())));
+        for (Nib.Control control : nib.controls()) {
+            JComponent one = make(control, owner);
+            if (one == null) continue;
+            one.setBounds(clamped(control.x()), clamped(control.y()),
+                          clamped(control.width()), clamped(control.height()));
+            one.setPreferredSize(new java.awt.Dimension(
+                clamped(control.width()), clamped(control.height())));
+            if (!control.name().isBlank()) {
+                one.getAccessibleContext().setAccessibleName(control.name().toString());
+            }
+            made.put(control.identifier().toString(), one);
+        }
+        for (Nib.Control control : nib.controls()) {
+            JComponent one = made.get(control.identifier().toString());
+            if (one == null) continue;
+            JComponent parent = control.isLoose() ? null : made.get(control.in().toString());
+            if (parent == null) panel.add(one); else putInside(parent, one);
+            if (one instanceof AbstractButton button) {
+                String action = control.action() == null ? "" : control.action().toString();
+                button.addActionListener(e -> {
+                    chosen[0] = action;
+                    Object closer = panel.getClientProperty(SHEET_CLOSER);
+                    if (closer instanceof Runnable takeItDown) takeItDown.run();
+                });
+                if (control.defaultButton()) panel.putClientProperty(SHEET_DEFAULT, button);
+            }
+        }
+        return panel;
+    }
+
+    /** Which button in a sheet Return presses, for anything that wants to know. */
+    static final String SHEET_DEFAULT = "org.fractalmicro.sheetDefault";
+
+    /**
+     * The panel a sheet would put up, for a check with no window to hang one on.
+     *
+     * A sheet needs a window that is on the screen, and a checking run has none: the desktop
+     * is laid out and drawn into an image and never shown, which is what lets the checks run
+     * on a machine somebody is using. This is the same panel the same description makes,
+     * built and wired, so what can be checked without a screen is.
+     */
+    public JPanel sheetPanelForChecking(Nib nib, Map<String, JComponent> made,
+                                        String[] chosen) {
+        return sheetPanel(nib, new Window(0, "checking", null), made, chosen);
     }
 
     /**
