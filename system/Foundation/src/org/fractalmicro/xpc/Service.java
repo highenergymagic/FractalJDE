@@ -54,13 +54,23 @@ public final class Service implements AutoCloseable {
 
     public boolean isRunning() { return running.get(); }
 
+    /** How long to wait for the port to be up before answering that the service is. */
+    private static final long CLAIMING_MILLISECONDS = 2000;
+
     /**
-     * Starts listening. Answers false when the name is already taken.
+     * Starts listening, and does not answer until the name is being served.
      *
      * The name is claimed in one step rather than looked at and then taken: two services
      * starting at the same moment would both see a free name and both start, and no amount
      * of looking first prevents that. The claim is what decides, and the loser is told by
      * the same call that tried.
+     *
+     * The port itself is made on the accepting thread, which is a thread that has just
+     * been started and on a busy machine has not necessarily run yet. So this waited for
+     * it before answering, because everything that starts a service goes on to use the
+     * name, and a call that says yes before the name is there hands back something that
+     * is not a service until a moment later. Every caller waiting a little differently for
+     * a thing that had already been promised is how that gets papered over instead.
      */
     public boolean start() {
         if (running.get()) return true;
@@ -73,7 +83,25 @@ public final class Service implements AutoCloseable {
         accepting = new Thread(this::accept, "xpc-" + name);
         accepting.setDaemon(true);
         accepting.start();
-        return true;
+        return waitForTheName();
+    }
+
+    /** Until the port is up, until the thread gives up on it, or until it has been a while. */
+    private boolean waitForTheName() {
+        long until = System.nanoTime() + CLAIMING_MILLISECONDS * 1_000_000L;
+        while (System.nanoTime() < until) {
+            // Set back by the accepting thread when the name turns out to be held by
+            // something this cannot take it from.
+            if (!running.get()) return false;
+            if (Pipes.exists(name)) return true;
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return running.get();
     }
 
     private void accept() {
