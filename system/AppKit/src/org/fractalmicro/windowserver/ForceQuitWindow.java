@@ -92,13 +92,15 @@ public class ForceQuitWindow extends JInternalFrame {
     private void forceQuit() {
         String name = list.getSelectedValue();
         if (name == null) {
-            Desktop.beep("Select an application first.");
+            Desktop.beep();
             return;
         }
         if ("Finder".equals(name)) {
             org.fractalmicro.foundation.FMNotificationCenter.defaultCenter()
                 .post(org.fractalmicro.foundation.FMNotificationCenter.PROGRAMS_CHANGED);
-            Desktop.beep("The Finder relaunches rather than quitting.");
+            org.fractalmicro.appkit.FMAlert.tell(
+                org.fractalmicro.foundation.FMString.of("The Finder relaunches rather than quitting."),
+                org.fractalmicro.foundation.FMString.EMPTY);
             return;
         }
         boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,

@@ -168,7 +168,7 @@ public class Spotlight extends JDialog {
     }
 
     private void openTop() {
-        if (model.isEmpty()) { Desktop.beep("No results"); return; }
+        if (model.isEmpty()) { Desktop.beep(); return; }
         open(model.get(0));
     }
 
@@ -184,7 +184,9 @@ public class Spotlight extends JDialog {
     private void open(Node n) {
         setVisible(false);
         if (!LaunchServices.open(n)) {
-            Desktop.beep(org.fractalmicro.foundation.FMLocalized.of(NOTHING_OPENS_THAT).toString());
+            org.fractalmicro.appkit.FMAlert.tell(
+                org.fractalmicro.foundation.FMLocalized.of(NOTHING_OPENS_THAT),
+                org.fractalmicro.foundation.FMString.EMPTY);
         }
     }
 

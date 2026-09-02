@@ -90,7 +90,7 @@ public class IconView extends JScrollPane implements FileView {
     public void renameSelection() {
         int index = list.getSelectedIndex();
         if (index < 0) {
-            Finder.beep("Select an item to rename.");
+            Finder.beep();
             return;
         }
         Rectangle cell = list.getCellBounds(index, index);

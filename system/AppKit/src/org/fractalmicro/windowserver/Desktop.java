@@ -84,7 +84,7 @@ public class Desktop extends JFrame {
             if (e.name.equalsIgnoreCase(name)) entry = e;
         }
         if (entry == null) {
-            beep(name + " is not running.");
+            beep();
             return;
         }
         String executable = withoutExtension(
@@ -107,16 +107,25 @@ public class Desktop extends JFrame {
     }
 
     /**
-     * Says something went wrong, out loud and in the status line.
+     * The system beep, and nothing else.
      *
-     * The sound and the line along the bottom of the screen belong to the screen. A
-     * program that also has somewhere of its own to put the message says this first and
-     * then adds its own.
+     * NSBeep takes no argument and says nothing, because a beep is what a Mac makes when a
+     * key means nothing where it was pressed: Back at the start of the history, a shortcut
+     * in a window with no toolbar. It is a full stop, not a sentence.
+     *
+     * This used to take a message and write it along the bottom of the screen. Mac OS X has
+     * never done that. A Finder's status bar says how many items are in the folder and how
+     * much room is left on the disk; it is not somewhere a program explains itself, and a
+     * sentence appearing there after every refused keystroke reads like a machine narrating
+     * itself to somebody who did not ask.
+     *
+     * What is left is three answers rather than one. A command that cannot apply is drawn
+     * grey and cannot be chosen at all. Something that genuinely went wrong puts up an
+     * alert, which is a thing a person dismisses rather than a line they may not have been
+     * looking at. And a key that means nothing here beeps, which is this.
      */
-    public static void beep(String message) {
+    public static void beep() {
         java.awt.Toolkit.getDefaultToolkit().beep();
-        Desktop d = sharedDesktop();
-        if (d != null) d.setStatus(message);
     }
 
     private final JDesktopPane pane = new Surface();
@@ -492,7 +501,7 @@ public class Desktop extends JFrame {
 
     public void closeFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null) { beep("No window is open."); return; }
+        if (f == null) { beep(); return; }
         f.doDefaultCloseAction();
         menu.windowsChanged();
         focusAfterClose();
@@ -523,13 +532,13 @@ public class Desktop extends JFrame {
 
     public void minimizeFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null || !f.isIconifiable()) { beep("No window to minimize"); return; }
+        if (f == null || !f.isIconifiable()) { beep(); return; }
         try { f.setIcon(true); } catch (java.beans.PropertyVetoException ignored) { }
     }
 
     public void zoomFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null) { beep("No window to zoom"); return; }
+        if (f == null) { beep(); return; }
         try { f.setMaximum(!f.isMaximum()); } catch (java.beans.PropertyVetoException ignored) { }
     }
 

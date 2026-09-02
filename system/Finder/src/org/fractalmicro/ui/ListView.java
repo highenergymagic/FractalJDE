@@ -80,7 +80,7 @@ public class ListView extends JScrollPane implements FileView {
     public void renameSelection() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            Finder.beep("Select an item to rename.");
+            Finder.beep();
             return;
         }
         java.util.List<Node> selected = selection();

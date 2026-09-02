@@ -214,7 +214,7 @@ public class DesktopIcons extends JList<Node> {
     public void renameSelection() {
         int index = getSelectedIndex();
         if (index < 0) {
-            org.fractalmicro.windowserver.Desktop.beep("Select an item to rename.");
+            org.fractalmicro.windowserver.Desktop.beep();
             return;
         }
         NameEditor.begin(this, nameBoundsOf(index), getSelectedValue(), this::repaint);

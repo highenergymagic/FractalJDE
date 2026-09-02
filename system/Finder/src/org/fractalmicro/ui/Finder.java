@@ -87,7 +87,7 @@ public final class Finder {
     public static void open(Node n) {
         if (n == null) return;
         if (n.kind == Node.Kind.TRASH) { openTrash(); return; }
-        if (n.isVolume() && !n.isMounted()) { beep(NO_DISC); return; }
+        if (n.isVolume() && !n.isMounted()) { tell(NO_DISC); return; }
         if (openBundle(n)) return;
         if (n.isContainer() && n.file != null) { newWindow(n.file); return; }
         if (n.file != null) launchApp(n);
@@ -110,7 +110,7 @@ public final class Finder {
     /** Show Package Contents: browse inside a bundle, as Finder allows. */
     public static void showPackageContents(Node n) {
         if (n == null || n.file == null || !org.fractalmicro.bundle.Bundle.looksLikeBundle(n.file)) {
-            beep(NOT_A_PACKAGE);
+            beep();
             return;
         }
         newWindow(n.file);
@@ -121,7 +121,7 @@ public final class Finder {
     }
 
     public static void launchApp(Node app) {
-        if (app == null || app.file == null) { beep(NOTHING_TO_OPEN); return; }
+        if (app == null || app.file == null) { beep(); return; }
         Recent.noteItem(app.file);
         Running.note(app.name, app.file);
         Shell.open(app.file);
@@ -154,7 +154,7 @@ public final class Finder {
     /* ------------------------------------------------------------ editing */
 
     public static void newFolder(File parent) {
-        if (parent == null || !parent.isDirectory()) { beep(NO_FOLDER_OPEN); return; }
+        if (parent == null || !parent.isDirectory()) { beep(); return; }
         File f = FS.newFolder(parent);
         wayBack(UNDO_NEW_FOLDER, () -> removeAll(List.of(f)));
         refreshAll();
@@ -186,8 +186,8 @@ public final class Finder {
     private static final FMString UNDO_LABEL = FMString.of("finder.undoLabel");
 
     public static void rename(Node n) {
-        if (n == null || n.file == null) { beep(SELECT_TO_RENAME); return; }
-        if (n.isVolume()) { beep(NO_VOLUME_RENAME); return; }
+        if (n == null || n.file == null) { beep(); return; }
+        if (n.isVolume()) { tell(NO_VOLUME_RENAME); return; }
         String current = n.file.getName();
         String next = prompt("Rename this item.", "Name:", current, "Rename");
         if (next == null || next.isBlank() || next.equals(current)) return;
@@ -198,13 +198,13 @@ public final class Finder {
             return;
         }
         if (!n.file.renameTo(dest)) {
-            beep(RENAME_FAILED);
+            tell(RENAME_FAILED);
         } else {
             // Registered after it worked, and closing over what it needs rather than over
             // the node: the node describes a file that no longer has that name.
             File back = n.file;
             wayBack(UNDO_RENAME, () -> {
-                if (dest.renameTo(back)) refreshAll(); else beep(RENAME_FAILED);
+                if (dest.renameTo(back)) refreshAll(); else tell(RENAME_FAILED);
             });
         }
         refreshAll();
@@ -217,7 +217,7 @@ public final class Finder {
             try {
                 made.add(FS.duplicate(n.file));
             } catch (IOException e) {
-                beep(FMLocalized.filled(DUPLICATE_FAILED, FMString.of(n.name)));
+                tell(FMLocalized.filled(DUPLICATE_FAILED, FMString.of(n.name)));
             }
         }
         if (!made.isEmpty()) wayBack(UNDO_DUPLICATE, () -> removeAll(made));
@@ -258,7 +258,7 @@ public final class Finder {
             try {
                 made.add(org.fractalmicro.alias.Alias.create(n.file, null));
             } catch (IOException e) {
-                beep(FMLocalized.filled(ALIAS_FAILED, FMString.of(e.getMessage())));
+                tell(FMLocalized.filled(ALIAS_FAILED, FMString.of(e.getMessage())));
                 break;
             }
         }
@@ -311,16 +311,17 @@ public final class Finder {
                 refreshAll();
             });
         }
+        // Nothing failed, so nothing is said. The label is set either way; where it is
+        // kept is this program's business and not something to interrupt somebody about.
         if (!everywhere) {
-            beep("This volume cannot hold labels on the files themselves; "
-                 + "they are kept beside them instead.");
+            org.fractalmicro.core.Log.info("labels on this volume are kept beside the files");
         }
         refreshAll();
     }
 
     /** Show Original, following an alias, a symbolic link or a Windows shortcut. */
     public static void showOriginal(Node n) {
-        if (n == null || n.file == null) { beep(SELECT_AN_ALIAS); return; }
+        if (n == null || n.file == null) { beep(); return; }
         File target = originalOf(n.file);
         try {
             if (target == null && Files.isSymbolicLink(n.file.toPath())) {
@@ -329,7 +330,7 @@ public final class Finder {
         } catch (IOException ignored) { }
         if (target == null) target = Apps.resolve(n.file);
         if (target == null || !target.exists() || target.equals(n.file)) {
-            beep(FMLocalized.filled(NO_ORIGINAL, FMString.of(n.name)));
+            tell(FMLocalized.filled(NO_ORIGINAL, FMString.of(n.name)));
             return;
         }
         goTo(target.isDirectory() ? target : target.getParentFile());
@@ -338,18 +339,18 @@ public final class Finder {
     public static void moveToTrash(List<Node> nodes) {
         List<File> files = new ArrayList<>();
         for (Node n : nodes) {
-            if (n.isVolume()) { beep(NO_VOLUME_TRASH); continue; }
+            if (n.isVolume()) { tell(NO_VOLUME_TRASH); continue; }
             if (n.file != null) files.add(n.file);
         }
-        if (files.isEmpty()) { beep(NOTHING_SELECTED); return; }
-        if (!Trash.canMoveToTrash()) { beep(NO_TRASH); return; }
+        if (files.isEmpty()) { beep(); return; }
+        if (!Trash.canMoveToTrash()) { tell(NO_TRASH); return; }
         int moved = Trash.moveToTrash(files);
-        if (moved < files.size()) beep(SOME_NOT_TRASHED);
+        if (moved < files.size()) tell(SOME_NOT_TRASHED);
         refreshAll();
     }
 
     public static void emptyTrash(boolean secure) {
-        if (Trash.isEmpty()) { beep(TRASH_EMPTY); return; }
+        if (Trash.isEmpty()) { beep(); return; }
         if (FinderSettings.warnOnEmptyTrash()) {
             boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,
                 FMString.of("Are you sure you want to permanently erase the items in the Trash?"),
@@ -364,7 +365,7 @@ public final class Finder {
     public static void copy(List<Node> nodes) {
         clipboard.clear();
         for (Node n : nodes) if (n.file != null) clipboard.add(n.file);
-        if (clipboard.isEmpty()) { beep(NOTHING_SELECTED); return; }
+        if (clipboard.isEmpty()) { beep(); return; }
         Toolkit.getDefaultToolkit().getSystemClipboard()
                .setContents(new FileTransfer(new ArrayList<>(clipboard)), null);
     }
@@ -372,7 +373,7 @@ public final class Finder {
     public static void paste(File destination) {
         List<File> source = new ArrayList<>(clipboard);
         if (source.isEmpty()) source = clipboardFromSystem();
-        if (source.isEmpty() || destination == null) { beep(NOTHING_TO_PASTE); return; }
+        if (source.isEmpty() || destination == null) { beep(); return; }
         for (File f : source) {
             try {
                 File dest = new File(destination, f.getName());
@@ -381,7 +382,7 @@ public final class Finder {
                 if (f.isDirectory()) FS.copyTree(f.toPath(), dest.toPath());
                 else Files.copy(f.toPath(), dest.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
             } catch (Exception e) {
-                beep(FMLocalized.filled(PASTE_FAILED, FMString.of(f.getName())));
+                tell(FMLocalized.filled(PASTE_FAILED, FMString.of(f.getName())));
             }
         }
         refreshAll();
@@ -402,7 +403,7 @@ public final class Finder {
     public static void compress(List<Node> nodes) {
         List<File> files = new ArrayList<>();
         for (Node n : nodes) if (n.file != null) files.add(n.file);
-        if (files.isEmpty()) { beep(NOTHING_SELECTED); return; }
+        if (files.isEmpty()) { beep(); return; }
 
         File parent = files.get(0).getParentFile();
         String base = files.size() == 1 ? files.get(0).getName() : "Archive";
@@ -416,7 +417,7 @@ public final class Finder {
                     new java.io.BufferedOutputStream(new java.io.FileOutputStream(target)))) {
                 for (File f : files) addToZip(out, f, f.getName());
             } catch (Exception e) {
-                SwingUtilities.invokeLater(() -> beep(ARCHIVE_FAILED));
+                SwingUtilities.invokeLater(() -> tell(ARCHIVE_FAILED));
                 return;
             }
             SwingUtilities.invokeLater(Finder::refreshAll);
@@ -451,12 +452,12 @@ public final class Finder {
         for (Node n : nodes) {
             if (n.file != null && org.fractalmicro.fs.Places.addFavourite(n.file)) added++;
         }
-        if (added == 0) { beep(ONLY_FOLDERS); return; }
+        if (added == 0) { tell(ONLY_FOLDERS); return; }
         refreshAll();
     }
 
     public static void openWithChosen(List<Node> nodes) {
-        if (nodes.isEmpty()) { beep(SELECT_SOMETHING); return; }
+        if (nodes.isEmpty()) { beep(); return; }
         String programs = System.getenv("ProgramFiles");
         JFileChooser chooser = new JFileChooser(
             programs == null ? org.fractalmicro.fs.Volumes.systemDrive() : programs);
@@ -471,34 +472,34 @@ public final class Finder {
     }
 
     public static void print(Node n) {
-        if (n == null || n.file == null || !n.file.isFile()) { beep(SELECT_TO_PRINT); return; }
+        if (n == null || n.file == null || !n.file.isFile()) { beep(); return; }
         try {
             java.awt.Desktop d = java.awt.Desktop.getDesktop();
             if (!d.isSupported(java.awt.Desktop.Action.PRINT)) {
-                beep(NO_PRINTER);
+                tell(NO_PRINTER);
                 return;
             }
             d.print(n.file);
         } catch (Exception e) {
-            beep(PRINT_FAILED);
+            tell(PRINT_FAILED);
         }
     }
 
     /* -------------------------------------------------------------- info */
 
     public static void getInfo(Node n) {
-        if (n == null) { beep(SELECT_SOMETHING); return; }
+        if (n == null) { beep(); return; }
         Desktop.sharedDesktop().addWindow(new InfoWindow(n));
     }
 
     public static void eject(Node volume) {
-        if (volume == null || !volume.isVolume()) { beep(SELECT_TO_EJECT); return; }
+        if (volume == null || !volume.isVolume()) { beep(); return; }
         String mount = volume.mountPoint == null
             ? volume.file.getAbsolutePath() : volume.mountPoint;
         Shell.async(() -> {
             boolean ok = Kernel32.ejectMedia(mount);
             SwingUtilities.invokeLater(() -> {
-                if (!ok) beep(FMLocalized.filled(EJECT_FAILED, FMString.of(volume.name)));
+                if (!ok) tell(FMLocalized.filled(EJECT_FAILED, FMString.of(volume.name)));
                 Volumes.refresh(null);
             });
         });
@@ -569,14 +570,23 @@ public final class Finder {
      * table and this is the one place most of it goes through. The overload taking words
      * is for the few that are put together from something a person typed.
      */
-    public static void beep(FMString key) {
-        Desktop.beep(FMLocalized.of(key).toString());
+    /** A key that means nothing where it was pressed. No words: there are none to say. */
+    public static void beep() { Desktop.beep(); }
+
+    /**
+     * Something went wrong that a person needs to know about, said in an alert.
+     *
+     * An alert rather than a line along the bottom of the screen, because a failure is a
+     * thing to be dismissed rather than a thing to be noticed. This is what a Mac puts up
+     * when a file cannot be renamed, and the difference between it and a status line is
+     * whether the program can be sure the message was read.
+     */
+    public static void tell(FMString key) {
+        FMAlert.tell(FMLocalized.of(key), FMString.EMPTY);
     }
 
-    public static void beep(String message) {
-        Desktop.beep(message);
-        FinderWindow w = frontWindow();
-        if (w != null) w.setStatusText(message);
+    public static void tell(FMString message, FMString informative) {
+        FMAlert.tell(message, informative);
     }
 
     /** Asks for one piece of text, with a button named for what it will do. */
@@ -685,26 +695,15 @@ public final class Finder {
     /* ------------------------------------------------- what the Finder says */
 
     private static final FMString NO_DISC = FMString.of("finder.noDisc");
-    private static final FMString NOT_A_PACKAGE = FMString.of("finder.notAPackage");
-    private static final FMString NOTHING_TO_OPEN = FMString.of("finder.nothingToOpen");
-    private static final FMString NO_FOLDER_OPEN = FMString.of("finder.noFolderOpen");
-    private static final FMString SELECT_TO_RENAME = FMString.of("finder.selectToRename");
     private static final FMString NO_VOLUME_RENAME = FMString.of("finder.noVolumeRename");
     private static final FMString RENAME_FAILED = FMString.of("finder.renameFailed");
-    private static final FMString SELECT_AN_ALIAS = FMString.of("finder.selectAnAlias");
     private static final FMString NO_VOLUME_TRASH = FMString.of("finder.noVolumeTrash");
-    private static final FMString NOTHING_SELECTED = FMString.of("finder.nothingSelected");
     private static final FMString NO_TRASH = FMString.of("finder.noTrash");
     private static final FMString SOME_NOT_TRASHED = FMString.of("finder.someNotTrashed");
-    private static final FMString TRASH_EMPTY = FMString.of("finder.trashEmpty");
-    private static final FMString NOTHING_TO_PASTE = FMString.of("finder.nothingToPaste");
     private static final FMString ARCHIVE_FAILED = FMString.of("finder.archiveFailed");
     private static final FMString ONLY_FOLDERS = FMString.of("finder.onlyFolders");
-    private static final FMString SELECT_SOMETHING = FMString.of("finder.selectSomething");
-    private static final FMString SELECT_TO_PRINT = FMString.of("finder.selectToPrint");
     private static final FMString NO_PRINTER = FMString.of("finder.noPrinter");
     private static final FMString PRINT_FAILED = FMString.of("finder.printFailed");
-    private static final FMString SELECT_TO_EJECT = FMString.of("finder.selectToEject");
     private static final FMString DUPLICATE_FAILED = FMString.of("finder.duplicateFailed");
     private static final FMString ALIAS_FAILED = FMString.of("finder.aliasFailed");
     private static final FMString NO_ORIGINAL = FMString.of("finder.noOriginal");

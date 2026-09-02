@@ -213,12 +213,12 @@ public final class Shortcuts {
         // Which program's window it is does not come into it: a toolbar is a toolbar.
         javax.swing.JInternalFrame front = desktop.activeWindow();
         if (front == null) {
-            Desktop.beep("No window is open.");
+            Desktop.beep();
             return;
         }
         boolean landed = front instanceof org.fractalmicro.appkit.KeyWindow window
                       && window.focusToolbar();
-        if (!landed) Desktop.beep("This window has no toolbar showing.");
+        if (!landed) Desktop.beep();
     }
 
     private static void focusDock(Desktop desktop) {

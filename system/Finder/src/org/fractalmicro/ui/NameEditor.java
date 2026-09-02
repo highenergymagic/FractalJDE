@@ -69,11 +69,11 @@ public final class NameEditor {
      */
     public static void begin(JComponent over, Rectangle bounds, Node node, Runnable done) {
         if (node == null || node.file == null) {
-            Finder.beep("Select an item to rename.");
+            Finder.beep();
             return;
         }
         if (node.isVolume()) {
-            Finder.beep("Volumes cannot be renamed here.");
+            Finder.tell(FMString.of("Volumes cannot be renamed here."), FMString.EMPTY);
             return;
         }
         cancel();

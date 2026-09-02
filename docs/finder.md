@@ -128,3 +128,30 @@ click.
 One thing is not validated yet: the Label submenu is built at run time from the labels
 somebody has used, so its items carry no action name and nothing asks about them. It stays
 black with nothing selected.
+
+## Three answers, and none of them a sentence in the status bar
+
+`Desktop.beep` used to take a message, sound the beep, and write the message along the
+bottom of the screen. Mac OS X has never done that. A Finder's status bar says how many
+items are in the folder and how much room is left on the disk; it is not somewhere a
+program explains itself, and a sentence appearing there after every refused keystroke reads
+like a machine narrating itself to somebody who did not ask.
+
+There are three answers now, and which one applies is decided before anything happens
+rather than after.
+
+| | |
+|---|---|
+| The command cannot apply | it is grey, and cannot be chosen at all |
+| Something went wrong | an alert, which is dismissed rather than glanced at |
+| The key means nothing here | the beep, which says nothing because there is nothing to say |
+
+`NSBeep` takes no argument. Neither does this one now.
+
+Seventeen sentences left the source with the old form, most of them explaining a command
+that is now simply grey. What remains is a beep for a dead end, Back at the start of the
+history among them, and an alert for a rename that failed.
+
+Cut stays in the Edit menu, greyed. That is what Snow Leopard's Finder does: the item is
+there and files cannot be cut, and cutting files did not arrive on a Mac until Lion. The
+item was never the mistake. Being black was.

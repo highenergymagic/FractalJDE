@@ -315,7 +315,7 @@ public class FinderWindow extends JInternalFrame
 
     public void navigateTo(File dir) {
         if (dir == null || !dir.isDirectory()) {
-            Finder.beep("That folder could not be opened");
+            Finder.tell(FMString.of("The folder could not be opened."), FMString.EMPTY);
             return;
         }
         push(new Location(Mode.FOLDER, dir, titleFor(dir)));
@@ -383,19 +383,19 @@ public class FinderWindow extends JInternalFrame
     }
 
     public void goBack() {
-        if (historyIndex <= 0) { Finder.beep("Nothing to go back to"); return; }
+        if (historyIndex <= 0) { Finder.beep(); return; }
         historyIndex--;
         applyLocation();
     }
 
     public void goForward() {
-        if (historyIndex >= history.size() - 1) { Finder.beep("Nothing to go forward to"); return; }
+        if (historyIndex >= history.size() - 1) { Finder.beep(); return; }
         historyIndex++;
         applyLocation();
     }
 
     public void goUp() {
-        if (folder == null) { Finder.beep("There is no enclosing folder"); return; }
+        if (folder == null) { Finder.beep(); return; }
         File parent = folder.getParentFile();
         if (parent == null) { showComputer(); return; }
         navigateTo(parent);
@@ -425,7 +425,7 @@ public class FinderWindow extends JInternalFrame
             Recent.noteItem(n.file);
             Finder.launchApp(n);
         } else {
-            Finder.beep(n.name + " cannot be opened from here");
+            Finder.beep();
         }
     }
 
@@ -599,7 +599,7 @@ public class FinderWindow extends JInternalFrame
     /* ------------------------------------------------------------- search */
 
     private void runSearch(String query) {
-        if (query == null || query.isBlank()) { Finder.beep("Type something to search for"); return; }
+        if (query == null || query.isBlank()) { Finder.beep(); return; }
         File where = currentFolder();
         List<Node> hits = Search.inFolder(where, query, 500);
         showSearchResults("Searching “" + query + "”", hits);

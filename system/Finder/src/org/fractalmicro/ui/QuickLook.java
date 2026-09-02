@@ -47,7 +47,7 @@ public class QuickLook extends JInternalFrame {
     }
 
     public static void show(Node node) {
-        if (node == null) { Finder.beep("Select something to look at"); return; }
+        if (node == null) { Finder.beep(); return; }
         JComponent body;
         File f = node.file;
         String name = f == null ? node.name : f.getName().toLowerCase(Locale.ROOT);

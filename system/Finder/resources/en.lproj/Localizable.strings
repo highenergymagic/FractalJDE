@@ -25,20 +25,12 @@
 "finder.showSidebar" = "Show Sidebar";
 
 /* Said when a command needs a window and there is not one open. */
-"finder.noWindowOpen" = "No Finder window is open.";
 
 /* Said when a command exists in the menus but this Finder does not do it. */
-"finder.noBurning" = "Burning discs is not supported.";
-"finder.noCustomToolbar" = "The toolbar in this Finder is not customisable.";
-"finder.noClipboard" = "The clipboard viewer is not implemented.";
-"finder.nothingToUndo" = "There is nothing to undo.";
-"finder.nothingToRedo" = "There is nothing to redo.";
 
 /* The Finder copies and pastes rather than cutting, the way it always has. */
-"finder.noCutting" = "The Finder copies rather than cuts; use Copy then Paste.";
 
 /* Said after Clean Up has rearranged the icons. */
-"finder.tidiedUp" = "Tidied up.";
 
 /* Go to Folder. The prompt above the field, the window's title, and the button that does
    it, which is named for what it does rather than saying OK. */
@@ -56,45 +48,34 @@
 
 "finder.noDisc" = "There is no disc in the drive.";
 
-"finder.notAPackage" = "That is not a package.";
 
-"finder.nothingToOpen" = "There is nothing to open.";
 
-"finder.noFolderOpen" = "No folder is open.";
 
-"finder.selectToRename" = "Select an item to rename.";
 
 "finder.noVolumeRename" = "Volumes cannot be renamed here.";
 
 "finder.renameFailed" = "The item could not be renamed.";
 
-"finder.selectAnAlias" = "Select an alias.";
 
 "finder.noVolumeTrash" = "Volumes cannot be moved to the Trash.";
 
-"finder.nothingSelected" = "Nothing is selected.";
 
 "finder.noTrash" = "This system will not move items to the Trash.";
 
 "finder.someNotTrashed" = "Some items could not be moved to the Trash.";
 
-"finder.trashEmpty" = "The Trash is empty.";
 
-"finder.nothingToPaste" = "There is nothing to paste.";
 
 "finder.archiveFailed" = "The archive could not be created.";
 
 "finder.onlyFolders" = "Only folders can be added to the sidebar.";
 
-"finder.selectSomething" = "Select an item first.";
 
-"finder.selectToPrint" = "Select a document to print.";
 
 "finder.noPrinter" = "There is no printer set up for this kind of document.";
 
 "finder.printFailed" = "The document could not be printed.";
 
-"finder.selectToEject" = "Select a disk to eject.";
 
 "finder.duplicateFailed" = "Could not duplicate “%1$@”.";
 

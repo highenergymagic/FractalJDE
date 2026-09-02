@@ -15,14 +15,6 @@
 "finder.hideSidebar" = "Seitenleiste ausblenden";
 "finder.showSidebar" = "Seitenleiste einblenden";
 
-"finder.noWindowOpen" = "Es ist kein Finder-Fenster geöffnet.";
-"finder.noBurning" = "Das Brennen von CDs wird nicht unterstützt.";
-"finder.noCustomToolbar" = "Die Symbolleiste dieses Finders lässt sich nicht anpassen.";
-"finder.noClipboard" = "Die Zwischenablage-Anzeige ist nicht vorhanden.";
-"finder.nothingToUndo" = "Es gibt nichts zu widerrufen.";
-"finder.nothingToRedo" = "Es gibt nichts zu wiederholen.";
-"finder.noCutting" = "Der Finder kopiert statt auszuschneiden; benutzen Sie Kopieren und Einsetzen.";
-"finder.tidiedUp" = "Aufgeräumt.";
 
 "finder.goToFolderPrompt" = "Gehe zum Ordner:";
 "finder.goToFolderTitle" = "Ordner";

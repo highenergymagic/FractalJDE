@@ -277,7 +277,11 @@ public final class FinderMenus implements NibLoader.Commands {
             case "newWindow" -> Finder.newWindow(null);
             case "newFolder" -> Finder.newFolder(currentFolder());
             case "newSmartFolder" -> Spotlight.open();
-            case "newBurnFolder", "burnToDisc" -> beep(NO_BURNING);
+            // Named in the file, greyed by canPerform, and so unreachable from the menu.
+            // Reached by a shortcut anyway, the answer is the one a Mac gives a key that
+            // means nothing here.
+            case "newBurnFolder", "burnToDisc", "cut", "showClipboard",
+                 "customizeToolbar" -> Finder.beep();
             case "open", "openWithDefault" -> Finder.openAll(selection());
             case "openWithChosen" -> Finder.openWithChosen(selection());
             case "print" -> Finder.print(Finder.first(selection()));
@@ -294,13 +298,11 @@ public final class FinderMenus implements NibLoader.Commands {
             case "find" -> Spotlight.open();
 
             /* --------------------------------------------------------------- Edit */
-            case "undo" -> { if (!Finder.undoManager().undo()) beep(NOTHING_TO_UNDO); }
-            case "redo" -> { if (!Finder.undoManager().redo()) beep(NOTHING_TO_REDO); }
-            case "cut" -> beep(NO_CUTTING);
+            case "undo" -> { if (!Finder.undoManager().undo()) Finder.beep(); }
+            case "redo" -> { if (!Finder.undoManager().redo()) Finder.beep(); }
             case "copy" -> Finder.copy(selection());
             case "paste" -> Finder.paste(currentFolder());
             case "selectAll" -> selectAll();
-            case "showClipboard" -> beep(NO_CLIPBOARD);
 
             /* --------------------------------------------------------------- View */
             case "viewAsIcons" -> setView("Icon");
@@ -311,7 +313,6 @@ public final class FinderMenus implements NibLoader.Commands {
                 Finder.refreshDesktop();
                 FinderWindow w = Finder.frontWindow();
                 if (w != null) w.reload();
-                beep(TIDIED_UP);
             }
             case "cleanUpSelection" -> {
                 FinderWindow w = Finder.frontWindow();
@@ -325,7 +326,6 @@ public final class FinderMenus implements NibLoader.Commands {
             case "togglePathBar" -> toggle("pathbar");
             case "toggleStatusBar" -> toggle("statusbar");
             case "toggleSidebar" -> toggle("sidebar");
-            case "customizeToolbar" -> beep(NO_CUSTOM_TOOLBAR);
             case "showViewOptions" -> ViewOptionsWindow.open();
 
             /* ----------------------------------------------------------------- Go */
@@ -363,14 +363,6 @@ public final class FinderMenus implements NibLoader.Commands {
     private static final FMString SHOW_STATUS_BAR = FMString.of("finder.showStatusBar");
     private static final FMString HIDE_SIDEBAR = FMString.of("finder.hideSidebar");
     private static final FMString SHOW_SIDEBAR = FMString.of("finder.showSidebar");
-    private static final FMString NO_BURNING = FMString.of("finder.noBurning");
-    private static final FMString NOTHING_TO_UNDO = FMString.of("finder.nothingToUndo");
-    private static final FMString NOTHING_TO_REDO = FMString.of("finder.nothingToRedo");
-    private static final FMString NO_CUTTING = FMString.of("finder.noCutting");
-    private static final FMString NO_CLIPBOARD = FMString.of("finder.noClipboard");
-    private static final FMString TIDIED_UP = FMString.of("finder.tidiedUp");
-    private static final FMString NO_CUSTOM_TOOLBAR = FMString.of("finder.noCustomToolbar");
-    private static final FMString NO_WINDOW = FMString.of("finder.noWindowOpen");
     private static final FMString GO_TO_PROMPT = FMString.of("finder.goToFolderPrompt");
     private static final FMString GO_TO_TITLE = FMString.of("finder.goToFolderTitle");
     private static final FMString GO_TO_BUTTON = FMString.of("finder.goToFolderButton");
@@ -381,7 +373,8 @@ public final class FinderMenus implements NibLoader.Commands {
     private static final FMString UNDO_PLAIN = FMString.of("finder.undoPlain");
     private static final FMString REDO_PLAIN = FMString.of("finder.redoPlain");
 
-    private static void beep(FMString key) { Finder.beep(FMLocalized.of(key).toString()); }
+    /** Something went wrong that a person needs to know about. */
+    private static void tell(FMString key) { Finder.tell(key); }
 
     /* ------------------------------------------------------------- what can be done */
 
@@ -464,17 +457,17 @@ public final class FinderMenus implements NibLoader.Commands {
     private void arrangeBy(String key) {
         FinderWindow w = Finder.frontWindow();
         if (w != null) w.arrangeBy(FinderSettings.arrangeKeyFor(key));
-        else beep(NO_WINDOW);
+        else Finder.beep();
     }
 
     private void inFrontWindow(java.util.function.Consumer<FinderWindow> what) {
         FinderWindow w = Finder.frontWindow();
-        if (w != null) what.accept(w); else beep(NO_WINDOW);
+        if (w != null) what.accept(w); else Finder.beep();
     }
 
     void toggle(String what) {
         FinderWindow w = Finder.frontWindow();
-        if (w == null) { beep(NO_WINDOW); return; }
+        if (w == null) { Finder.beep(); return; }
         w.toggleChrome(what);
     }
 

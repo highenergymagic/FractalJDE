@@ -191,8 +191,10 @@ public class MainMenu extends JMenuBar {
         @Override public void perform(FMString action) {
             switch (action.toString()) {
                 case "aboutThisComputer" -> AboutWindow.showAboutComputer();
-                case "softwareUpdate" -> Desktop.beep(FMLocalized.of(UP_TO_DATE).toString());
-                case "fractalSoftware" -> Desktop.beep(FMLocalized.of(NO_SOFTWARE_PAGE).toString());
+                case "softwareUpdate" -> org.fractalmicro.appkit.FMAlert.tell(
+                    FMLocalized.of(UP_TO_DATE), FMString.EMPTY);
+                case "fractalSoftware" -> org.fractalmicro.appkit.FMAlert.tell(
+                    FMLocalized.of(NO_SOFTWARE_PAGE), FMString.EMPTY);
                 case "systemPreferences", "dockPreferences" ->
                     Bundles.openPart(SYSTEM_PREFERENCES, "system");
                 case "dockMagnification" -> {
