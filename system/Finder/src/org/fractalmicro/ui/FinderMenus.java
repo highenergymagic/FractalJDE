@@ -30,7 +30,7 @@ import org.fractalmicro.nib.NibLoader;
 import org.fractalmicro.os.FinderSettings;
 import org.fractalmicro.os.OSPaths;
 import org.fractalmicro.windowserver.AboutWindow;
-import org.fractalmicro.windowserver.DesktopIcons;
+
 import org.fractalmicro.windowserver.Spotlight;
 import org.fractalmicro.windowserver.Desktop;
 import org.fractalmicro.windowserver.MainMenu;
@@ -87,6 +87,10 @@ public final class FinderMenus implements NibLoader.Commands {
      */
     public static FinderMenus install(Desktop desktop) {
         FinderMenus menus = new FinderMenus(desktop);
+        // The icons on the desktop, which are a view of a folder and so are the file
+        // manager's rather than the screen's. The screen keeps somewhere to put them and
+        // is told what goes there, the same way it is told which menus to show.
+        desktop.setIcons(new DesktopIcons());
         // The Finder runs inside the process the session started, so it is not that
         // process's main bundle and its words are not found without it saying so.
         FMLocalized.searchAlso(
@@ -266,14 +270,14 @@ public final class FinderMenus implements NibLoader.Commands {
             case "viewAsColumns" -> setView("Column");
             case "viewAsCoverFlow" -> setView("Cover Flow");
             case "cleanUp" -> {
-                desktop.icons().refresh();
+                Finder.refreshDesktop();
                 FinderWindow w = Finder.frontWindow();
                 if (w != null) w.reload();
                 beep(TIDIED_UP);
             }
             case "cleanUpSelection" -> {
                 FinderWindow w = Finder.frontWindow();
-                if (w != null) w.reload(); else desktop.icons().refresh();
+                if (w != null) w.reload(); else Finder.refreshDesktop();
             }
             case "arrangeByName" -> arrangeBy("Name");
             case "arrangeByDateModified" -> arrangeBy("Date Modified");
@@ -343,7 +347,7 @@ public final class FinderMenus implements NibLoader.Commands {
         FinderWindow w = Finder.frontWindow();
         if (w != null) w.selectAll();
         else {
-            DesktopIcons icons = desktop.icons();
+            DesktopIcons icons = Finder.desktopIcons();
             icons.requestFocusInWindow();
             icons.setSelectionInterval(0, icons.getModel().getSize() - 1);
         }
@@ -401,7 +405,8 @@ public final class FinderMenus implements NibLoader.Commands {
     private List<Node> selection() {
         FinderWindow w = Finder.frontWindow();
         if (w != null) return w.selection();
-        return desktop.icons().selection();
+        DesktopIcons icons = Finder.desktopIcons();
+        return icons == null ? java.util.List.of() : icons.selection();
     }
 
     private File currentFolder() {

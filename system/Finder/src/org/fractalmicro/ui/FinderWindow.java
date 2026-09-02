@@ -44,7 +44,8 @@ import java.util.List;
 import java.util.Locale;
 
 /** A Finder window: sidebar, toolbar, one of four views, path bar and status bar. */
-public class FinderWindow extends JInternalFrame {
+public class FinderWindow extends JInternalFrame
+                          implements org.fractalmicro.appkit.KeyWindow {
 
     public enum Mode { FOLDER, APPLICATIONS, UTILITIES, COMPUTER, NETWORK, TRASH, SEARCH }
 
@@ -531,7 +532,8 @@ public class FinderWindow extends JInternalFrame {
     public String viewMode() { return viewMode; }
 
     /** Where the keyboard should land when this window opens: the file list itself. */
-    public JComponent focusTarget() {
+    @Override
+    public JComponent initialFirstResponder() {
         FileView view = currentView();
         JComponent component = view.component();
         // The scroll pane is not the thing that takes keys; its list or table is.
@@ -550,7 +552,7 @@ public class FinderWindow extends JInternalFrame {
      * The toolbar is one stop in the tab order, as a cluster is under full keyboard access,
      * and this is the other way to it: straight there, without tabbing past everything else.
      */
-    public boolean focusToolbar() {
+    @Override public boolean focusToolbar() {
         if (!toolbar.isVisible()) return false;
         java.awt.FocusTraversalPolicy policy = toolbar.getFocusTraversalPolicy();
         java.awt.Component target = policy == null ? null

@@ -23,7 +23,6 @@ import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMMutableArray;
 
-import org.fractalmicro.ui.Finder;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;

@@ -89,11 +89,16 @@ case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) sep=";" ;; esac
 rm -rf build
 mkdir -p build/frameworks build/apps
 
-# AppKit and Finder are still compiled as one stage, and that is not the shape they should
-# be: the screen furniture reaches into the file browser about fifty times, mostly from the
-# Dock and the desktop icons. Everything below them does separate, and the build proves it
-# by never handing one the class path of anything above it.
-FRAMEWORKS="LibSystem Foundation dyld launchd LaunchServices Metadata AppKit+Finder"
+# One stage per framework, in the order they depend on each other, and none of them is ever
+# handed the class path of anything above it. That is what makes the stack a fact rather
+# than an intention: a library that reached upward would not compile, here, in this loop.
+#
+# AppKit and the Finder were one stage for a long time, because the screen furniture named
+# the file browser: the Dock opened the Trash by calling it, the desktop icons were an
+# AppKit class that called it back, and every double-click asked it what a file was. They
+# are separate now, and this line is the check. A stage that still needs the one after it
+# fails here rather than in a list of known exceptions.
+FRAMEWORKS="LibSystem Foundation dyld launchd LaunchServices Metadata AppKit Finder"
 
 # ----------------------------------------------------------------- the frameworks
 beneath=""
@@ -186,9 +191,15 @@ for dir in apps/*/; do
     apps="$apps $name"
 done
 
-# The Finder is a program in a bundle like any other, and its interface files and words go
-# in with it. It is built with AppKit rather than under apps, so it is staged by hand here
-# and the installer finds it under the same name as everything else.
+# The Finder is a program in a bundle like any other: its classes go into its bundle and
+# its interface files and words go in beside them. It is built under system/ rather than
+# under apps/, because the session and the checks are compiled against it, so it is staged
+# by hand here and the installer finds it under the same name as everything else.
+#
+# Its code used to be inside AppKit, which meant every program that linked a window library
+# was handed the file manager as well, and the bundle it shipped in carried nothing at all.
+mkdir -p build/apps/Finder
+cp -r build/frameworks/Finder/* build/apps/Finder/ 2>/dev/null || true
 [ -d system/Finder/resources ] && cp -r system/Finder/resources build/apps/Finder.resources
 
 # ------------------------------------------------------------------- the checks

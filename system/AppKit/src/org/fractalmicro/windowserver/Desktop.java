@@ -19,8 +19,6 @@
  */
 package org.fractalmicro.windowserver;
 
-import org.fractalmicro.ui.Finder;
-import org.fractalmicro.ui.FinderWindow;
 
 import org.fractalmicro.appkit.AppFrame;
 import org.fractalmicro.appkit.AppWindow;
@@ -121,7 +119,20 @@ public class Desktop extends JFrame {
     }
 
     private final JDesktopPane pane = new Surface();
-    private final DesktopIcons icons = new DesktopIcons();
+
+    /**
+     * What is shown on the desktop, once something has put something there.
+     *
+     * Nothing here, on purpose. On a Mac the desktop is a folder and the icons on it are a
+     * view of that folder, drawn by the Finder, which is a program like any other. The
+     * screen provides the back of itself and does not know what goes on it: this used to
+     * hold a Finder class, which meant the layer that draws could not be built until the
+     * file manager had been.
+     *
+     * Null until {@link #setIcons} is called, and a screen with nothing at the back of it
+     * still works. That is the honest state of a machine whose file manager is not running.
+     */
+    private JComponent icons;
     private final Dock dock = new Dock();
     private final JLayeredPane stage = new Stage();
     private MainMenu menu;
@@ -134,7 +145,6 @@ public class Desktop extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         pane.setDesktopManager(new DefaultDesktopManager());
-        pane.add(icons, Integer.valueOf(JLayeredPane.DEFAULT_LAYER - 1));
 
         stage.add(pane, JLayeredPane.DEFAULT_LAYER);
         stage.add(dock, JLayeredPane.PALETTE_LAYER);
@@ -197,7 +207,28 @@ public class Desktop extends JFrame {
 
     /** Whether each window is a window of the host system in its own right. */
     public boolean separateWindows() { return separateWindows; }
-    public DesktopIcons icons() { return icons; }
+    /** What is at the back of the screen, or null when nothing has put anything there. */
+    public JComponent icons() { return icons; }
+
+    /** Puts the keyboard on it. Answers false when there is nothing there to put it on. */
+    public boolean focusIcons() {
+        return icons != null && icons.requestFocusInWindow();
+    }
+
+    /**
+     * Puts a view at the back of the screen, behind every window.
+     *
+     * The file manager calls this at start-up with its view of the desktop folder. Called
+     * again it replaces what was there, which is what happens when the file manager is
+     * restarted and the old view belongs to a process that has gone.
+     */
+    public void setIcons(JComponent view) {
+        if (icons != null) pane.remove(icons);
+        icons = view;
+        if (view != null) pane.add(view, Integer.valueOf(JLayeredPane.DEFAULT_LAYER - 1));
+        stage.revalidate();
+        pane.repaint();
+    }
     public Dock dock() { return dock; }
     public MainMenu mainMenu() { return menu; }
 
@@ -406,8 +437,11 @@ public class Desktop extends JFrame {
      */
     public Component focusInto(JInternalFrame frame) {
         Component target = null;
-        // A Finder window opens on its files, not on its toolbar.
-        if (frame instanceof FinderWindow) target = ((FinderWindow) frame).focusTarget();
+        // A window that knows better than its focus policy says so. A file browser opens
+        // on its files, not on the search field at the end of its toolbar.
+        if (frame instanceof org.fractalmicro.appkit.KeyWindow window) {
+            target = window.initialFirstResponder();
+        }
         if (target == null) {
             java.awt.FocusTraversalPolicy policy = frame.getFocusTraversalPolicy();
             if (policy != null) target = policy.getDefaultComponent(frame);
@@ -457,7 +491,7 @@ public class Desktop extends JFrame {
 
     public void closeFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null) { Finder.beep("No window is open."); return; }
+        if (f == null) { beep("No window is open."); return; }
         f.doDefaultCloseAction();
         menu.windowsChanged();
         focusAfterClose();
@@ -479,25 +513,28 @@ public class Desktop extends JFrame {
             target.requestFocusInWindow();
             return target;
         }
-        icons.requestFocusInWindow();
-        return icons;
+        // The desktop itself when there is nothing at the back of it, so that the keyboard
+        // lands somewhere rather than nowhere.
+        Component back = icons != null ? icons : pane;
+        back.requestFocusInWindow();
+        return back;
     }
 
     public void minimizeFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null || !f.isIconifiable()) { Finder.beep("No window to minimize"); return; }
+        if (f == null || !f.isIconifiable()) { beep("No window to minimize"); return; }
         try { f.setIcon(true); } catch (java.beans.PropertyVetoException ignored) { }
     }
 
     public void zoomFrontWindow() {
         JInternalFrame f = activeWindow();
-        if (f == null) { Finder.beep("No window to zoom"); return; }
+        if (f == null) { beep("No window to zoom"); return; }
         try { f.setMaximum(!f.isMaximum()); } catch (java.beans.PropertyVetoException ignored) { }
     }
 
     public void hideAllWindows() {
         for (JInternalFrame f : pane.getAllFrames()) f.setVisible(false);
-        icons.requestFocusInWindow();
+        if (icons != null) icons.requestFocusInWindow();
         setStatus("All windows hidden");
     }
 
@@ -534,7 +571,7 @@ public class Desktop extends JFrame {
         @Override public void doLayout() {
             int w = getWidth(), h = getHeight();
             pane.setBounds(0, 0, w, h);
-            icons.setBounds(0, 0, w, h - dockHeight());
+            if (icons != null) icons.setBounds(0, 0, w, h - dockHeight());
             Dimension d = dock.getPreferredSize();
             int dw = Math.min(d.width, w - 40);
             dock.setBounds((w - dw) / 2, h - d.height, dw, d.height);

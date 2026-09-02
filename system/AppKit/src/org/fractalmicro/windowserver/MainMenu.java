@@ -22,7 +22,7 @@ package org.fractalmicro.windowserver;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
-import org.fractalmicro.ui.Finder;
+import org.fractalmicro.bundle.LaunchServices;
 
 import org.fractalmicro.appkit.Alert;
 import org.fractalmicro.appkit.AppWindow;
@@ -191,8 +191,8 @@ public class MainMenu extends JMenuBar {
         @Override public void perform(FMString action) {
             switch (action.toString()) {
                 case "aboutThisComputer" -> AboutWindow.showAboutComputer();
-                case "softwareUpdate" -> Finder.beep(FMLocalized.of(UP_TO_DATE).toString());
-                case "fractalSoftware" -> Finder.beep(FMLocalized.of(NO_SOFTWARE_PAGE).toString());
+                case "softwareUpdate" -> Desktop.beep(FMLocalized.of(UP_TO_DATE).toString());
+                case "fractalSoftware" -> Desktop.beep(FMLocalized.of(NO_SOFTWARE_PAGE).toString());
                 case "systemPreferences", "dockPreferences" ->
                     Bundles.openPart(SYSTEM_PREFERENCES, "system");
                 case "dockMagnification" -> {
@@ -505,7 +505,7 @@ public class MainMenu extends JMenuBar {
             recentItems.add(none);
         }
         for (File f : items) {
-            recentItems.add(item(f.getName(), null, e -> Finder.open(FS.node(f))));
+            recentItems.add(item(f.getName(), null, e -> LaunchServices.open(f)));
         }
         List<File> folders = Recent.folders();
         if (folders.isEmpty()) {
@@ -515,7 +515,7 @@ public class MainMenu extends JMenuBar {
         }
         for (File f : folders) {
             recentFolders.add(item(f.getName().isEmpty() ? f.getPath() : f.getName(), null,
-                                   e -> Finder.goTo(f)));
+                                   e -> LaunchServices.openFolder(f)));
         }
         recentItems.addSeparator();
         recentItems.add(item("Clear Menu", null, e -> { Recent.clear(); rebuildRecents(); }));

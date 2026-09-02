@@ -50,31 +50,37 @@ import java.util.regex.Pattern;
 public final class LayerTest {
     private LayerTest() {}
 
-    public static int count() { return 4; }
+    public static int count() { return 3; }
 
-    /**
-     * The one place the stack is not true, and how far it is allowed to go.
+    /*
+     * There used to be an exception here, and a count of how far it went.
      *
-     * The screen furniture reaches into the file browser: the Dock, the desktop icons, the
-     * menu bar and Spotlight all name the Finder. They are compiled as one stage for that
-     * reason, and until they are separated this is a fact about the system rather than a
-     * mistake somebody left in.
+     * The screen furniture reached into the file browser: the Dock, the desktop icons, the
+     * menu bar and Spotlight all named the Finder, thirteen times between them. It was
+     * written down as a known hole with a ratchet on it, which was better than not saying
+     * so, and it stayed for a long time.
      *
-     * Recording it here is the difference between a known exception and a hole. The count
-     * may go down and may not go up, so the boundary that is already crossed cannot be
-     * crossed in a new place while the check goes on saying the stack is fine.
+     * Most of it was not a dependency at all. Ten of the thirteen were the screen calling
+     * a Finder method that did nothing but call the screen back, or an import nothing used.
+     * What was left was one real question, asked in the wrong place: what happens when
+     * somebody double-clicks a file. That is LaunchServices' to answer, and now does. The
+     * desktop icons went the other way, into the file manager, because a view of a folder
+     * is the file manager's whoever is holding it.
+     *
+     * So the exception is gone rather than smaller, and the check below has nothing to
+     * forgive.
      */
-    private static final String ALLOWED_FROM = "AppKit";
-    private static final String ALLOWED_TO = "Finder";
-    private static final int ALLOWED_MOST = 13;
 
     /** The stack, lowest first. A package may use its own layer and anything below it. */
     private static final String[][] LAYERS = {
         {"LibSystem",    "win", "core"},
         {"Foundation",   "plist", "fs", "alias", "os", "kernel", "xpc", "icns"},
         {"CoreServices", "bundle", "macho", "dyld", "mds", "launchd"},
-        {"AppKit",       "appkit", "nib", "windowserver", "theme", "a11y", "app"},
-        {"Finder",       "ui"},
+        {"AppKit",       "appkit", "nib", "windowserver", "theme", "a11y"},
+        // The file manager, and the class the system opens it through. That class was
+        // counted as AppKit's for a while, which made every ordinary call it makes into
+        // its own program look like the screen reaching upwards.
+        {"Finder",       "ui", "app"},
     };
 
     private static final Pattern USE = Pattern.compile("\\borg\\.fractalmicro\\.([a-z0-9]+)\\.([A-Z]\\w+)");
@@ -135,23 +141,8 @@ public final class LayerTest {
             read > 0 && level.size() == new java.util.HashSet<>(level.keySet()).size());
 
         java.util.Set<String> distinct = new java.util.TreeSet<>(upward);
-        List<String> unexpected = distinct.stream()
-            .filter(one -> !one.startsWith(ALLOWED_FROM + " ")
-                        || !one.contains(" uses " + ALLOWED_TO + "."))
-            .toList();
-        for (String one : unexpected) out.println("      " + one);
-        failures += check(out, "no library uses one above it in the stack, apart from the "
-                               + "one that has not been split yet", unexpected.isEmpty());
-
-        // A ratchet rather than a pass. The exception is real and is not being fixed here,
-        // but it can only get smaller: a new reference across the same boundary is the
-        // same mistake as a new boundary, and without this the exception is a hole that
-        // widens quietly.
-        out.println("      " + ALLOWED_FROM + " reaches into " + ALLOWED_TO + " "
-                    + distinct.size() + " times, and may not reach further than "
-                    + ALLOWED_MOST);
-        failures += check(out, "and that one is no worse than it was",
-            distinct.size() <= ALLOWED_MOST);
+        for (String one : distinct) out.println("      " + one);
+        failures += check(out, "no library uses one above it in the stack", distinct.isEmpty());
 
         // The lowest layer is the one that matters most: it is the boundary to the
         // host system, and anything it knows about a window is a mistake with a long tail.

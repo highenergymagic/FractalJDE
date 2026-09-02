@@ -65,15 +65,31 @@ public final class OSPaths {
     /**
      * Where the volume is.
      *
-     * Normally .fractaldt in the home directory. A build that is making a volume to ship
-     * says where with -Dorg.fractalmicro.volume, because a volume being built is not the volume the
-     * machine is running, and writing one on top of the other would be a poor way to find
-     * that out.
+     * Normally .fractaldt in the home directory, and said otherwise in two ways that mean
+     * two different things.
+     *
+     * org.fractalmicro.root is the volume this process was booted from. The kernel finds a
+     * volume, reads the loader off it and tells everything it starts which one it was, so
+     * a session started by launchd is told this and nothing else. It is asked first,
+     * because a process that was booted from somewhere is running from there whatever
+     * anybody else thinks.
+     *
+     * org.fractalmicro.volume is a volume being built. A build laying out a system to ship
+     * says where it is putting it, because that volume is not the one the build machine
+     * runs and writing one over the other would be a poor way to find that out.
+     *
+     * Only the second used to be read. A session booted onto any volume but the usual one
+     * therefore ran against the usual one: it drew a desktop, so the pictures came out and
+     * the checks passed, and the programs it opened were the ones installed at home rather
+     * than the ones that had just shipped. The whole point of installing onto an empty
+     * directory is to find out what happens there, and it was not what happened.
      */
     private static Path chooseRoot() {
-        String named = System.getProperty("org.fractalmicro.volume", "");
-        return named.isBlank() ? USER_HOME.resolve(".fractaldt")
-                               : Paths.get(named).toAbsolutePath().normalize();
+        for (String property : new String[]{"org.fractalmicro.root", "org.fractalmicro.volume"}) {
+            String named = System.getProperty(property, "");
+            if (!named.isBlank()) return Paths.get(named).toAbsolutePath().normalize();
+        }
+        return USER_HOME.resolve(".fractaldt");
     }
 
     /** What the volume was called before, kept only so that one can be moved to the other. */

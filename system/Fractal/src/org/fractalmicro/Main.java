@@ -26,7 +26,6 @@ import org.fractalmicro.fs.Trash;
 import org.fractalmicro.fs.Volumes;
 import org.fractalmicro.theme.AquaLaf;
 import org.fractalmicro.windowserver.Desktop;
-import org.fractalmicro.ui.Finder;
 
 import javax.swing.*;
 
@@ -54,6 +53,15 @@ public final class Main {
         } catch (ReflectiveOperationException e) {
             Throwable why = e.getCause() == null ? e : e.getCause();
             System.out.println("the checks could not run: " + why);
+        }
+    }
+
+    /** Opens a window by the name of the class that puts it up, for the checking modes. */
+    private static void openByName(String className) {
+        try {
+            Class.forName(className).getMethod("open").invoke(null);
+        } catch (ReflectiveOperationException notHere) {
+            System.out.println("this build has no " + className);
         }
     }
 
@@ -246,6 +254,12 @@ public final class Main {
         Progress.speakingAs("loginwindow");
 
         SwingUtilities.invokeLater(() -> {
+            // Named, not just described. A session runs from one volume and opens the
+            // programs installed on it, and for a while it said the first and did the
+            // second somewhere else: booted onto an empty directory it laid out that
+            // directory and then went on using the one at home. Everything looked right,
+            // including the picture at the end.
+            Progress.say("the volume is " + org.fractalmicro.os.OSPaths.ROOT);
             Progress.say("laying out the volume");
             org.fractalmicro.os.OSPaths.ensure();
             org.fractalmicro.os.Defaults.migrate();
@@ -285,10 +299,18 @@ public final class Main {
 
             Progress.say("building the desktop");
             Desktop desktop = new Desktop();
-            // The Finder hands the bar its menus, the same way any other program does.
-            // Until it does, the bar has an Apple menu, a Window menu and nothing else.
+            // The file manager takes over the desktop: the menus the bar shows when nothing
+            // else is in front, and the icons on the back of the screen. Asked for by
+            // identifier, like anything else the session starts, so this file names no
+            // class inside it and the session image does not link it. Until it answers,
+            // the bar has an Apple menu, a Window menu and nothing else, which is what a
+            // machine with no file manager installed should look like.
             Progress.say("the menu bar");
-            org.fractalmicro.ui.FinderMenus.install(desktop);
+            if (!org.fractalmicro.bundle.Bundles.openPart(
+                    org.fractalmicro.bundle.LaunchServices.FILE_BROWSER,
+                    org.fractalmicro.bundle.LaunchServices.DESKTOP)) {
+                org.fractalmicro.core.Log.info("no file manager took the desktop");
+            }
             // And the indicators on the right come from their own bundles, loaded by the
             // thing whose job that is. The bar does not know what a clock is.
             org.fractalmicro.windowserver.SystemUIServer.start(desktop.mainMenu());
@@ -321,7 +343,7 @@ public final class Main {
                 Progress.say("opening the screen");
                 desktop.setVisible(true);
                 desktop.openScreen();
-                desktop.icons().requestFocusInWindow();
+                desktop.focusIcons();
                 Runtime.getRuntime().addShutdownHook(new Thread(desktop::closeScreen));
             }
             desktop.setStatus("Desktop ready");
@@ -332,9 +354,10 @@ public final class Main {
             Progress.ready();
 
             Volumes.refresh(() -> {
-                desktop.icons().refresh();
-                Finder.refreshAll();
-                if (!offscreen) desktop.icons().requestFocusInWindow();
+
+                org.fractalmicro.bundle.LaunchServices.tellFileBrowser(
+                    org.fractalmicro.bundle.LaunchServices.REFRESH);
+                if (!offscreen) desktop.focusIcons();
             });
             Apps.refresh(desktop.dock()::rebuild);
             Trash.refresh();
@@ -361,9 +384,13 @@ public final class Main {
             // A path on its own opens a Finder window; a path with a program opens the
             // document in that program instead.
             if (startPath != null && appToOpen == null) {
-                Finder.newWindow(new java.io.File(startPath));
+                org.fractalmicro.bundle.LaunchServices.openFolder(new java.io.File(startPath));
             }
-            if (doControls) org.fractalmicro.ui.ControlGallery.open();
+            // Reached by name, like the checks, because it is one: a window of every
+            // control drawn on its own, for looking at. It lives with the file manager and
+            // the session does not link that, so naming the class here would be a session
+            // that will not start without a file manager installed.
+            if (doControls) openByName("org.fractalmicro.ui.ControlGallery");
             if (appToOpen != null) {
                 // A program named alongside a document opens that document.
                 java.util.List<java.io.File> documents = startPath == null
@@ -403,7 +430,7 @@ public final class Main {
                         System.out.println(wanted + " opened: " + opened);
                     }
 
-                    javax.swing.JList<?> icons = desktop.icons();
+                    javax.swing.JList<?> icons = (javax.swing.JList<?>) desktop.icons();
                     java.awt.Rectangle cell = icons.getModel().getSize() > 0
                         ? icons.getCellBounds(0, 0) : null;
                     System.out.println("showing=" + icons.isShowing()

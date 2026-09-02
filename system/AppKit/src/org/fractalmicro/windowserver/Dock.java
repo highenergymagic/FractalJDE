@@ -19,7 +19,8 @@
  */
 package org.fractalmicro.windowserver;
 
-import org.fractalmicro.ui.Finder;
+import org.fractalmicro.bundle.Bundles;
+import org.fractalmicro.bundle.LaunchServices;
 
 import org.fractalmicro.appkit.FocusGroup;
 
@@ -83,7 +84,7 @@ public class Dock extends JPanel {
         List<JComponent> order = new ArrayList<>();
 
         Node finder = new Node(Node.Kind.APPLICATION, "Finder", null);
-        Tile finderTile = new Tile(finder, true, e -> Finder.newWindow(null));
+        Tile finderTile = new Tile(finder, true, e -> Bundles.openIdentifier(LaunchServices.FILE_BROWSER));
         tiles.add(finderTile);
         order.add(finderTile);
 
@@ -93,7 +94,7 @@ public class Dock extends JPanel {
             Node n = new Node(Node.Kind.APPLICATION,
                 pinned.label.isEmpty() ? stripExtension(pinned.file.getName()) : pinned.label,
                 pinned.file);
-            Tile tile = new Tile(n, Running.isRunning(n.name), e -> Finder.launchApp(n));
+            Tile tile = new Tile(n, Running.isRunning(n.name), e -> LaunchServices.open(n));
             tiles.add(tile);
             order.add(tile);
             seen.add(pinned.file);
@@ -101,14 +102,14 @@ public class Dock extends JPanel {
 
         Node browser = Apps.defaultBrowser();
         if (browser != null && notSeen(seen, browser.file)) {
-            Tile tile = new Tile(browser, Running.isRunning(browser.name), e -> Finder.launchApp(browser));
+            Tile tile = new Tile(browser, Running.isRunning(browser.name), e -> LaunchServices.open(browser));
             tiles.add(tile);
             order.add(tile);
             seen.add(browser.file);
         }
         Node mail = Apps.defaultMail();
         if (mail != null && notSeen(seen, mail.file)) {
-            Tile tile = new Tile(mail, Running.isRunning(mail.name), e -> Finder.launchApp(mail));
+            Tile tile = new Tile(mail, Running.isRunning(mail.name), e -> LaunchServices.open(mail));
             tiles.add(tile);
             order.add(tile);
             seen.add(mail.file);
@@ -133,7 +134,7 @@ public class Dock extends JPanel {
         for (Running.Entry entry : Running.all()) {
             if (!notSeen(seen, entry.launcher)) continue;
             Node n = new Node(Node.Kind.APPLICATION, entry.name, entry.launcher);
-            Tile tile = new Tile(n, true, e -> Finder.launchApp(n));
+            Tile tile = new Tile(n, true, e -> LaunchServices.open(n));
             tiles.add(tile);
             order.add(tile);
         }
@@ -141,7 +142,7 @@ public class Dock extends JPanel {
         tiles.add(new Separator());
 
         Node trash = new Node(Node.Kind.TRASH, "Trash", null);
-        Tile trashTile = new Tile(trash, false, e -> Finder.openTrash());
+        Tile trashTile = new Tile(trash, false, e -> LaunchServices.tellFileBrowser(LaunchServices.TRASH));
         tiles.add(trashTile);
         order.add(trashTile);
 
@@ -182,6 +183,13 @@ public class Dock extends JPanel {
     private static String stripExtension(String n) {
         int dot = n.lastIndexOf('.');
         return dot > 0 ? n.substring(0, dot) : n;
+    }
+
+    /** A menu item with something behind it, which is two lines said many times. */
+    private static JMenuItem item(String text, ActionListener what) {
+        JMenuItem made = new JMenuItem(text);
+        made.addActionListener(what);
+        return made;
     }
 
     @Override
@@ -281,8 +289,8 @@ public class Dock extends JPanel {
         private JPopupMenu menu() {
             JPopupMenu m = new JPopupMenu();
             if (node.kind == Node.Kind.TRASH) {
-                m.add(Finder.item("Open", e -> Finder.openTrash()));
-                JMenuItem empty = Finder.item("Empty Trash", e -> Finder.emptyTrash(false));
+                m.add(item("Open", e -> LaunchServices.tellFileBrowser(LaunchServices.TRASH)));
+                JMenuItem empty = item("Empty Trash", e -> LaunchServices.tellFileBrowser(LaunchServices.EMPTY_TRASH));
                 empty.setEnabled(!Trash.isEmpty());
                 m.add(empty);
                 return m;
@@ -293,7 +301,7 @@ public class Dock extends JPanel {
                 for (org.fractalmicro.win.User32.Win window : app.windows) {
                     String title = window.title.length() > 60
                         ? window.title.substring(0, 57) + "…" : window.title;
-                    JMenuItem item = Finder.item(title, e -> WindowList.activate(window));
+                    JMenuItem item = item(title, e -> WindowList.activate(window));
                     if (window.minimized) item.setToolTipText("Minimized");
                     m.add(item);
                 }
@@ -311,10 +319,10 @@ public class Dock extends JPanel {
                     rebuild();
                 });
                 options.add(keep);
-                options.add(Finder.item("Show in Finder", e -> {
+                options.add(item("Show in Finder", e -> {
                     File target = Apps.resolve(file);
                     File folder = target.isDirectory() ? target : target.getParentFile();
-                    Finder.goTo(folder);
+                    LaunchServices.openFolder(folder);
                 }));
             } else {
                 JMenuItem keep = new JMenuItem("Keep in Dock");
@@ -325,16 +333,16 @@ public class Dock extends JPanel {
             m.addSeparator();
 
             if ("Finder".equals(node.name)) {
-                m.add(Finder.item("New Finder Window", e -> Finder.newWindow(null)));
+                m.add(item("New Finder Window", e -> Bundles.openIdentifier(LaunchServices.FILE_BROWSER)));
                 return m;
             }
             if (app != null) {
-                m.add(Finder.item("Hide", e -> WindowList.hide(app)));
-                m.add(Finder.item("Quit", e -> WindowList.quit(app)));
+                m.add(item("Hide", e -> WindowList.hide(app)));
+                m.add(item("Quit", e -> WindowList.quit(app)));
             } else if (running) {
-                m.add(Finder.item("Quit", e -> Desktop.quitApplication(node.name)));
+                m.add(item("Quit", e -> Desktop.quitApplication(node.name)));
             } else {
-                m.add(Finder.item("Open", e -> Finder.launchApp(node)));
+                m.add(item("Open", e -> LaunchServices.open(node)));
             }
             return m;
         }

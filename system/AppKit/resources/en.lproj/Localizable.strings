@@ -92,3 +92,7 @@
 "panel.goToButton" = "Go";
 "panel.noSuchFolder" = "The folder “%1$@” can’t be found.";
 "panel.checkSpelling" = "Check the spelling and try again.";
+
+/* Spotlight, when the thing that was found cannot be opened: a disk with nothing in the
+   drive, or a file that has gone since the index last looked at it. */
+"spotlight.nothingOpensThat" = "Nothing opens that.";

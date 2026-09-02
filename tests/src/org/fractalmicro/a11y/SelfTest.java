@@ -63,6 +63,17 @@ public final class SelfTest {
         }
     }
 
+    /**
+     * The icons on the desktop, which are the file manager's view and not the screen's.
+     *
+     * The screen holds a control and does not know what kind it is, which is the point:
+     * it is put there by whatever draws the desktop. The checks are allowed to know, and
+     * this is the one place they say so.
+     */
+    private static DesktopIcons desktopIcons(Desktop desktop) {
+        return (DesktopIcons) desktop.icons();
+    }
+
     private static void runChecks(Desktop desktop) {
         step("new Finder window", () -> Finder.newWindow(FS.home()));
         step("icon view", () -> Finder.frontWindow().setViewMode("Icon"));
@@ -282,7 +293,7 @@ public final class SelfTest {
 
         System.out.println();
         System.out.println("log file: " + org.fractalmicro.core.Log.file());
-        System.out.println("desktop icons: " + desktop.icons().getModel().getSize());
+        System.out.println("desktop icons: " + desktopIcons(desktop).getModel().getSize());
         System.out.println();
         System.out.println("keyboard check:");
         try {
@@ -351,7 +362,7 @@ public final class SelfTest {
     private static void checkSpokenDescriptions(Desktop desktop) {
         System.out.println();
         System.out.println("spoken descriptions:");
-        javax.swing.JList<org.fractalmicro.fs.Node> icons = desktop.icons();
+        javax.swing.JList<org.fractalmicro.fs.Node> icons = desktopIcons(desktop);
         if (icons.getModel().getSize() > 0) {
             String description = descriptionFrom(icons, icons.getModel().getElementAt(0));
             System.out.println("      desktop item: " + description);
@@ -744,7 +755,7 @@ public final class SelfTest {
         }
         for (org.fractalmicro.fs.Node drive : empty) {
             step(drive.name + " stays off the desktop", () -> {
-                javax.swing.ListModel<org.fractalmicro.fs.Node> model = desktop.icons().getModel();
+                javax.swing.ListModel<org.fractalmicro.fs.Node> model = desktopIcons(desktop).getModel();
                 for (int i = 0; i < model.getSize(); i++) {
                     if (model.getElementAt(i).name.equals(drive.name)) {
                         throw new IllegalStateException("it is on the desktop");
@@ -848,9 +859,9 @@ public final class SelfTest {
         org.fractalmicro.os.FinderSettings.setShowExternalDisks(external);
         org.fractalmicro.os.FinderSettings.setShowRemovableMedia(removable);
         org.fractalmicro.os.FinderSettings.setShowServers(servers);
-        desktop.icons().refresh();
+        desktopIcons(desktop).refresh();
         drain();
-        return desktop.icons().getModel().getSize();
+        return desktopIcons(desktop).getModel().getSize();
     }
 
     private static void step(String what, Runnable body) {

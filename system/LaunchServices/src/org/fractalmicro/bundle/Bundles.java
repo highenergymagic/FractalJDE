@@ -58,9 +58,15 @@ public final class Bundles {
     private static final Spec[] BUILT_IN = {
         // Finder opens other programs and asks what is installed, so it links CoreServices
         // as well. No other program here does, and none of them can.
+        //
+        // Its own code goes in its own bundle, like every other program's. It used to have
+        // none, because the file manager was compiled into AppKit and every program that
+        // linked AppKit got the Finder with it, which is not what linking a window library
+        // should hand anybody.
         new Spec("Finder", PREFIX + "finder", "org.fractalmicro.app.FinderApp",
                  Where.CORE_SERVICES, "The file manager", true,
-                 java.util.List.of(), Frameworks.COCOA_AND_SERVICES, ""),
+                 java.util.List.of("org.fractalmicro.ui", "org.fractalmicro.app"),
+                 Frameworks.COCOA_AND_SERVICES, ""),
         new Spec("System Preferences", PREFIX + "systempreferences", "",
                  Where.SYSTEM_APPLICATIONS, "Settings", false,
                  java.util.List.of("org.fractalmicro.systempreferences"), Frameworks.COCOA,

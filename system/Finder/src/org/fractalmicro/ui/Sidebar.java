@@ -161,8 +161,12 @@ public class Sidebar extends JScrollPane {
      */
     public void rebuild() {
         Target chosen = selectedTarget();
-        rows.clear();
 
+        // Built to one side and put in at the end, rather than emptied and refilled.
+        // Reading the places touches the disk, and a repaint that lands in the middle of
+        // that asks a table that still thinks it has sixteen rows for a list that has
+        // none. It threw where it was painting, which is nowhere anybody can catch it.
+        List<Row> built = new ArrayList<>();
         for (Places.Group section : Places.all()) {
             List<Row> made = new ArrayList<>();
             for (Places.Place one : section.places()) {
@@ -170,19 +174,21 @@ public class Sidebar extends JScrollPane {
                                           one.token().isEmpty() ? null : one.token().toString(),
                                           one.kind())));
             }
-            group(FMLocalized.of(section.heading()).toString(), made);
+            group(built, FMLocalized.of(section.heading()).toString(), made);
         }
+        group(built, "TRASH",
+              List.of(place(new Target("Trash", null, "trash", Node.Kind.TRASH))));
 
-        group("TRASH", List.of(place(new Target("Trash", null, "trash", Node.Kind.TRASH))));
-
+        rows.clear();
+        rows.addAll(built);
         model.fireTableDataChanged();
         reselect(chosen);
     }
 
-    private void group(String heading, List<Row> members) {
+    private void group(List<Row> into, String heading, List<Row> members) {
         if (members.isEmpty()) return;
-        rows.add(new Row(heading, null));
-        rows.addAll(members);
+        into.add(new Row(heading, null));
+        into.addAll(members);
     }
 
     private Row place(Target target) { return new Row(null, target); }

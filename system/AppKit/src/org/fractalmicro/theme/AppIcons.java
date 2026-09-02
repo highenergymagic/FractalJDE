@@ -19,7 +19,6 @@
  */
 package org.fractalmicro.theme;
 
-import org.fractalmicro.ui.Finder;
 
 import java.awt.*;
 import java.awt.geom.Path2D;

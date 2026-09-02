@@ -46,6 +46,13 @@ Every part of that says where it has got to, in one shape:
    1.5  loginwindow: ready
 ```
 
+The session says which volume it is on, and that line is checked by the build, because it
+used not to be true. The kernel found a volume, unpacked onto it and started a session
+there, and the session then read `~/.fractaldt` for everything it opened: it looked at the
+wrong property. Installing onto an empty directory is done precisely to find out what
+happens on a machine that has never seen this system, and what happened was that the
+machine's own copy was quietly used instead. Nothing failed. The picture came out.
+
 The number is seconds since the machine started, not since the process printing it did.
 Three processes are involved and each one's own clock starts when it does, so measuring
 locally would make the times run backwards halfway down. Whoever starts a process passes

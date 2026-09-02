@@ -82,6 +82,11 @@ jobs:
                --screenshot "$PWD/build/fresh-desktop.png" 2>&1 | tee boot.txt
           grep -q "files written" boot.txt
           grep -q "launchd: starting, as task 1" boot.txt
+          # And that the session ran from the volume it was booted onto, rather than from
+          # whatever is installed at home. It used to say it was doing the first and then
+          # quietly do the second, which made this whole step a check of the machine it
+          # was running on.
+          grep -q "loginwindow: the volume is .*build.fresh" boot.txt
           test -f build/fresh/usr/lib/dyld
           test -f build/fresh/sbin/launchd
           test -s build/fresh-desktop.png

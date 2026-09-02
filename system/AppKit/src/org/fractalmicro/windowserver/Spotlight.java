@@ -19,7 +19,7 @@
  */
 package org.fractalmicro.windowserver;
 
-import org.fractalmicro.ui.Finder;
+import org.fractalmicro.bundle.LaunchServices;
 
 
 import org.fractalmicro.core.Shell;
@@ -168,7 +168,7 @@ public class Spotlight extends JDialog {
     }
 
     private void openTop() {
-        if (model.isEmpty()) { Finder.beep("No results"); return; }
+        if (model.isEmpty()) { Desktop.beep("No results"); return; }
         open(model.get(0));
     }
 
@@ -177,9 +177,15 @@ public class Spotlight extends JDialog {
         if (n != null) open(n);
     }
 
+    /** What is said when the thing found cannot be opened after all. */
+    private static final org.fractalmicro.foundation.FMString NOTHING_OPENS_THAT =
+        org.fractalmicro.foundation.FMString.of("spotlight.nothingOpensThat");
+
     private void open(Node n) {
         setVisible(false);
-        Finder.open(n);
+        if (!LaunchServices.open(n)) {
+            Desktop.beep(org.fractalmicro.foundation.FMLocalized.of(NOTHING_OPENS_THAT).toString());
+        }
     }
 
     private static class ResultRenderer extends DefaultListCellRenderer {

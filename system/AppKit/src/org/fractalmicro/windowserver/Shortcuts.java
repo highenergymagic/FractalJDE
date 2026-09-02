@@ -19,8 +19,7 @@
  */
 package org.fractalmicro.windowserver;
 
-import org.fractalmicro.ui.Finder;
-import org.fractalmicro.ui.FinderWindow;
+import org.fractalmicro.bundle.LaunchServices;
 
 
 import org.fractalmicro.fs.FS;
@@ -145,11 +144,11 @@ public final class Shortcuts {
                 return true;
             }
             if (alt && option && e.getKeyCode() == KeyEvent.VK_L) {
-                Finder.goTo(FS.downloads());
+                LaunchServices.openFolder(FS.downloads());
                 return true;
             }
             if (e.getKeyCode() == KeyEvent.VK_F5) {
-                Finder.refreshAll();
+                LaunchServices.tellFileBrowser(LaunchServices.REFRESH);
                 return true;
             }
             return false;
@@ -210,12 +209,16 @@ public final class Shortcuts {
      */
     private static void focusToolbar(Desktop desktop) {
         MenuSelectionManager.defaultManager().clearSelectedPath();
-        FinderWindow window = Finder.frontWindow();
-        if (window == null) {
-            Finder.beep("No window is open.");
+        // Whichever window is in front, if it is one that says where the keyboard goes.
+        // Which program's window it is does not come into it: a toolbar is a toolbar.
+        javax.swing.JInternalFrame front = desktop.activeWindow();
+        if (front == null) {
+            Desktop.beep("No window is open.");
             return;
         }
-        if (!window.focusToolbar()) Finder.beep("This window has no toolbar showing.");
+        boolean landed = front instanceof org.fractalmicro.appkit.KeyWindow window
+                      && window.focusToolbar();
+        if (!landed) Desktop.beep("This window has no toolbar showing.");
     }
 
     private static void focusDock(Desktop desktop) {

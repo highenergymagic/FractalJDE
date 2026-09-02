@@ -93,6 +93,16 @@ The images under `system/` are built in the order they depend on each other, so 
 cannot use something above it even by accident. Packages are `org.fractalmicro.*`
 throughout, matching the bundle identifiers.
 
+The Finder is one of them and not part of the screen. It was for a long time: AppKit and
+the Finder were compiled as one stage, because the Dock opened the Trash by calling into
+the file manager, the desktop icons were an AppKit class that called it back, and every
+double-click asked it what a file was. They are separate stages now, which is a stronger
+statement than a check: AppKit is compiled without the Finder on its class path, so a
+reference to it would not build. What opening a file means moved down to LaunchServices,
+where it was always a question about programs rather than about windows, and the desktop
+icons moved up into the Finder, because a view of a folder belongs to whatever draws
+folders. The screen keeps somewhere to put them and is told what goes there.
+
 ```
 system/LibSystem       win     the Windows calls, the shortcut parser
                        core    logging, the shell, startup items
@@ -108,7 +118,8 @@ system/Foundation      foundation  FMString, FMArray, FMDictionary, FMNumber, FM
 system/dyld            dyld    the loader: images, two level binding, runpaths
                        macho   reading and writing Mach-O, the linker, symbol tables
 system/launchd         launchd jobs, and Init, which is task 1
-system/LaunchServices  bundle  bundles, the images on the volume, opening a program
+system/LaunchServices  bundle  bundles, the images on the volume, and what opening a
+                               file means: a program, a folder, or the host
 system/Metadata        mds     the search index and its server
 system/AppKit          appkit      FMApplication, alerts, sheets, text, services
                        nib         interface descriptions
@@ -116,7 +127,8 @@ system/AppKit          appkit      FMApplication, alerts, sheets, text, services
                        theme       colours, fonts, drawn icons, the Swing UI delegates
                        a11y        the dumps, the keyboard test, offscreen rendering
                        menuextras  the clock, volume, network and user indicators
-system/Finder          ui, app the file manager
+system/Finder          ui      the file manager: its windows, its views, the desktop icons
+                       app     the class the system opens it through, by identifier
 system/Fractal                 Main and Boot: the session, installed as loginwindow
 ```
 
@@ -180,6 +192,12 @@ worked out at start-up.
   panels or sheets. Every application is built and shipped separately, but only Calculator
   runs in a process of its own; the rest are loaded into the desktop's process out of their
   own bundles. Each one moves out as the description protocol grows to carry what it draws.
+- The Finder and the Dock are among them, and the Finder is the furthest along: nothing
+  above it names a class in it any more, and it is compiled as its own image against
+  AppKit. What is left is that its windows cannot be described. A description carries
+  eleven kinds of control and no split view, no toolbar, no file browser and no way to
+  send a picture, and a Finder window is all four of those. The description protocol is
+  the whole of what stands between here and a Finder in a process of its own.
 - Burn folders, burning to disc and the clipboard viewer are named but do nothing.
 - `Fractal.exe` starts a session and waits for it, and does not start another if that one
   ends. That is fine started by hand and not fine as the Windows shell, where the answer

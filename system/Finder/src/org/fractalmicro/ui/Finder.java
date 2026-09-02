@@ -448,11 +448,30 @@ public final class Finder {
 
     /* ------------------------------------------------------------ helpers */
 
+    /**
+     * The icons on the desktop, which are this program's view of a folder.
+     *
+     * The screen holds it, because the screen holds everything that is drawn, but it is
+     * this program's and only this program knows what it is. Null before the desktop has
+     * been taken over, and on a screen where it never was.
+     */
+    public static DesktopIcons desktopIcons() {
+        Desktop d = Desktop.get();
+        return d != null && d.icons() instanceof DesktopIcons view ? view : null;
+    }
+
+    /** Looks at the desktop folder again, when there is a view of it to look with. */
+    public static void refreshDesktop() {
+        DesktopIcons icons = desktopIcons();
+        if (icons != null) icons.refresh();
+    }
+
     public static void refreshAll() {
         SwingUtilities.invokeLater(() -> {
             Desktop d = Desktop.get();
             if (d == null) return;
-            d.icons().refresh();
+            DesktopIcons icons = desktopIcons();
+            if (icons != null) icons.refresh();
             for (JInternalFrame f : d.windows()) {
                 if (f instanceof FinderWindow) ((FinderWindow) f).reload();
             }

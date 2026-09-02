@@ -81,12 +81,20 @@ public final class FMApplicationMain implements Bundles.Launcher {
      * the same way as opening it from outside: the code comes out of the executable in the
      * bundle, with the libraries it links behind it, and a program reaching for something
      * it did not link fails here as it would there.
+     *
+     * Unless this process is already the program, which is what a hosted program is. Then
+     * its code is here and taking a second copy out of the bundle would be two copies of
+     * every class it has: two of each static field, two of each type, and a desktop
+     * holding a control made by one of them while everything else asks the other. That is
+     * not isolation, it is a program talking to itself through a wall. A program with a
+     * process of its own has no copy here and gets the bundle's, which is the only one.
      */
     private static boolean deliver(Bundle bundle, java.util.function.Consumer<FMApplicationDelegate> what) {
         if (bundle == null) return false;
         Object instance;
         try {
-            instance = Dyld.load(bundle);
+            instance = hosted(bundle);
+            if (instance == null) instance = Dyld.load(bundle);
         } catch (Exception notLoadable) {
             org.fractalmicro.core.Log.error("could not open " + bundle.displayName(), notLoadable);
             return false;
@@ -99,6 +107,23 @@ public final class FMApplicationMain implements Bundles.Launcher {
         if (javax.swing.SwingUtilities.isEventDispatchThread()) run.run();
         else javax.swing.SwingUtilities.invokeLater(run);
         return true;
+    }
+
+    /**
+     * The program, if this process is already carrying it.
+     *
+     * Answers null when it is not, which is the ordinary case and means it comes out of
+     * its bundle.
+     */
+    private static Object hosted(Bundle bundle) {
+        String principal = bundle.principalClass().toString();
+        if (principal.isEmpty()) return null;
+        try {
+            return Class.forName(principal, true, FMApplicationMain.class.getClassLoader())
+                        .getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException | LinkageError notHere) {
+            return null;
+        }
     }
 
     /**
