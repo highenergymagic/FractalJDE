@@ -201,6 +201,10 @@ public final class SelfTest {
         int vocabularyFailures = VocabularyTest.run(System.out);
         if (vocabularyFailures > 0) failures.add(vocabularyFailures + " vocabulary checks failed");
 
+        steps += UndoTest.count();
+        int undoFailures = UndoTest.run(System.out);
+        if (undoFailures > 0) failures.add(undoFailures + " undo checks failed");
+
         steps += PlatformTest.count();
         int platformFailures = PlatformTest.run(System.out);
         if (platformFailures > 0) failures.add(platformFailures + " platform checks failed");

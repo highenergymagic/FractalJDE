@@ -78,6 +78,17 @@ public final class FinderMenus implements NibLoader.Commands {
     }
 
     /**
+     * One with no bar behind it, for asking what a command would answer.
+     *
+     * Whether a command applies is a question about the selection and the windows, not
+     * about the menus, so it can be asked without any. The checks ask it that way because
+     * the alternative is opening a menu, which needs a pointer.
+     */
+    public static FinderMenus forChecking() {
+        return new FinderMenus(Desktop.sharedDesktop());
+    }
+
+    /**
      * Reads the Finder's menus and gives them to the bar as the program in front by
      * default, so they are what shows when no other program owns it.
      *
@@ -160,11 +171,38 @@ public final class FinderMenus implements NibLoader.Commands {
             menu.addMenuListener(new javax.swing.event.MenuListener() {
                 @Override public void menuSelected(javax.swing.event.MenuEvent e) {
                     nameTheSelection();
+                    nameTheUndo();
                     sayShowOrHide();
                 }
                 @Override public void menuDeselected(javax.swing.event.MenuEvent e) { }
                 @Override public void menuCanceled(javax.swing.event.MenuEvent e) { }
             });
+        }
+    }
+
+    /**
+     * Says what Undo would undo, which is the point of an undo manager keeping names.
+     *
+     * "Undo" alone asks somebody to press a key and find out. "Undo Rename" is a promise
+     * about what is going to change, made before it changes. The two words are put together
+     * from the strings file rather than joined here, because which order they go in is not
+     * the same in every language.
+     */
+    private void nameTheUndo() {
+        JMenuItem undo = loaded.item(FMString.of("undo"));
+        JMenuItem redo = loaded.item(FMString.of("redo"));
+        org.fractalmicro.foundation.FMUndoManager manager = Finder.undoManager();
+        if (undo != null) {
+            undo.setText(manager.canUndo()
+                ? FMLocalized.filled(UNDO_NAMED,
+                      FMLocalized.of(manager.undoActionName())).toString()
+                : FMLocalized.of(UNDO_PLAIN).toString());
+        }
+        if (redo != null) {
+            redo.setText(manager.canRedo()
+                ? FMLocalized.filled(REDO_NAMED,
+                      FMLocalized.of(manager.redoActionName())).toString()
+                : FMLocalized.of(REDO_PLAIN).toString());
         }
     }
 
@@ -256,8 +294,8 @@ public final class FinderMenus implements NibLoader.Commands {
             case "find" -> Spotlight.open();
 
             /* --------------------------------------------------------------- Edit */
-            case "undo" -> beep(NOTHING_TO_UNDO);
-            case "redo" -> beep(NOTHING_TO_REDO);
+            case "undo" -> { if (!Finder.undoManager().undo()) beep(NOTHING_TO_UNDO); }
+            case "redo" -> { if (!Finder.undoManager().redo()) beep(NOTHING_TO_REDO); }
             case "cut" -> beep(NO_CUTTING);
             case "copy" -> Finder.copy(selection());
             case "paste" -> Finder.paste(currentFolder());
@@ -338,8 +376,72 @@ public final class FinderMenus implements NibLoader.Commands {
     private static final FMString GO_TO_BUTTON = FMString.of("finder.goToFolderButton");
     private static final FMString NO_SUCH_FOLDER = FMString.of("finder.noSuchFolder");
     private static final FMString CHECK_SPELLING = FMString.of("finder.checkSpelling");
+    private static final FMString UNDO_NAMED = FMString.of("finder.undoNamed");
+    private static final FMString REDO_NAMED = FMString.of("finder.redoNamed");
+    private static final FMString UNDO_PLAIN = FMString.of("finder.undoPlain");
+    private static final FMString REDO_PLAIN = FMString.of("finder.redoPlain");
 
     private static void beep(FMString key) { Finder.beep(FMLocalized.of(key).toString()); }
+
+    /* ------------------------------------------------------------- what can be done */
+
+    /**
+     * Whether a command applies right now, asked of every item as its menu opens.
+     *
+     * The rules are the ones a person would say out loud: Get Info needs something chosen,
+     * Paste needs something on the clipboard and somewhere to put it, Eject needs a disk.
+     * Most commands are not on this list, because most commands always apply and saying so
+     * for each of them would be a list of everything the Finder can do written twice.
+     *
+     * Before this, every item in every menu was black at all times. A menu that offers Undo
+     * when there is nothing to undo, and Eject when nothing is selected, is not a menu: it
+     * is a list of the program's methods with keyboard shortcuts on them.
+     */
+    @Override public boolean canPerform(FMString action) {
+        return switch (action.toString()) {
+            case "undo" -> Finder.undoManager().canUndo();
+            case "redo" -> Finder.undoManager().canRedo();
+
+            // Something has to be chosen.
+            case "open", "openWithDefault", "openWithChosen", "getInfo", "compress",
+                 "duplicate", "makeAlias", "quickLook", "addToSidebar", "moveToTrash",
+                 "print", "copy", "cleanUpSelection" -> !selection().isEmpty();
+
+            // Chosen, and of a kind the command means anything for.
+            case "showOriginal" -> isAlias(Finder.first(selection()));
+            case "eject" -> isEjectable(Finder.first(selection()));
+
+            // Somewhere to put something, and something to put.
+            case "paste" -> currentFolder() != null && Finder.hasCopiedFiles();
+            case "newFolder" -> currentFolder() != null;
+
+            // A window to do it to.
+            case "closeWindow", "goBack", "goForward", "goUp", "cleanUp", "selectAll",
+                 "viewAsIcons", "viewAsList", "viewAsColumns", "viewAsCoverFlow",
+                 "arrangeByName", "arrangeByDateModified", "arrangeBySize", "arrangeByKind",
+                 "toggleToolbar", "togglePathBar", "toggleStatusBar", "toggleSidebar",
+                 "showViewOptions" -> Finder.frontWindow() != null;
+
+            // The Trash, which is a thing rather than a selection.
+            case "emptyTrash", "secureEmptyTrash" -> !org.fractalmicro.fs.Trash.isEmpty();
+
+            // Named in the file and not built, so they say no rather than beeping later.
+            case "cut", "showClipboard", "newBurnFolder", "burnToDisc",
+                 "customizeToolbar" -> false;
+
+            default -> true;
+        };
+    }
+
+    private static boolean isAlias(Node node) {
+        return node != null && node.file != null
+            && org.fractalmicro.alias.Alias.isAlias(node.file);
+    }
+
+    private static boolean isEjectable(Node node) {
+        return node != null && node.isVolume() && node.isMounted()
+            && node.kind != Node.Kind.HARD_DISK;
+    }
 
     /* ------------------------------------------------------------------ the actions */
 

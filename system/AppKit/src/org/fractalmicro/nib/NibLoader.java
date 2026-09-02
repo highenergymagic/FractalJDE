@@ -142,6 +142,21 @@ public final class NibLoader {
 
         /** Whether a command that shows a tick has one now. False when it does not apply. */
         default boolean isOn(FMString action) { return false; }
+
+        /**
+         * Whether the command could be done right now.
+         *
+         * Asked as a menu opens, of every item in it, which is when NSMenuValidation asks
+         * and for the same reason: what can be done depends on what is selected and where
+         * the keyboard is, and both of those change constantly. Anything answering no is
+         * drawn grey and does nothing when pressed.
+         *
+         * Yes by default, because a command with no opinion is one that always applies:
+         * New Window does not care what is selected. The ones that do care say so, and
+         * saying so is the whole difference between a menu and a list of everything the
+         * program can ever do.
+         */
+        default boolean canPerform(FMString action) { return true; }
     }
 
     /**
@@ -159,10 +174,71 @@ public final class NibLoader {
             // which is the one case where being told the name matters most.
             JMenu made = new JMenu(menu.title().toString());
             fill(made, menu.items(), commands);
+            validateAsItOpens(made, commands);
             out.add(made);
         }
         return out;
     }
+
+    /**
+     * Asks the program about every item in a menu, as the menu opens.
+     *
+     * Then, rather than when the menu was built, because what can be done changes with the
+     * selection and the menu was built once at start-up. This is what NSMenuValidation is
+     * and when it runs; the alternative is every command in the program remembering to
+     * enable and disable its own menu item from everywhere that changes anything, which is
+     * how menus come to lie.
+     *
+     * A tick is asked for at the same moment and for the same reason.
+     */
+    private void validateAsItOpens(JMenu menu, Commands commands) {
+        menu.addMenuListener(new javax.swing.event.MenuListener() {
+            @Override public void menuSelected(javax.swing.event.MenuEvent e) {
+                validate(menu, commands);
+            }
+            @Override public void menuDeselected(javax.swing.event.MenuEvent e) { }
+            @Override public void menuCanceled(javax.swing.event.MenuEvent e) { }
+        });
+    }
+
+    private void validate(javax.swing.MenuElement holder, Commands commands) {
+        for (java.awt.Component child : componentsOf(holder)) {
+            if (child instanceof JMenu under) {
+                validate(under, commands);
+                // A submenu with nothing in it that can be done is one nobody should be
+                // sent into. It is the only case where a menu itself is greyed out.
+                under.setEnabled(anyEnabled(under));
+                continue;
+            }
+            if (!(child instanceof JMenuItem item)) continue;
+            Object named = item.getClientProperty(ACTION);
+            if (!(named instanceof String action) || action.isEmpty()) continue;
+            // An item the description switched off stays off. Validation says what can be
+            // done now; the description says what this program offers at all, and a
+            // command that is not offered cannot become available by being asked about.
+            boolean described = !Boolean.FALSE.equals(item.getClientProperty(DESCRIBED));
+            item.setEnabled(described && commands.canPerform(FMString.of(action)));
+            if (item instanceof JCheckBoxMenuItem box) {
+                box.setSelected(commands.isOn(FMString.of(action)));
+            }
+        }
+    }
+
+    private static java.awt.Component[] componentsOf(javax.swing.MenuElement holder) {
+        if (holder instanceof JMenu menu) return menu.getMenuComponents();
+        return new java.awt.Component[0];
+    }
+
+    private static boolean anyEnabled(JMenu menu) {
+        for (java.awt.Component child : menu.getMenuComponents()) {
+            if (child instanceof JMenuItem item && item.isEnabled()) return true;
+        }
+        return false;
+    }
+
+    /** What an item remembers about itself, so validating one is not a search for it. */
+    private static final String ACTION = "org.fractalmicro.menuAction";
+    private static final String DESCRIBED = "org.fractalmicro.menuEnabledInDescription";
 
     private void fill(JMenu into, FMArray<Nib.MenuItem> items, Commands commands) {
         for (Nib.MenuItem item : items) {
@@ -189,6 +265,8 @@ public final class NibLoader {
             : new JMenuItem(item.title().toString());
         made.addActionListener(listener);
         made.setEnabled(item.enabled());
+        made.putClientProperty(ACTION, action.toString());
+        made.putClientProperty(DESCRIBED, item.enabled());
 
         KeyStroke key = keyFor(item);
         if (key != null) made.setAccelerator(key);

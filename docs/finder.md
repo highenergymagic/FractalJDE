@@ -95,3 +95,36 @@ untouched, and letting anyone replace the file with their own build of it, is wh
 asks for. Its licence and readme travel with it.
 
 Where NVDA is not running, nothing is said and nothing breaks.
+
+## Undo, and menus that tell the truth
+
+Two things arrived together because they are the same thing seen from two ends.
+
+`FMUndoManager` is NSUndoManager: nothing in it records what happened. What is registered
+is the way back. Something about to rename a file registers the rename that would undo it,
+and a manager holding a stack of those walks backwards without knowing what any of them
+were for. Redo is that stack read the other way, and it needs no separate code: while an
+undo runs, anything it registers goes on the redo stack instead, because the way back from
+the way back is the way forward.
+
+The name goes in with the action. "Undo" alone asks somebody to press a key and find out;
+**Undo Rename** is a promise about what is going to change, made before it changes. New
+Folder, Duplicate, Make Alias, Rename and Label all register one.
+
+The other end is `canPerform`, which is NSMenuValidation. Every item in a menu is asked as
+the menu opens, which is when what can be done is actually known: it depends on the
+selection and on which window is in front, and both change constantly.
+
+Before it, every item in every menu was black at all times. With nothing selected and no
+window open, the File menu now offers New Finder Window, New Folder, New Smart Folder and
+Find, and greys out the other fifteen. That is not decoration. **A menu that offers Eject
+when nothing is selected is not a menu; it is a list of the program's methods with keyboard
+shortcuts on them,** and a person learns quickly that it cannot be trusted.
+
+Commands the description names but this version does not do, Cut and Show Clipboard among
+them, say no rather than beeping after they are chosen. The refusal belongs before the
+click.
+
+One thing is not validated yet: the Label submenu is built at run time from the labels
+somebody has used, so its items carry no action name and nothing asks about them. It stays
+black with nothing selected.

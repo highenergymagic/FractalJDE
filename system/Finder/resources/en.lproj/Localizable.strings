@@ -105,3 +105,19 @@
 "finder.pasteFailed" = "Could not paste “%1$@”.";
 
 "finder.ejectFailed" = "The disk “%1$@” could not be ejected.";
+
+/* What an undo is called in the menu. "Undo" on its own tells nobody what is about to
+   change; the whole point of naming an undo is that a person can decide before pressing
+   it. The verb is the one from the command that was done, not a description of it. */
+"finder.undoRename" = "Rename";
+"finder.undoNewFolder" = "New Folder";
+"finder.undoDuplicate" = "Duplicate";
+"finder.undoMakeAlias" = "Make Alias";
+"finder.undoLabel" = "Label";
+
+/* And how the item reads with one of those in it, since the order of the two words is
+   not the same in every language. */
+"finder.undoNamed" = "Undo %1$@";
+"finder.redoNamed" = "Redo %1$@";
+"finder.undoPlain" = "Undo";
+"finder.redoPlain" = "Redo";

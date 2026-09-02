@@ -51,6 +51,15 @@ public final class Finder {
 
     private static final List<File> clipboard = new ArrayList<>();
 
+    /**
+     * Whether there is anything to paste.
+     *
+     * The clipboard this program filled, rather than the host's. Asking the host means
+     * asking for the contents, which for a large copy is the copy, and it is asked every
+     * time the Edit menu opens.
+     */
+    public static boolean hasCopiedFiles() { return !clipboard.isEmpty(); }
+
     /* ------------------------------------------------------------- windows */
 
     public static FinderWindow newWindow(File dir) {
@@ -147,9 +156,34 @@ public final class Finder {
     public static void newFolder(File parent) {
         if (parent == null || !parent.isDirectory()) { beep(NO_FOLDER_OPEN); return; }
         File f = FS.newFolder(parent);
+        wayBack(UNDO_NEW_FOLDER, () -> removeAll(List.of(f)));
         refreshAll();
         rename(FS.node(f));
     }
+
+    /**
+     * The Finder's own way back.
+     *
+     * One for the program rather than one per window, because what it undoes is not in a
+     * window: a file renamed in one window is renamed in every window showing that folder
+     * and on the desktop as well. Cocoa puts an undo manager on a document and reaches it
+     * through the responder chain; the Finder's documents are the disk.
+     */
+    private static final org.fractalmicro.foundation.FMUndoManager UNDO =
+        new org.fractalmicro.foundation.FMUndoManager();
+
+    public static org.fractalmicro.foundation.FMUndoManager undoManager() { return UNDO; }
+
+    /** Names an undo the way a menu will say it: Undo Rename, not Undo. */
+    private static void wayBack(FMString name, Runnable how) {
+        UNDO.registerUndo(name, how);
+    }
+
+    private static final FMString UNDO_RENAME = FMString.of("finder.undoRename");
+    private static final FMString UNDO_NEW_FOLDER = FMString.of("finder.undoNewFolder");
+    private static final FMString UNDO_DUPLICATE = FMString.of("finder.undoDuplicate");
+    private static final FMString UNDO_MAKE_ALIAS = FMString.of("finder.undoMakeAlias");
+    private static final FMString UNDO_LABEL = FMString.of("finder.undoLabel");
 
     public static void rename(Node n) {
         if (n == null || n.file == null) { beep(SELECT_TO_RENAME); return; }
@@ -163,20 +197,52 @@ public final class Finder {
                        FMString.of("Please choose a different name."));
             return;
         }
-        if (!n.file.renameTo(dest)) beep(RENAME_FAILED);
+        if (!n.file.renameTo(dest)) {
+            beep(RENAME_FAILED);
+        } else {
+            // Registered after it worked, and closing over what it needs rather than over
+            // the node: the node describes a file that no longer has that name.
+            File back = n.file;
+            wayBack(UNDO_RENAME, () -> {
+                if (dest.renameTo(back)) refreshAll(); else beep(RENAME_FAILED);
+            });
+        }
         refreshAll();
     }
 
     public static void duplicate(List<Node> nodes) {
+        List<File> made = new ArrayList<>();
         for (Node n : nodes) {
             if (n.file == null) continue;
             try {
-                FS.duplicate(n.file);
+                made.add(FS.duplicate(n.file));
             } catch (IOException e) {
                 beep(FMLocalized.filled(DUPLICATE_FAILED, FMString.of(n.name)));
             }
         }
+        if (!made.isEmpty()) wayBack(UNDO_DUPLICATE, () -> removeAll(made));
         refreshAll();
+    }
+
+    /**
+     * Takes back something this program made, which is the way back from making it.
+     *
+     * Deleted rather than put in the Trash. Undoing something that made a copy should leave
+     * no trace of it, and a Trash with the copy in it is a trace: somebody would empty it
+     * later and be told they were about to lose a file they never knowingly made.
+     */
+    private static void removeAll(List<File> files) {
+        for (File one : files) {
+            if (one == null || !one.exists()) continue;
+            if (one.isDirectory()) deleteTree(one); else one.delete();
+        }
+        refreshAll();
+    }
+
+    private static void deleteTree(File file) {
+        File[] children = file.listFiles();
+        if (children != null) for (File child : children) deleteTree(child);
+        file.delete();
     }
 
     /**
@@ -186,18 +252,20 @@ public final class Finder {
      * moment the target moves.
      */
     public static void makeAlias(List<Node> nodes) {
-        int made = 0;
+        List<File> made = new ArrayList<>();
         for (Node n : nodes) {
             if (n.file == null) continue;
             try {
-                org.fractalmicro.alias.Alias.create(n.file, null);
-                made++;
+                made.add(org.fractalmicro.alias.Alias.create(n.file, null));
             } catch (IOException e) {
                 beep(FMLocalized.filled(ALIAS_FAILED, FMString.of(e.getMessage())));
                 break;
             }
         }
-        if (made > 0) refreshAll();
+        if (!made.isEmpty()) {
+            wayBack(UNDO_MAKE_ALIAS, () -> removeAll(made));
+            refreshAll();
+        }
     }
 
     /**
@@ -225,9 +293,23 @@ public final class Finder {
     /** Marks every selected item, or clears the mark when the label is none. */
     public static void label(List<Node> nodes, int label) {
         boolean everywhere = true;
+        // What each one had, taken before anything is set, because afterwards it is gone.
+        java.util.Map<File, Integer> was = new java.util.LinkedHashMap<>();
+        for (Node n : nodes) {
+            if (n.file != null) was.put(n.file, org.fractalmicro.fs.Labels.of(n.file));
+        }
         for (Node n : nodes) {
             if (n.file == null) continue;
             everywhere &= org.fractalmicro.fs.Labels.set(n.file, label);
+        }
+        if (!was.isEmpty()) {
+            wayBack(UNDO_LABEL, () -> {
+                was.forEach((file, had) -> {
+                    org.fractalmicro.fs.Labels.set(file, had);
+                    org.fractalmicro.fs.Labels.forget(file);
+                });
+                refreshAll();
+            });
         }
         if (!everywhere) {
             beep("This volume cannot hold labels on the files themselves; "

@@ -29,3 +29,15 @@
 "finder.goToFolderButton" = "Öffnen";
 "finder.noSuchFolder" = "Der Ordner „%1$@“ kann nicht gefunden werden.";
 "finder.checkSpelling" = "Überprüfen Sie die Schreibweise und versuchen Sie es erneut.";
+
+/* Was ein Widerrufen im Menü heißt. */
+"finder.undoRename" = "Umbenennen";
+"finder.undoNewFolder" = "Neuer Ordner";
+"finder.undoDuplicate" = "Duplizieren";
+"finder.undoMakeAlias" = "Alias erzeugen";
+"finder.undoLabel" = "Etikett";
+
+"finder.undoNamed" = "%1$@ widerrufen";
+"finder.redoNamed" = "%1$@ wiederholen";
+"finder.undoPlain" = "Widerrufen";
+"finder.redoPlain" = "Wiederholen";

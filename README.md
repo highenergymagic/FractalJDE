@@ -201,10 +201,12 @@ worked out at start-up.
   structure the sidebar list format really uses.
 - Windows live inside one full screen frame unless the window style setting says
   otherwise, so Windows' Alt Tab usually sees a single application.
-- A program in another process can describe a window and menus, but not yet styled text,
-  panels or sheets. Every application is built and shipped separately, but only Calculator
-  runs in a process of its own; the rest are loaded into the desktop's process out of their
-  own bundles. Each one moves out as the description protocol grows to carry what it draws.
+- A program in another process can describe a window, its menus, a sheet, and a folder shown
+  three ways. What it cannot yet describe is styled text, a path bar, or anything that can
+  be dragged. Every application is built and shipped separately, and none of them has a
+  main: the bundle names the class and the framework starts it. Only Calculator runs in a
+  process of its own; the rest are loaded into the desktop's process out of their own
+  bundles, and each moves out as the description protocol grows to carry what it draws.
 - The Finder and the Dock are among them, and the Finder is the furthest along: nothing
   above it names a class in it any more, and it is compiled as its own image against
   AppKit. A window shaped like one of its own can now be described in one message, sheets
