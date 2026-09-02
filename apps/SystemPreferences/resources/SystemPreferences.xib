@@ -83,6 +83,22 @@
                         <accessibility key="accessibilityLabel" label="Show labels behind names"/>
                         <connections><action selector="show labels"/></connections>
                     </button>
+                    <button id="spring loaded" type="check">
+                        <rect key="frame" x="178" y="120" width="420" height="22"/>
+                        <buttonCell key="cell" title="Spring-loaded folders and windows"/>
+                        <accessibility key="accessibilityLabel" label="Spring-loaded folders and windows" help="Resting a drag on a folder opens it"/>
+                        <connections><action selector="spring loaded"/></connections>
+                    </button>
+                    <textField id="spring delay label" editable="NO">
+                        <rect key="frame" x="198" y="146" width="120" height="22"/>
+                        <textFieldCell key="cell" title="Delay"/>
+                        <accessibility key="accessibilityLabel" label="Delay before a folder opens"/>
+                    </textField>
+                    <slider id="spring delay" minValue="2" maxValue="20">
+                        <rect key="frame" x="198" y="172" width="240" height="28"/>
+                        <accessibility key="accessibilityLabel" label="Delay before a folder opens" help="How long a drag rests on a folder before it opens"/>
+                        <connections><action selector="spring delay"/></connections>
+                    </slider>
                     <button id="white on black" type="check">
                         <rect key="frame" x="178" y="16" width="420" height="22"/>
                         <buttonCell key="cell" title="Use white on black"/>
@@ -100,7 +116,7 @@
                         <textFieldCell key="cell" title="Size"/>
                         <accessibility key="accessibilityLabel" label="Dock size"/>
                     </textField>
-                    <slider id="dock size">
+                    <slider id="dock size" minValue="16" maxValue="128">
                         <rect key="frame" x="178" y="68" width="240" height="28"/>
                         <accessibility key="accessibilityLabel" label="Dock size" help="How big the Dock's icons are"/>
                         <connections><action selector="dock size"/></connections>

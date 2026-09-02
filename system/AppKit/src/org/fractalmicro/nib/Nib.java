@@ -72,6 +72,17 @@ public final class Nib {
     public static final FMString VALUE = FMString.of("Value");
     public static final FMString CHOICES = FMString.of("Choices");
     public static final FMString DEFAULT_BUTTON = FMString.of("DefaultButton");
+
+    /**
+     * The two ends of a control that holds a number between them.
+     *
+     * A slider is the only control here that has them, and without them every slider in
+     * the system ran from nothing to a hundred whatever it was for. What it is set to only
+     * means something against what it can be set to, so the ends belong in the description
+     * beside the value and not in the head of whoever wrote the program.
+     */
+    public static final FMString FROM = FMString.of("From");
+    public static final FMString TO = FMString.of("To");
     /** Which control this one sits inside, when it is not the window itself. */
     public static final FMString IN = FMString.of("In");
 
@@ -271,7 +282,8 @@ public final class Nib {
     public record Control(ControlClass kind, FMString identifier, FMString name,
                           FMString description, FMString text, FMString action,
                           int x, int y, int width, int height,
-                          Object value, FMArray<FMString> choices, boolean defaultButton,
+                          Object value, double from, double to,
+                          FMArray<FMString> choices, boolean defaultButton,
                           FMString in) {
 
         /**
@@ -285,7 +297,7 @@ public final class Nib {
                        int x, int y, int width, int height,
                        Object value, FMArray<FMString> choices, boolean defaultButton) {
             this(kind, identifier, name, description, text, action, x, y, width, height,
-                 value, choices, defaultButton, FMString.EMPTY);
+                 value, 0, 100, choices, defaultButton, FMString.EMPTY);
         }
 
         /**
@@ -306,61 +318,67 @@ public final class Nib {
         public static Control of(ControlClass kind, FMString identifier) {
             return new Control(kind, identifier, FMString.EMPTY, FMString.EMPTY,
                                FMString.EMPTY, FMString.EMPTY, 0, 0, 100, 22,
-                               null, FMArray.empty(), false, FMString.EMPTY);
+                               null, 0, 100, FMArray.empty(), false, FMString.EMPTY);
         }
 
         /** What a screen reader says it is, which every control has to have. */
         public Control named(FMString name) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** And the longer sentence, for a control whose name is not the whole story. */
         public Control describedAs(FMString description) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** What is written on it, or in it: a button's label, a field's contents. */
         public Control showing(FMString text) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** What it sends back when somebody uses it. */
         public Control sending(FMString action) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
+        }
+
+    /** The two ends of a control that holds a number between them. */
+        public Control between(double from, double to) {
+            return new Control(kind, identifier, name, description, text, action,
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** Where it goes and how big it is. */
         public Control at(int x, int y, int width, int height) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** What it holds, for the controls that hold something other than words. */
         public Control holding(Object value) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** What is in it, for the ones that are a list of things. */
         public Control choosingFrom(FMArray<FMString> choices) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, in);
+                               x, y, width, height, value, from, to, choices, defaultButton, in);
         }
 
         /** The one Return presses. A window has at most one. */
         public Control asDefault() {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, true, in);
+                               x, y, width, height, value, from, to, choices, true, in);
         }
 
         /** The same control, inside the one named. */
         public Control within(FMString parent) {
             return new Control(kind, identifier, name, description, text, action,
-                               x, y, width, height, value, choices, defaultButton, parent);
+                               x, y, width, height, value, from, to, choices, defaultButton, parent);
         }
 
         /** Whether it goes in the window itself rather than inside another control. */
@@ -371,6 +389,10 @@ public final class Nib {
             out.set(CLASS, kind.className());
             out.set(IDENTIFIER, identifier);
             out.set(NAME, name);
+            if (kind == ControlClass.FMSlider) {
+                out.set(FROM, from);
+                out.set(TO, to);
+            }
             if (description != null && !description.isBlank()) out.set(DESCRIPTION, description);
             if (text != null) out.set(TEXT, text);
             if (action != null && !action.isBlank()) out.set(ACTION, action);
@@ -394,7 +416,8 @@ public final class Nib {
                 values.string(ACTION),
                 (int) values.whole(X, 0), (int) values.whole(Y, 0),
                 (int) values.whole(WIDTH, 100), (int) values.whole(HEIGHT, 22),
-                values.value(VALUE), textList(values, CHOICES),
+                values.value(VALUE), values.real(FROM, 0), values.real(TO, 100),
+                textList(values, CHOICES),
                 values.truth(DEFAULT_BUTTON, false),
                 values.string(IN));
         }

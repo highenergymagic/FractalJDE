@@ -60,7 +60,7 @@ public final class FileDrops {
     public static void install(JList<Node> list, Supplier<File> showing) {
         FMFileDragging.install(list,
             () -> filesOf(list.getSelectedValuesList()),
-            new IntoNodes(showing) {
+            new IntoNodes(list, showing) {
                 @Override protected Node nodeAt(Point where) {
                     int i = list.locationToIndex(where);
                     if (i < 0) return null;
@@ -81,7 +81,7 @@ public final class FileDrops {
                 }
                 return filesOf(chosen);
             },
-            new IntoNodes(showing) {
+            new IntoNodes(table, showing) {
                 @Override protected Node nodeAt(Point where) {
                     int row = table.rowAtPoint(where);
                     return row < 0 ? null : rowAt.apply(table.convertRowIndexToModel(row));
@@ -122,8 +122,76 @@ public final class FileDrops {
     /** A destination that reads a listing: whatever is under the pointer decides. */
     private abstract static class IntoNodes extends FMFileDragging.IntoFolders {
         private final Supplier<File> showing;
+        private final javax.swing.JComponent view;
 
-        IntoNodes(Supplier<File> showing) { this.showing = showing; }
+        IntoNodes(javax.swing.JComponent view, Supplier<File> showing) {
+            this.view = view;
+            this.showing = showing;
+        }
+
+        /* ---------------------------------------------------- springing open */
+
+        /** Where the window was before the first folder sprang open, and nothing if none has. */
+        private File before;
+        /** A window opened by springing, which is shut again rather than gone back in. */
+        private FinderWindow opened;
+
+        /**
+         * The folder resting here would open.
+         *
+         * Not the folder this view is already showing, which is what the space between the
+         * icons answers with and is not somewhere to go. Not a disk that is not in the
+         * drive either, and not a bundle, since opening one of those means running it.
+         */
+        @Override public File wouldSpringOpen(Point where) {
+            Node under = nodeAt(where);
+            if (under == null || under.file == null || !under.isContainer()) return null;
+            if (org.fractalmicro.bundle.Bundle.looksLikeBundle(under.file)) return null;
+            if (under.isVolume() && !under.isMounted()) return null;
+            return under.file;
+        }
+
+        /**
+         * Goes into it, with the drag still going.
+         *
+         * The window this view is in, where there is one. The desktop is in no window, so a
+         * folder springing open there opens one, which is what a Mac does: the desktop
+         * cannot show a folder's contents in place because it is showing the desktop.
+         */
+        @Override public void springOpen(File folder) {
+            FinderWindow window = windowOf();
+            if (window != null) {
+                if (before == null) before = window.currentFolder();
+                window.navigateTo(folder);
+                return;
+            }
+            if (opened == null) opened = Finder.newWindow(folder);
+            else opened.navigateTo(folder);
+        }
+
+        /**
+         * Puts back what springing opened, once the drag is over.
+         *
+         * A window that was already there goes back to the folder it was showing. One that
+         * springing opened is shut. Either way a drag through four folders leaves the screen
+         * as it found it, which is the whole reason a spring-loaded folder springs back.
+         */
+        @Override public void springBack() {
+            if (before != null) {
+                FinderWindow window = windowOf();
+                if (window != null) window.navigateTo(before);
+                before = null;
+            }
+            if (opened != null) {
+                opened.dispose();
+                opened = null;
+            }
+        }
+
+        private FinderWindow windowOf() {
+            return (FinderWindow) javax.swing.SwingUtilities
+                .getAncestorOfClass(FinderWindow.class, view);
+        }
 
         /** What the view is drawing at this point, or nothing where there is nothing. */
         protected abstract Node nodeAt(Point where);

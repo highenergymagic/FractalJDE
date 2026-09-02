@@ -80,6 +80,28 @@ public class FMFileDragging extends TransferHandler {
          * underneath does know, and {@link #install} listens to it.
          */
         default void aimedAt(boolean yes) {}
+
+        /**
+         * What resting the drag here would open, or nothing where resting does nothing.
+         *
+         * This is a spring-loaded folder. A person dragging a file into a folder three
+         * levels down would otherwise have to put it somewhere, open their way down, and
+         * pick it up again, all while holding something they cannot put down. Resting on a
+         * folder opens it, and the drag carries on inside.
+         */
+        default File wouldSpringOpen(Point where) { return null; }
+
+        /** Opens it, with the drag still going. */
+        default void springOpen(File folder) { }
+
+        /**
+         * Puts back whatever springing opened, once the drag is over.
+         *
+         * Called however the drag ended: dropped here, dropped elsewhere, or given up on.
+         * Without it a drag through four folders leaves four windows open, which is the
+         * thing spring loading exists to avoid.
+         */
+        default void springBack() { }
     }
 
     /**
@@ -178,21 +200,32 @@ public class FMFileDragging extends TransferHandler {
         java.awt.dnd.DropTarget target = view.getDropTarget();
         if (target == null) return;
         try {
+            FMFileDragging handler = (FMFileDragging) view.getTransferHandler();
             target.addDropTargetListener(new java.awt.dnd.DropTargetAdapter() {
                 @Override public void dragEnter(java.awt.dnd.DropTargetDragEvent e) {
                     to.aimedAt(true);
                 }
                 @Override public void dragExit(java.awt.dnd.DropTargetEvent e) {
                     to.aimedAt(false);
+                    handler.stopWaiting();
+                    to.springBack();
                 }
+                // After Swing's own listener, which is added first and is the one that
+                // performs the drop. By here the files have landed, so what springing
+                // opened can be put back.
                 @Override public void drop(java.awt.dnd.DropTargetDropEvent e) {
                     to.aimedAt(false);
+                    handler.stopWaiting();
+                    to.springBack();
                 }
             });
         } catch (java.util.TooManyListenersException alreadyWatched) {
             // One is enough, and a view set up twice is a view somebody wired twice.
         }
     }
+
+    /** What answers for this view: what a drop would do, and what resting would open. */
+    public Destination destination() { return destination; }
 
     protected FMFileDragging(Source source, Destination destination) {
         this.source = source;
@@ -228,15 +261,54 @@ public class FMFileDragging extends TransferHandler {
     @Override public boolean canImport(TransferSupport support) {
         if (destination == null || !support.isDrop()) return false;
         FMDragOperation how = whatWouldHappen(support);
+        // Asked on every twitch of the pointer, which is what makes it the place to notice
+        // that the pointer has stopped twitching.
+        watchForResting(destination.wouldSpringOpen(pointOf(support)));
         if (how != FMDragOperation.NONE) support.setDropAction(how.asSwing());
         return how != FMDragOperation.NONE;
     }
 
     @Override public boolean importData(TransferSupport support) {
         if (destination == null || !support.isDrop()) return false;
+        stopWaiting();
         FMDragOperation how = whatWouldHappen(support);
         if (how == FMDragOperation.NONE) return false;
         return destination.take(pointOf(support), filesIn(support), how);
+    }
+
+    /* ------------------------------------------------------- resting on a folder */
+
+    private javax.swing.Timer resting;
+    private File restingOn;
+
+    /**
+     * Notices that the pointer has stopped over something that would open.
+     *
+     * The clock starts again every time the answer changes, so crossing four folders on the
+     * way to a fifth opens none of them: what counts is resting, and moving off something
+     * and back onto it is not resting on it. Nothing happens at all while the answer is
+     * nothing, which is most of a drag.
+     */
+    private void watchForResting(File wouldOpen) {
+        if (java.util.Objects.equals(wouldOpen, restingOn)) return;
+        restingOn = wouldOpen;
+        stopWaiting();
+        if (wouldOpen == null) return;
+        int delay = (int) Math.round(
+            org.fractalmicro.os.FinderSettings.springDelay() * 1000);
+        if (!org.fractalmicro.os.FinderSettings.springLoaded()) return;
+        resting = new javax.swing.Timer(delay, e -> {
+            stopWaiting();
+            File open = restingOn;
+            if (open != null) destination.springOpen(open);
+        });
+        resting.setRepeats(false);
+        resting.start();
+    }
+
+    private void stopWaiting() {
+        if (resting != null) resting.stop();
+        resting = null;
     }
 
     private FMDragOperation whatWouldHappen(TransferSupport support) {

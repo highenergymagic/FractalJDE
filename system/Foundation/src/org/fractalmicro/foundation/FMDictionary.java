@@ -122,6 +122,12 @@ public class FMDictionary {
         return found == null ? fallback : found.asWhole();
     }
 
+    /** The same, for a number that is not a whole one: a delay, a fraction, a size. */
+    public double real(FMString key, double fallback) {
+        FMNumber found = number(key, null);
+        return found == null ? fallback : found.asReal();
+    }
+
     /** The dictionary under a name, for a property list holding another one. */
     public FMDictionary dictionary(FMString key) {
         return adopting(values.get(key)) instanceof FMDictionary inner ? inner : EMPTY;

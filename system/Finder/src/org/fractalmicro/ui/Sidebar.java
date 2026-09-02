@@ -202,6 +202,28 @@ public class Sidebar extends JScrollPane {
                 return file != null && file.isDirectory() ? file : null;
             }
 
+            // Resting on a place goes there, the same as resting on a folder in a window.
+            // Not while the pointer is near a row's edge, where letting go would add to the
+            // list instead: springing open somewhere a drop would not go is a window that
+            // moved for no reason.
+            @Override public File wouldSpringOpen(Point where) {
+                return wouldJoinTheList(where) ? null : folderAt(where);
+            }
+
+            @Override public void springOpen(File folder) {
+                FinderWindow window = enclosingWindow();
+                if (window == null) return;
+                if (before == null) before = window.currentFolder();
+                window.navigateTo(folder);
+            }
+
+            @Override public void springBack() {
+                if (before == null) return;
+                FinderWindow window = enclosingWindow();
+                if (window != null) window.navigateTo(before);
+                before = null;
+            }
+
             @Override protected boolean receive(List<File> files, File into, FMDragOperation how) {
                 return Finder.receiveDrop(files, into, how);
             }
@@ -215,6 +237,10 @@ public class Sidebar extends JScrollPane {
      * True near the top or bottom edge of a row, and true anywhere below the last one,
      * which is the empty part of the sidebar and the easiest place to aim for.
      */
+    private FinderWindow enclosingWindow() {
+        return (FinderWindow) SwingUtilities.getAncestorOfClass(FinderWindow.class, table);
+    }
+
     private boolean wouldJoinTheList(Point where) {
         int row = table.rowAtPoint(where);
         if (row < 0) return true;
@@ -374,6 +400,9 @@ public class Sidebar extends JScrollPane {
      */
     private boolean insertingHere;
     private int insertAbove = -1;
+
+    /** Where the window was before resting on a place moved it. */
+    private File before;
 
     private void showInsertion(Point where) {
         boolean inserting = where != null && wouldJoinTheList(where);

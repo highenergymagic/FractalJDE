@@ -219,7 +219,10 @@ public final class Xib {
             FMString.of(action == null ? "" : text(action, "selector", "")),
             number(frame, "x", 0), number(frame, "y", 0),
             number(frame, "width", 100), number(frame, "height", 22),
-            null, choices.asArray(), isDefault);
+            // A slider says where its two ends are, the way a nib always has. Anything
+            // else has no use for them and gets the pair everything used to have.
+            null, number(e, "minValue", 0), number(e, "maxValue", 100),
+            choices.asArray(), isDefault, FMString.EMPTY);
     }
 
     private static Nib.ControlClass kindOf(Element e) {
@@ -475,7 +478,7 @@ public final class Xib {
                 said(table, c.identifier(), "accessibilityHelp", c.description()),
                 c.text() == null ? null : said(table, c.identifier(), "title", c.text()),
                 c.action(), c.x(), c.y(), c.width(), c.height(), c.value(),
-                c.choices(), c.defaultButton()));
+                c.from(), c.to(), c.choices(), c.defaultButton(), c.in()));
         }
 
         FMMutableArray<Nib.Menu> menus = FMMutableArray.empty();

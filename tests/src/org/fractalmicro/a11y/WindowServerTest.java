@@ -50,7 +50,7 @@ import java.util.List;
 public final class WindowServerTest {
     private WindowServerTest() {}
 
-    public static int count() { return 17; }
+    public static int count() { return 19; }
 
     public static int run(Desktop desktop, PrintStream out) {
         int failures = 0;
@@ -67,6 +67,12 @@ public final class WindowServerTest {
             .button(FMString.of("more"), FMString.of("More"), FMString.of("increase"), 190, 60, 100, 24, true)
             .add(ControlClass.FMProgressIndicator, FMString.of("bar"), FMString.of("How far"), FMString.EMPTY,
                  20, 110, 270, 16)
+            .add(Nib.Control.of(ControlClass.FMCheckBox, FMString.of("ticked"))
+                    .named(FMString.of("Ticked")).showing(FMString.of("Ticked"))
+                    .at(20, 132, 200, 22))
+            .add(Nib.Control.of(ControlClass.FMSlider, FMString.of("how long"))
+                    .named(FMString.of("How long")).between(2, 20)
+                    .at(20, 158, 200, 28))
             .build();
 
         try {
@@ -123,6 +129,25 @@ public final class WindowServerTest {
             drain();
             failures += check(out, "a value of another kind arrives too",
                 app.valueOf(FMString.of("bar")).sameAs(FMString.of("60")));
+
+            // A tick, set from a truth written as a number, which is what a program sending
+            // a setting sends. It used to take only a boolean or the word, so every
+            // checkbox in System Preferences came up clear whatever the setting said.
+            app.setValue(FMString.of("how long"), org.fractalmicro.foundation.FMNumber.of(5L));
+            app.setValue(FMString.of("ticked"), org.fractalmicro.foundation.FMNumber.of(true));
+            drain();
+            javax.swing.JCheckBox box = (javax.swing.JCheckBox) componentNamed(frame, "Ticked");
+            failures += check(out, "a tick set from a truth written as a number is ticked",
+                box != null && box.isSelected());
+
+            // And a slider drawn between the ends its description gave it, rather than
+            // between nought and a hundred, which had every slider in the system holding a
+            // number that meant nothing against where the knob was.
+            javax.swing.JSlider slider =
+                (javax.swing.JSlider) componentNamed(frame, "How long");
+            failures += check(out, "a slider runs between the ends it was described with",
+                slider != null && slider.getMinimum() == 2 && slider.getMaximum() == 20
+                && slider.getValue() == 5);
 
             app.setEnabled(FMString.of("more"), false);
             drain();

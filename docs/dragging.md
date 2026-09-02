@@ -58,6 +58,33 @@ nothing, though copying it there is Duplicate and is allowed.
 A refusal is a pointer that will not take. That is the only warning worth giving, because it
 arrives while the mouse is still down and costs nothing to heed.
 
+## Spring-loaded folders
+
+Resting a drag on a folder opens it, and the drag carries on inside. Without it, filing
+something three levels down means putting it somewhere, opening your way down, and picking
+it up again, all while holding something you cannot put down.
+
+The clock starts again every time the answer changes, so crossing four folders on the way to
+a fifth opens none of them. What counts is resting: moving off something and back onto it is
+not resting on it.
+
+Where it opens depends on where the drag is. A window goes into the folder. The sidebar
+takes its window to the place, unless the pointer is near a row's edge, where letting go
+would add to the list instead and springing open would move a window for no reason. The
+desktop has no window to reuse, so it opens one.
+
+However the drag ends, whether it was dropped there, dropped somewhere else, or given up on,
+what springing opened is put back: a window that was already there returns to the folder it
+was showing, and one that springing opened is shut. That half is the half people notice.
+Without it a drag through four folders leaves four windows open, which is the thing spring
+loading exists to save them from.
+
+It is on by default with a delay of half a second, both in Finder → Preferences → Advanced
+and under the names Mac OS X keeps them at, `SpringingEnabled` and `SpringingDelay`. The
+delay is held between a fifth of a second and two: below the first a folder opens while
+somebody is still crossing it on the way to somewhere else, and above the second nobody
+waits long enough to find out that it would have.
+
 ## Replacing
 
 Dropping something onto a folder that already has a file of that name asks first, and the

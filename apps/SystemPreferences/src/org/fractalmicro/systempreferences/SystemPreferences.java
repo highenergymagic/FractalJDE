@@ -50,13 +50,15 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
     private static final FMString PANES = FMString.of("panes");
 
     /**
-     * One switch: what it is called, what it reads, and what it writes.
+     * One switch: which control it is, which pane it is on, and what it reads and writes.
      *
-     * Keeping the two halves together is the point. A checkbox whose label and whose
-     * setting are written in different places is a checkbox that eventually says one thing
-     * and does another.
+     * No words. The words are in the interface file, which is the one place they can be
+     * read by somebody translating and the one place a person looking for them would think
+     * to look. They used to be here as well, in a field nothing ever read, which is worse
+     * than either: two copies of a label that can disagree, and no way to tell which of
+     * them is the one on the screen.
      */
-    private record Switch(FMString id, FMString label, FMString pane,
+    private record Switch(FMString id, FMString pane,
                           java.util.function.BooleanSupplier reads,
                           java.util.function.Consumer<Boolean> writes) {}
 
@@ -70,47 +72,60 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
         FMArray.of(DESKTOP, SIDEBAR, ADVANCED, APPEARANCE, DOCK);
 
     private static final Switch[] SWITCHES = {
-        sw(FMString.of("hard disks"), FMString.of("Hard disks on the desktop"), DESKTOP,
+        sw(FMString.of("hard disks"), DESKTOP,
            FinderSettings::showHardDisks, FinderSettings::setShowHardDisks),
-        sw(FMString.of("external disks"), FMString.of("External disks on the desktop"), DESKTOP,
+        sw(FMString.of("external disks"), DESKTOP,
            FinderSettings::showExternalDisks, FinderSettings::setShowExternalDisks),
-        sw(FMString.of("removable media"), FMString.of("CDs, DVDs and iPods on the desktop"), DESKTOP,
+        sw(FMString.of("removable media"), DESKTOP,
            FinderSettings::showRemovableMedia, FinderSettings::setShowRemovableMedia),
-        sw(FMString.of("servers"), FMString.of("Connected servers on the desktop"), DESKTOP,
+        sw(FMString.of("servers"), DESKTOP,
            FinderSettings::showServers, FinderSettings::setShowServers),
 
-        sw(FMString.of("sidebar devices"), FMString.of("Devices in the sidebar"), SIDEBAR,
+        sw(FMString.of("sidebar devices"), SIDEBAR,
            FinderSettings::sidebarShowDevices, FinderSettings::setSidebarShowDevices),
-        sw(FMString.of("sidebar places"), FMString.of("Places in the sidebar"), SIDEBAR,
+        sw(FMString.of("sidebar places"), SIDEBAR,
            FinderSettings::sidebarShowPlaces, FinderSettings::setSidebarShowPlaces),
-        sw(FMString.of("sidebar search"), FMString.of("Search For in the sidebar"), SIDEBAR,
+        sw(FMString.of("sidebar search"), SIDEBAR,
            FinderSettings::sidebarShowSearch, FinderSettings::setSidebarShowSearch),
 
-        sw(FMString.of("all extensions"), FMString.of("Show all filename extensions"), ADVANCED,
+        sw(FMString.of("all extensions"), ADVANCED,
            FinderSettings::showAllExtensions, FinderSettings::setShowAllExtensions),
-        sw(FMString.of("warn on trash"), FMString.of("Show warning before emptying the Trash"), ADVANCED,
+        sw(FMString.of("warn on trash"), ADVANCED,
            FinderSettings::warnOnEmptyTrash, FinderSettings::setWarnOnEmptyTrash),
-        sw(FMString.of("system icons"), FMString.of("Use Windows icons for applications"), ADVANCED,
+        sw(FMString.of("system icons"), ADVANCED,
            FinderSettings::systemIconsForApplications,
            FinderSettings::setSystemIconsForApplications),
-        sw(FMString.of("show labels"), FMString.of("Show labels behind names"), ADVANCED,
+        sw(FMString.of("show labels"), ADVANCED,
            FinderSettings::showLabels, FinderSettings::setShowLabels),
+        sw(FMString.of("spring loaded"), ADVANCED,
+           FinderSettings::springLoaded, FinderSettings::setSpringLoaded),
 
-        sw(FMString.of("white on black"), FMString.of("Use white on black"), APPEARANCE,
+        sw(FMString.of("white on black"), APPEARANCE,
            FinderSettings::highContrast, FinderSettings::setHighContrast),
 
-        sw(FMString.of("magnification"), FMString.of("Magnification"), DOCK,
+        sw(FMString.of("magnification"), DOCK,
            DockSettings::magnification, DockSettings::setMagnification),
     };
 
-    private static Switch sw(FMString id, FMString label, FMString pane,
+    private static Switch sw(FMString id, FMString pane,
                              java.util.function.BooleanSupplier reads,
                              java.util.function.Consumer<Boolean> writes) {
-        return new Switch(id, label, pane, reads, writes);
+        return new Switch(id, pane, reads, writes);
     }
 
     /** The one control that is not a switch: how big the Dock's tiles are. */
     private static final FMString DOCK_SIZE = FMString.of("dock size");
+
+    /**
+     * How long a drag rests on a folder before it opens.
+     *
+     * A slider rather than a number, because nobody knows what they want this to be in
+     * milliseconds and everybody knows whether folders are opening too eagerly. It is set
+     * in tenths of a second, so what the slider is holding is the setting and not a
+     * position that has to be turned into one.
+     */
+    private static final FMString SPRING_DELAY = FMString.of("spring delay");
+    private static final FMString SPRING_DELAY_LABEL = FMString.of("spring delay label");
 
     private final FMApplication app = FMApplication.sharedApplication();
 
@@ -139,6 +154,13 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
             if (size != null) DockSettings.setTileSize(size.asInteger());
         });
 
+        app.setValue(SPRING_DELAY,
+                     FMNumber.of((int) Math.round(FinderSettings.springDelay() * 10)));
+        app.on(SPRING_DELAY, event -> {
+            FMNumber tenths = FMNumber.parsing(event.text());
+            if (tenths != null) FinderSettings.setSpringDelay(tenths.asInteger() / 10.0);
+        });
+
         app.on(PANES, event -> showPane(event.text()));
         app.on(FMString.of("quit"), event -> app.stop());
         app.on(FMString.of("close"), event -> app.stop());
@@ -154,6 +176,8 @@ public final class SystemPreferences implements org.fractalmicro.appkit.FMApplic
         }
         app.setVisible(DOCK_SIZE, DOCK.sameAs(wanted));
         app.setVisible(FMString.of("dock size label"), DOCK.sameAs(wanted));
+        app.setVisible(SPRING_DELAY, ADVANCED.sameAs(wanted));
+        app.setVisible(SPRING_DELAY_LABEL, ADVANCED.sameAs(wanted));
     }
 
     /* ------------------------------------------------------------- the description */

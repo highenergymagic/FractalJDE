@@ -58,6 +58,18 @@ public final class FinderSettings {
     public static final FMString SHOW_SIDEBAR         = FMString.of("ShowSidebar");
     public static final FMString SHOW_TOOLBAR         = FMString.of("ShowToolbar");
     public static final FMString SIDEBAR_WIDTH        = FMString.of("SidebarWidth");
+
+    /**
+     * Spring-loaded folders, and how long a drag has to rest on one before it opens.
+     *
+     * The names are the ones Mac OS X keeps them under, so a person who knows what to type
+     * at a shell can turn it off the way they always have. The delay is a fraction of a
+     * second and is written as one rather than as a slider position, because what the slider
+     * sets is a length of time and a number that means "third notch" is a number nothing
+     * else can read.
+     */
+    public static final FMString SPRING_LOADED        = FMString.of("SpringingEnabled");
+    public static final FMString SPRING_DELAY         = FMString.of("SpringingDelay");
     public static final FMString SORT_FOLDERS_FIRST   = FMString.of("_FXSortFoldersFirst");
     public static final FMString DESKTOP_VIEW         = FMString.of("DesktopViewSettings");
     public static final FMString STANDARD_VIEW        = FMString.of("StandardViewSettings");
@@ -106,6 +118,8 @@ public final class FinderSettings {
         f.applyDefault(SHOW_TOOLBAR, Boolean.TRUE);
         f.applyDefault(SIDEBAR_WIDTH, 180L);
         f.applyDefault(SORT_FOLDERS_FIRST, Boolean.TRUE);
+        f.applyDefault(SPRING_LOADED, Boolean.TRUE);
+        f.applyDefault(SPRING_DELAY, 0.5d);
         f.save();
 
         FMUserDefaults g = global();
@@ -244,6 +258,22 @@ public final class FinderSettings {
     }
 
     public static boolean sortFoldersFirst() { return finder().bool(SORT_FOLDERS_FIRST, true); }
+
+    /** Whether resting a drag on a folder opens it. */
+    public static boolean springLoaded() { return finder().bool(SPRING_LOADED, true); }
+    public static void setSpringLoaded(boolean on) { finder().set(SPRING_LOADED, on); }
+
+    /**
+     * How long a drag rests on a folder before it opens, in seconds.
+     *
+     * Held between a fifth of a second and two, because below the first a folder opens
+     * while somebody is still crossing it on the way to somewhere else, and above the
+     * second nobody waits long enough to find out that it would have.
+     */
+    public static double springDelay() {
+        return Math.max(0.2, Math.min(2.0, finder().real(SPRING_DELAY, 0.5)));
+    }
+    public static void setSpringDelay(double seconds) { finder().set(SPRING_DELAY, seconds); }
 
     /** Whether the label colours are drawn behind file names. */
     public static boolean showLabels()    { return finder().bool(SHOW_LABELS, true); }

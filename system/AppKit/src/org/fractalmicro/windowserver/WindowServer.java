@@ -677,8 +677,16 @@ public final class WindowServer {
                 return popup;
             }
             case FMSlider -> {
-                JSlider slider = new JSlider(0, 100,
-                    control.value() instanceof Number n ? n.intValue() : 50);
+                // Between the ends the description gave it. Everything used to run from
+                // nothing to a hundred, so a slider set to five sat hard against its left
+                // end and looked broken however right the number was.
+                int least = (int) Math.round(control.from());
+                int most = (int) Math.round(control.to());
+                if (most <= least) most = least + 1;
+                JSlider slider = new JSlider(least, most,
+                    control.value() instanceof Number n
+                        ? Math.max(least, Math.min(most, n.intValue()))
+                        : (least + most) / 2);
                 slider.addChangeListener(e -> {
                     if (!slider.getValueIsAdjusting()) {
                         post(window.application, actionEvent(window, control).put("value", (long) slider.getValue()));
@@ -811,7 +819,23 @@ public final class WindowServer {
             .put("action", control.action() == null ? "" : control.action());
     }
 
+    /**
+     * Whether the value in a control is being set by the program that owns it.
+     *
+     * A control that has been given a value has not been used, and telling the program
+     * otherwise is telling it a person did something they did not. Worse, it comes back to
+     * the program that just set it: a window that fills its controls in when it opens would
+     * hear that every one of them had been used, and a program that writes a setting when it
+     * hears that would write all of them back over themselves.
+     *
+     * Cocoa has the same rule and states it the same way: setting a control does not send
+     * its action. One flag rather than one per control, because every one of these happens
+     * on the thread that draws and nothing else can be between them.
+     */
+    private boolean settingFromTheProgram;
+
     private void post(String application, Message event) {
+        if (settingFromTheProgram) return;
         deliver(application, event);
     }
 
@@ -1120,7 +1144,34 @@ public final class WindowServer {
             .put("from", (long) where[0]).put("to", (long) where[1]).put("text", text[0]);
     }
 
+    /**
+     * Whether a value crossing the boundary means yes.
+     *
+     * A tick is a truth, and a truth travels as any of the things a truth is written as: a
+     * boolean, a number that is not nought, or one of the words. Property lists have always
+     * had both `<true/>` and `1` and have always meant the same by them.
+     *
+     * It used to take only the boolean and the word, and a program sending a number sent a
+     * tick that never appeared. Every checkbox in System Preferences came up clear whatever
+     * the setting behind it said, which read as a program that had forgotten its settings.
+     */
+    private static boolean isTrue(Object value, String text) {
+        if (value instanceof Boolean truth) return truth;
+        if (value instanceof Number number) return number.doubleValue() != 0;
+        return "true".equalsIgnoreCase(text) || "yes".equalsIgnoreCase(text)
+            || "1".equals(text.trim());
+    }
+
     private void apply(JComponent control, Object value) {
+        settingFromTheProgram = true;
+        try {
+            fill(control, value);
+        } finally {
+            settingFromTheProgram = false;
+        }
+    }
+
+    private void fill(JComponent control, Object value) {
         String text = value == null ? "" : String.valueOf(value);
         if (control instanceof javax.swing.JTextPane pane) {
             setRich(pane, text);
@@ -1129,7 +1180,7 @@ public final class WindowServer {
         } else if (control instanceof JLabel label) {
             label.setText(text);
         } else if (control instanceof JCheckBox box) {
-            box.setSelected(Boolean.TRUE.equals(value) || "true".equalsIgnoreCase(text));
+            box.setSelected(isTrue(value, text));
         } else if (control instanceof JProgressBar bar) {
             bar.setValue(value instanceof Number n ? n.intValue() : 0);
         } else if (control instanceof JSlider slider) {

@@ -53,7 +53,7 @@ import java.util.List;
 public final class DragTest {
     private DragTest() {}
 
-    public static int count() { return 26; }
+    public static int count() { return 32; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -65,6 +65,7 @@ public final class DragTest {
         failures += checkTheBoard(out);
         failures += checkDoingIt(out);
         failures += checkTheViewsAreWiredUp(out);
+        failures += checkSpringing(out);
 
         out.println("      " + (failures == 0 ? "files go where they are dropped"
                                               : failures + " failed"));
@@ -356,6 +357,129 @@ public final class DragTest {
             }
             if (child instanceof java.awt.Container inside) collect(inside, wired, unwired);
         }
+    }
+
+    /* ------------------------------------------------------------- springing open */
+
+    /**
+     * Spring-loaded folders: resting a drag on one opens it, and the window goes back
+     * afterwards.
+     *
+     * The clock is a timer and what it does when it fires is the part worth checking, so
+     * this asks the view's own destination the two questions the timer asks it: what would
+     * resting here open, and open it. Then it ends the drag the way the drop target does
+     * and looks at where the window is.
+     *
+     * The going back is the half people notice. Without it a drag through four folders
+     * leaves four windows open, which is the thing spring loading exists to save them from,
+     * and it is the half that is easy to leave out because the opening looks finished.
+     */
+    private static int checkSpringing(PrintStream out) {
+        int failures = 0;
+
+        failures += check(out, "resting on a folder opens it, unless it is turned off",
+            org.fractalmicro.os.FinderSettings.springLoaded());
+        double delay = org.fractalmicro.os.FinderSettings.springDelay();
+        failures += check(out, "and the wait is a length of time somebody would wait",
+            delay >= 0.2 && delay <= 2.0);
+
+        Path root;
+        try {
+            root = Files.createTempDirectory("fractal-spring-check");
+        } catch (Exception e) {
+            out.println("FAIL  a folder to work in: " + e);
+            return failures + 4;
+        }
+
+        org.fractalmicro.ui.FinderWindow window = null;
+        try {
+            File inside = new File(root.toFile(), "Inside");
+            inside.mkdirs();
+            File document = new File(root.toFile(), "Report.txt");
+            Files.writeString(document.toPath(), "a report");
+
+            window = org.fractalmicro.ui.Finder.newWindow(root.toFile());
+            window.setViewMode("List");
+            drain();
+
+            javax.swing.JTable rows = tableIn(window);
+            FMFileDragging dragging = rows == null ? null
+                : (FMFileDragging) rows.getTransferHandler();
+            if (dragging == null) {
+                out.println("FAIL  the view a drag would rest on");
+                return failures + 4;
+            }
+            FMFileDragging.Destination view = dragging.destination();
+
+            Point onTheFolder = middleOfRowShowing(rows, "Inside");
+            Point onTheFile = middleOfRowShowing(rows, "Report.txt");
+            failures += check(out, "a folder is something resting would open",
+                onTheFolder != null && inside.equals(view.wouldSpringOpen(onTheFolder)));
+            failures += check(out, "and a file is not",
+                onTheFile == null || view.wouldSpringOpen(onTheFile) == null);
+
+            view.springOpen(inside);
+            drain();
+            failures += check(out, "opening it takes the window into it",
+                inside.equals(window.currentFolder()));
+
+            view.springBack();
+            drain();
+            failures += check(out, "and the window goes back when the drag is over",
+                root.toFile().equals(window.currentFolder()));
+        } catch (Exception e) {
+            out.println("FAIL  spring-loaded folders: " + e);
+            failures++;
+        } finally {
+            if (window != null) window.dispose();
+            deleteTree(root.toFile());
+        }
+        return failures;
+    }
+
+    /**
+     * The table list view shows its files in.
+     *
+     * Told from the sidebar by having more than one column, since the sidebar is a table as
+     * well and takes drags as well. Asking the sidebar these questions would get the
+     * sidebar's answers, which are about places rather than about what is in the folder.
+     */
+    private static javax.swing.JTable tableIn(java.awt.Container from) {
+        for (java.awt.Component child : from.getComponents()) {
+            if (child instanceof javax.swing.JTable table
+                    && table.getTransferHandler() instanceof FMFileDragging
+                    && table.getColumnCount() > 1
+                    && table.getRowCount() > 0) {
+                return table;
+            }
+            if (child instanceof java.awt.Container inside) {
+                javax.swing.JTable found = tableIn(inside);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    /** A point in the middle of the row showing this name, or nothing if it shows none. */
+    private static Point middleOfRowShowing(javax.swing.JTable table, String name) {
+        for (int row = 0; row < table.getRowCount(); row++) {
+            Object value = table.getValueAt(row, 0);
+            // The cell holds the file itself, not its name: a listing draws a row from the
+            // whole of what it is showing, and the name is one of the things it draws.
+            String showing = value instanceof org.fractalmicro.fs.Node node
+                ? node.name : String.valueOf(value);
+            if (value == null || !name.equals(showing)) continue;
+            java.awt.Rectangle cell = table.getCellRect(row, 0, true);
+            return new Point(cell.x + cell.width / 2, cell.y + cell.height / 2);
+        }
+        return null;
+    }
+
+    /** Lets the screen catch up, since a window is laid out on the main thread. */
+    private static void drain() {
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+        } catch (Exception ignored) { }
     }
 
     /* ----------------------------------------------------------------- plumbing */
