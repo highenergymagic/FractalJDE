@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.windowserver;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.fs.Node;
@@ -70,20 +72,21 @@ public class AboutWindow extends JInternalFrame {
 
         p.add(centred(SystemProfile.OS_NAME, Aqua.titleFont().deriveFont(Font.PLAIN, 24f)));
         p.add(Box.createVerticalStrut(2));
-        p.add(centred(SystemProfile.OS_LONG_NAME, Aqua.smallFont()));
-        p.add(centred("Version " + SystemProfile.version()
-            + " (" + SystemProfile.build() + ")", Aqua.smallFont()));
+        p.add(centred(SystemProfile.longName(), Aqua.smallFont()));
+        p.add(centred(FMLocalized.filled(FMString.of("about.version"),
+            FMString.of(SystemProfile.version()), FMString.of(SystemProfile.build())).toString(), Aqua.smallFont()));
         p.add(Box.createVerticalStrut(14));
 
         // The facts go in a table, which is what they are: rows of name and value, each
         // the rows, which a column of labels does not allow.
         String[][] rows = {
-            {"Processor", SystemProfile.processor()},
-            {"Memory", SystemProfile.memory()},
-            {"Startup Disk", SystemProfile.startupDisk()},
+            {FMLocalized.of(FMString.of("about.processor")).toString(), SystemProfile.processor()},
+            {FMLocalized.of(FMString.of("about.memory")).toString(), SystemProfile.memory()},
+            {FMLocalized.of(FMString.of("about.startupDisk")).toString(), SystemProfile.startupDisk()},
         };
         javax.swing.table.DefaultTableModel model =
-            new javax.swing.table.DefaultTableModel(rows, new String[]{"Item", "Value"}) {
+            new javax.swing.table.DefaultTableModel(rows, new String[]{
+                FMLocalized.of(FMString.of("about.item")).toString(), FMLocalized.of(FMString.of("about.value")).toString()}) {
                 @Override public boolean isCellEditable(int r, int c) { return false; }
             };
         JTable table = new JTable(model);
@@ -94,7 +97,7 @@ public class AboutWindow extends JInternalFrame {
         table.setTableHeader(null);
         table.setBackground(Color.WHITE);
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
-        table.getAccessibleContext().setAccessibleName("System information");
+        table.getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("about.systemInformation")).toString());
         table.setPreferredScrollableViewportSize(new Dimension(320, 64));
         JPanel facts = new JPanel(new BorderLayout());
         facts.setOpaque(false);
@@ -104,16 +107,17 @@ public class AboutWindow extends JInternalFrame {
         p.add(facts);
 
         p.add(Box.createVerticalStrut(16));
-        JButton more = new JButton("More Info…");
+        JButton more = new JButton(FMLocalized.of(FMString.of("about.moreInfo")).toString());
         more.setAlignmentX(Component.CENTER_ALIGNMENT);
         more.addActionListener(e ->
             org.fractalmicro.bundle.Bundles.openIdentifier("org.fractalmicro.systemprofiler"));
         p.add(more);
 
         p.add(Box.createVerticalStrut(12));
-        p.add(centred(SystemProfile.VENDOR, Aqua.smallFont()));
+        p.add(centred(SystemProfile.vendor(), Aqua.smallFont()));
 
-        Desktop.sharedDesktop().addWindow(new AboutWindow("About This Computer", p, 400, 380));
+        Desktop.sharedDesktop().addWindow(
+            new AboutWindow(FMLocalized.of(FMString.of("about.thisComputer")).toString(), p, 400, 380));
     }
 
     public static void showAboutFinder() {
@@ -126,9 +130,10 @@ public class AboutWindow extends JInternalFrame {
         p.add(icon);
         p.add(Box.createVerticalStrut(8));
         p.add(centred("Finder", Aqua.titleFont().deriveFont(Font.PLAIN, 18f)));
-        p.add(centred("Version " + SystemProfile.version()
-            + " (" + SystemProfile.build() + ")", Aqua.smallFont()));
-        Desktop.sharedDesktop().addWindow(new AboutWindow("About Finder", p, 320, 240));
+        p.add(centred(FMLocalized.filled(FMString.of("about.version"),
+            FMString.of(SystemProfile.version()), FMString.of(SystemProfile.build())).toString(), Aqua.smallFont()));
+        Desktop.sharedDesktop().addWindow(
+            new AboutWindow(FMLocalized.of(FMString.of("about.finder")).toString(), p, 320, 240));
     }
 
     /** The same panel for any other program, named for whichever one asked. */
@@ -144,11 +149,13 @@ public class AboutWindow extends JInternalFrame {
         p.add(icon);
         p.add(Box.createVerticalStrut(8));
         p.add(centred(application, Aqua.titleFont().deriveFont(Font.PLAIN, 18f)));
-        p.add(centred("Version " + SystemProfile.version()
-            + " (" + SystemProfile.build() + ")", Aqua.smallFont()));
+        p.add(centred(FMLocalized.filled(FMString.of("about.version"),
+            FMString.of(SystemProfile.version()), FMString.of(SystemProfile.build())).toString(), Aqua.smallFont()));
         p.add(Box.createVerticalStrut(12));
-        p.add(centred(SystemProfile.VENDOR, Aqua.smallFont()));
-        Desktop.sharedDesktop().addWindow(new AboutWindow("About " + application, p, 320, 260));
+        p.add(centred(SystemProfile.vendor(), Aqua.smallFont()));
+        Desktop.sharedDesktop().addWindow(new AboutWindow(
+            FMLocalized.filled(FMString.of("menu.about"), FMString.of(application)).toString(),
+            p, 320, 260));
     }
 
     private static JLabel centred(String text, Font font) {

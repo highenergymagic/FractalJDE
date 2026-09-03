@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.menuextras;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.appkit.FMMenuExtra;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.foundation.FMString;
@@ -39,7 +40,7 @@ public final class ClockExtra implements FMMenuExtra {
     @Override public int position() { return 0; }
 
     @Override public JMenu menu() {
-        menu.add(MainMenu.item("Open Date & Time Preferences…", null,
+        menu.add(MainMenu.item(FMLocalized.of(FMString.of("extra.dateAndTimePreferences")).toString(), null,
                                e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
         tick();
         Timer every = new Timer(1000, e -> tick());
@@ -49,7 +50,10 @@ public final class ClockExtra implements FMMenuExtra {
 
     /** The time as the menu bar writes it. Only touched when the minute changes. */
     private void tick() {
-        String text = new java.text.SimpleDateFormat("EEE h:mm a")
+        // The pattern is words as much as the words are: a language that writes the
+        // day after the time, or the hour on a 24 clock, needs a different one.
+        String text = new java.text.SimpleDateFormat(
+            FMLocalized.of(FMString.of("extra.clockFormat")).toString())
             .format(new java.util.Date());
         if (text.equals(menu.getText())) return;
         menu.setText(text);

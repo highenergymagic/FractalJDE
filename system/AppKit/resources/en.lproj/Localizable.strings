@@ -195,3 +195,86 @@
 "menu.clearMenu" = "Clear Menu";
 "menu.open" = "Open";
 "menu.showMenu" = "Show Menu";
+
+/* The status menus at the right of the bar. Each is a small menu of its own, and the
+   clock's format is words as much as the words are: a language that writes the day after
+   the time, or the hour on a 24 clock, needs a different pattern. */
+"extra.clockFormat" = "EEE h:mm a";
+"extra.accountPreferences" = "Account Preferences…";
+"extra.loginWindow" = "Login Window…";
+"extra.logOutQuestion" = "Are you sure you want to quit all applications and log out now?";
+"extra.logOutWarning" = "If you do nothing, you will be logged out automatically.";
+"extra.logOut" = "Log Out";
+"extra.dateAndTimePreferences" = "Open Date & Time Preferences…";
+"extra.network" = "Network";
+"extra.networkPreferences" = "Network Preferences…";
+"extra.connectToServer" = "Connect to Server…";
+"extra.spotlight" = "Spotlight";
+"extra.showSpotlight" = "Show Spotlight…";
+"extra.spotlightPreferences" = "Spotlight Preferences…";
+"extra.volume" = "Volume";
+"extra.soundPreferences" = "Sound Preferences…";
+
+/* About This Computer, and the same panel for the Finder or any other program. */
+"about.thisComputer" = "About This Computer";
+"about.finder" = "About Finder";
+"about.version" = "Version %1$@ (%2$@)";
+"about.item" = "Item";
+"about.value" = "Value";
+"about.systemInformation" = "System information";
+"about.moreInfo" = "More Info…";
+"about.processor" = "Processor";
+"about.memory" = "Memory";
+"about.startupDisk" = "Startup Disk";
+
+/* A Dock tile's own menu. The windows above it are named by the programs themselves. */
+"dock.open" = "Open";
+"dock.emptyTrash" = "Empty Trash";
+"dock.minimized" = "Minimized";
+"dock.options" = "Options";
+"dock.keepInDock" = "Keep in Dock";
+"dock.showInFinder" = "Show in Finder";
+"dock.newFinderWindow" = "New Finder Window";
+"dock.hide" = "Hide";
+"dock.quit" = "Quit";
+
+/* The menu any text control puts up: what is misspelled, then the three editing commands.
+   It belongs to the system, so every program shows the same one. */
+"text.menu" = "Text";
+"text.noSuggestions" = "No suggestions";
+"text.learnSpelling" = "Learn Spelling";
+"text.ignoreSpelling" = "Ignore Spelling";
+"text.cut" = "Cut";
+"text.copy" = "Copy";
+"text.paste" = "Paste";
+"text.noCalendar" = "This system has no calendar to put a date into.";
+
+/* Spotlight. What it says about a search is a whole sentence for each case rather than
+   one built out of pieces, because a count and the thing counted do not sit in the same
+   order in every language. */
+"spotlight.name" = "Spotlight";
+"spotlight.search" = "Spotlight search";
+"spotlight.typeToSearch" = "Type to search";
+"spotlight.searching" = "Searching…";
+"spotlight.noResults" = "No results for %1$@";
+"spotlight.oneResult" = "1 result for %1$@";
+"spotlight.someResults" = "%1$@ results for %2$@";
+"spotlight.withoutIndex" = "%1$@ (searched without the index)";
+
+/* Parts of a control that a screen reader names but nobody sees written down. */
+"scrollBar.up" = "Scroll up";
+"scrollBar.down" = "Scroll down";
+"popUp.showChoices" = "Show choices";
+"window.titleBar" = "Title bar";
+
+/* What a program is told when its window will not open. These reach a person through
+   whatever the program does with the failure, so they are sentences and not codes. */
+"error.noBundle" = "This program was not started from a bundle.";
+"error.noInterface" = "There is no interface called %1$@.";
+"error.noWindowServer" = "The window server did not answer.";
+
+/* The status line when the desktop has finished coming up. */
+"desktop.ready" = "Desktop ready";
+
+/* An icon in the notification area that answers to no tooltip and owns no window. */
+"menu.notificationIcon" = "Notification icon";

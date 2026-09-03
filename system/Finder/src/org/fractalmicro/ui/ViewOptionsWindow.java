@@ -43,12 +43,12 @@ public class ViewOptionsWindow extends JInternalFrame {
      * are not the same string: the value names a sort order and a card in a layout. Cocoa
      * keeps them apart with a tag; here it is the position in the list.
      */
-    private static final String[] ARRANGE_KEYS = {"Name", "Date Modified", "Size", "Kind"};
+    private static final String[] ARRANGE_KEYS = {"Name", "DateModified", "Size", "Kind"};
     private static final FMString[] ARRANGE_NAMES = {
         FMString.of("browser.name"), FMString.of("browser.dateModified"),
         FMString.of("browser.size"), FMString.of("browser.kind")};
 
-    private static final String[] VIEW_MODES = {"Icon", "List", "Column", "Cover Flow"};
+    private static final String[] VIEW_MODES = {"Icon", "List", "Column", "CoverFlow"};
     private static final FMString[] VIEW_NAMES = {
         FMString.of("panel.asIcons"), FMString.of("panel.asList"),
         FMString.of("panel.asColumns"), FMString.of("finder.asCoverFlow")};

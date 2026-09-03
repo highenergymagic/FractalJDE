@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.menuextras;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.appkit.FMMenuExtra;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.foundation.FMString;
@@ -43,13 +44,13 @@ public final class UserExtra implements FMMenuExtra {
         String user = System.getProperty("user.name");
         JMenu m = new JMenu(user);
         m.getAccessibleContext().setAccessibleName(user);
-        m.add(MainMenu.item("Account Preferences…", null,
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.accountPreferences")).toString(), null,
                             e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
-        m.add(MainMenu.item("Login Window…", null, e -> {
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.loginWindow")).toString(), null, e -> {
             int chose = org.fractalmicro.appkit.FMAlert.confirmIrreversible(
-                FMString.of("Are you sure you want to quit all applications and log out now?"),
-                FMString.of("If you do nothing, you will be logged out automatically."),
-                FMString.of("Log Out"), FMString.of(null));
+                FMLocalized.of(FMString.of("extra.logOutQuestion")),
+                FMLocalized.of(FMString.of("extra.logOutWarning")),
+                FMLocalized.of(FMString.of("extra.logOut")), FMString.of(null));
             if (chose == 0) org.fractalmicro.win.Session.logOut(false);
         }));
         return m;

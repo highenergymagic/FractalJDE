@@ -20,6 +20,8 @@
 package org.fractalmicro.os;
 
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.win.Kernel32;
 import org.fractalmicro.win.Registry;
 
@@ -35,11 +37,20 @@ import java.util.regex.Pattern;
 public final class SystemProfile {
     private SystemProfile() {}
 
+    /** What the system is called. One word, and the same word in every language. */
     public static final String OS_NAME = "FractalJDE";
-    public static final String OS_LONG_NAME = "Fractal Java Desktop Environment";
+
+    /** The rest of the name, and who makes it, which are sentences and are translated. */
+    public static String longName() {
+        return FMLocalized.of(FMString.of("system.longName")).toString();
+    }
+
+    public static String vendor() {
+        return FMLocalized.of(FMString.of("system.vendor")).toString();
+    }
+
     public static String version() { return Version.number(); }
     public static String build() { return Version.build(); }
-    public static final String VENDOR = "Fractal Microsystems, Inc.";
 
     private static final String CPU_KEY = "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0";
 

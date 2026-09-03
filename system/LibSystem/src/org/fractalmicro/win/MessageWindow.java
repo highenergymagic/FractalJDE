@@ -289,8 +289,8 @@ public final class MessageWindow {
                 windowClass.set(ValueLayout.ADDRESS, 64, name);
                 short atom = (short) REGISTER_CLASS.invokeExact(windowClass);
                 if (atom == 0) {
-                    Log.info("the class " + className + " is already taken; "
-                           + "Explorer is probably still running");
+                    Log.info("the class " + className
+                           + " is already taken; Explorer is probably still running");
                 }
 
                 MemorySegment titleText = title == null

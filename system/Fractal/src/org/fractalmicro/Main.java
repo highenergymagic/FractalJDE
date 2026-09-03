@@ -346,7 +346,8 @@ public final class Main {
                 desktop.focusIcons();
                 Runtime.getRuntime().addShutdownHook(new Thread(desktop::closeScreen));
             }
-            desktop.setStatus("Desktop ready");
+            desktop.setStatus(org.fractalmicro.foundation.FMLocalized.of(
+                org.fractalmicro.foundation.FMString.of("desktop.ready")).toString());
             // The screen is up and has something on it. Whatever is watching a boot stops
             // watching here: the disks, the programs and the Trash count arrive afterwards
             // and fill themselves in, and waiting for them would hold a boot screen over a
@@ -413,7 +414,13 @@ public final class Main {
                 Timer t = new Timer(3000, e -> {
                     // Click the menu items the way a person would, in a window that is
                     // on screen, and report what came of it.
-                    for (String wanted : new String[]{"About This Computer", "About Finder"}) {
+                    for (String wanted : new String[]{
+                            org.fractalmicro.foundation.FMLocalized.of(
+                                org.fractalmicro.foundation.FMString.of("about.thisComputer"))
+                                .toString(),
+                            org.fractalmicro.foundation.FMLocalized.of(
+                                org.fractalmicro.foundation.FMString.of("about.finder"))
+                                .toString()}) {
                         javax.swing.JMenuItem item = findMenuItem(desktop.mainMenu(), wanted);
                         if (item == null) {
                             System.out.println("menu item missing: " + wanted);

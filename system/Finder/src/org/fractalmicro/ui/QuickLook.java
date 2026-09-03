@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.fs.FS;
@@ -39,7 +41,9 @@ import java.util.Locale;
 public class QuickLook extends JInternalFrame {
 
     private QuickLook(Node node, JComponent body) {
-        super("Quick Look: " + node.name, true, true, true, true);
+        super(FMLocalized.filled(FMString.of("finder.quickLookTitle"),
+                                 FMString.of(node.name)).toString(),
+              true, true, true, true);
         setFrameIcon(new ImageIcon(Icons.forNode(node, 16)));
         setContentPane(body);
         setSize(560, 460);
@@ -57,21 +61,25 @@ public class QuickLook extends JInternalFrame {
             JLabel label = new JLabel(icon);
             label.setHorizontalAlignment(SwingConstants.CENTER);
             label.getAccessibleContext().setAccessibleName(
-                "Image preview of " + node.name + ", "
-                + icon.getIconWidth() + " by " + icon.getIconHeight() + " pixels");
+                FMLocalized.filled(FMString.of("finder.imagePreview"),
+                    FMString.of(node.name),
+                    FMString.of(icon.getIconWidth() + " × " + icon.getIconHeight())).toString());
             body = new JScrollPane(label);
         } else if (f != null && f.isFile() && isText(name) && f.length() < 512 * 1024) {
             String text;
             try {
                 text = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
             } catch (Exception e) {
-                text = "This file could not be read: " + e.getMessage();
+                text = FMLocalized.filled(FMString.of("finder.fileNotRead"),
+                                          FMString.describing(e.getMessage())).toString();
             }
             FMTextArea area = new FMTextArea(org.fractalmicro.foundation.FMString.of(text));
             area.setEditable(false);
             area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
             area.setCaretPosition(0);
-            area.getAccessibleContext().setAccessibleName("Contents of " + node.name);
+            area.getAccessibleContext().setAccessibleName(
+                FMLocalized.filled(FMString.of("finder.contentsOf"),
+                                   FMString.of(node.name)).toString());
             body = new JScrollPane(area);
         } else {
             JPanel p = new JPanel();
@@ -86,9 +94,16 @@ public class QuickLook extends JInternalFrame {
             title.setAlignmentX(Component.CENTER_ALIGNMENT);
             p.add(Box.createVerticalStrut(10));
             p.add(title);
-            JLabel detail = new JLabel(node.kindLabel()
-                + (node.size >= 0 ? ", " + FS.formatBytes(node.size) : "")
-                + (node.modified > 0 ? ", modified " + FS.formatDate(node.modified) : ""));
+            FMString said = FMString.of(node.kindLabel());
+            if (node.size >= 0) {
+                said = FMLocalized.filled(FMString.of("finder.andSize"), said,
+                                          FMString.of(FS.formatBytes(node.size)));
+            }
+            if (node.modified > 0) {
+                said = FMLocalized.filled(FMString.of("finder.andModified"), said,
+                                          FMString.of(FS.formatDate(node.modified)));
+            }
+            JLabel detail = new JLabel(said.toString());
             detail.setFont(Aqua.smallFont());
             detail.setAlignmentX(Component.CENTER_ALIGNMENT);
             p.add(Box.createVerticalStrut(6));

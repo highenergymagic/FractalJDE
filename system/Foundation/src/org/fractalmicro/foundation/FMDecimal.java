@@ -125,7 +125,9 @@ public final class FMDecimal implements Comparable<FMDecimal> {
 
     /** How it is written: a whole number keeps no point, and no exponent is used. */
     @Override public String toString() {
-        return value == null ? "Not a number" : value.stripTrailingZeros().toPlainString();
+        // NaN, which is what NSDecimalNumber writes and what every other language that
+        // has the value writes. It is a value rather than a sentence.
+        return value == null ? "NaN" : value.stripTrailingZeros().toPlainString();
     }
 
     public FMString asString() { return FMString.of(toString()); }

@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.fs.Node;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
@@ -48,7 +50,7 @@ public class CoverFlowView extends JPanel implements FileView {
             flow.setSelection(list.selection());
             flow.repaint();
         });
-        getAccessibleContext().setAccessibleName("Cover Flow view");
+        getAccessibleContext().setAccessibleName(word(FMString.of("finder.coverFlowView")));
     }
 
     @Override public JComponent component() { return this; }
@@ -65,6 +67,11 @@ public class CoverFlowView extends JPanel implements FileView {
     @Override public List<Node> selection() { return list.selection(); }
     @Override public void selectAll() { list.selectAll(); }
     @Override public void focusView() { list.focusView(); }
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     @Override public void arrangeBy(String key) { list.arrangeBy(key); }
     @Override public void setIconSize(int px) { }
 
@@ -78,7 +85,7 @@ public class CoverFlowView extends JPanel implements FileView {
 
         Flow() {
             setPreferredSize(new Dimension(100, 180));
-            getAccessibleContext().setAccessibleName("Cover Flow preview");
+            getAccessibleContext().setAccessibleName(word(FMString.of("finder.coverFlowPreview")));
         }
 
         void setAll(List<Node> nodes) {

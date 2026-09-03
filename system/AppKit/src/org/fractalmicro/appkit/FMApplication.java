@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.appkit;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMArray;
 import java.util.List;
 import java.util.ArrayList;
@@ -290,13 +291,13 @@ public final class FMApplication implements AutoCloseable {
         org.fractalmicro.bundle.Bundle bundle = org.fractalmicro.bundle.Bundle.main();
         if (bundle == null) {
             complaint = FMError.of(FMError.COCOA_DOMAIN, 0,
-                FMString.of("This program was not started from a bundle."));
+                FMLocalized.of(FMString.of("error.noBundle")));
             return null;
         }
         java.io.File file = bundle.resource(interfaceName, org.fractalmicro.nib.Xib.EXTENSION);
         if (file == null) {
             complaint = FMError.of(FMError.COCOA_DOMAIN, 0,
-                FMString.of("There is no interface called " + interfaceName + "."));
+                FMLocalized.filled(FMString.of("error.noInterface"), interfaceName));
             return null;
         }
         try {
@@ -427,7 +428,7 @@ public final class FMApplication implements AutoCloseable {
     private volatile FMError complaint;
 
     private boolean failed(IOException e) {
-        complaint = FMError.from(e, FMString.of("The window server did not answer."));
+        complaint = FMError.from(e, FMLocalized.of(FMString.of("error.noWindowServer")));
         return false;
     }
 

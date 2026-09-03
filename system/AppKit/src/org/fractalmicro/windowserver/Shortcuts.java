@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.windowserver;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.bundle.LaunchServices;
 
 
@@ -69,21 +71,22 @@ public final class Shortcuts {
         int ctrl = HotKeys.MOD_CONTROL;
 
         // The system wide ones are not menu items, so they are registered by hand.
-        announceGlobal(alt, KeyEvent.VK_SPACE, "Spotlight");
-        announceGlobal(ctrl, KeyEvent.VK_F2, "Menu bar");
-        announceGlobal(ctrl, KeyEvent.VK_F3, "Dock");
-        announceGlobal(ctrl, KeyEvent.VK_F5, "Toolbar");
+        announceGlobal(alt, KeyEvent.VK_SPACE, word(FMString.of("extra.spotlight")));
+        announceGlobal(ctrl, KeyEvent.VK_F2, word(FMString.of("desktop.menuBar")));
+        announceGlobal(ctrl, KeyEvent.VK_F3, word(FMString.of("desktop.dock")));
+        announceGlobal(ctrl, KeyEvent.VK_F5, word(FMString.of("finder.toolbar")));
 
-        register(desktop, alt, KeyEvent.VK_SPACE, "Spotlight", Spotlight::open);
+        register(desktop, alt, KeyEvent.VK_SPACE, word(FMString.of("extra.spotlight")), Spotlight::open);
         registerWithFallback(desktop, alt | win, KeyEvent.VK_M, ctrl, KeyEvent.VK_F2,
-                             "Menu bar", () -> focusMenuBar(desktop));
+                             word(FMString.of("desktop.menuBar")), () -> focusMenuBar(desktop));
         registerWithFallback(desktop, alt | win, KeyEvent.VK_D, ctrl, KeyEvent.VK_F3,
-                             "Dock", () -> focusDock(desktop));
+                             word(FMString.of("desktop.dock")), () -> focusDock(desktop));
         // The toolbar of the front window, as Control F5 does on the system
         // this imitates when full keyboard access is on.
         registerWithFallback(desktop, alt | win, KeyEvent.VK_T, ctrl, KeyEvent.VK_F5,
-                             "Toolbar", () -> focusToolbar(desktop));
-        register(desktop, alt | win, KeyEvent.VK_ESCAPE, "Force Quit", ForceQuitWindow::open);
+                             word(FMString.of("finder.toolbar")), () -> focusToolbar(desktop));
+        register(desktop, alt | win, KeyEvent.VK_ESCAPE, word(FMString.of("forceQuit.button")),
+                 ForceQuitWindow::open);
 
         Runtime.getRuntime().addShutdownHook(
             new Thread(HotKeys::releaseAll, "fractal-hotkeys-release"));
@@ -191,6 +194,10 @@ public final class Shortcuts {
     }
 
     /** Teaches the announcer one shortcut that is not in any menu. */
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     private static void announceGlobal(int modifiers, int keyCode, String phrase) {
         int swing = 0;
         if ((modifiers & HotKeys.MOD_ALT) != 0) swing |= java.awt.event.InputEvent.ALT_DOWN_MASK;

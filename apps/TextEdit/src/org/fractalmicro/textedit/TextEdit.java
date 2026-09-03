@@ -89,7 +89,7 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
      * naming them here rather than reimplementing them means Cut behaves the way Cut
      * behaves everywhere, including for the selections nobody thinks to test.
      */
-    public record Command(FMString sends, FMString title, FMString key, FMString action) {}
+    public record Command(FMString sends, FMString key, FMString action) {}
 
     /** The editing and formatting commands, for anything that wants to check them. */
     public static FMArray<Command> commands() {
@@ -99,26 +99,33 @@ public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDele
         return out.asArray();
     }
 
-    private static Command edit(String sends, String title, String key, FMString action) {
-        return new Command(FMString.of(sends), FMString.of(title), FMString.of(key), action);
+    /**
+     * One command, named the way the interface file names it.
+     *
+     * There is no title here. What each command is called is in Document.xib beside every
+     * other word in the window, and a second copy in this file would be one nobody
+     * translates and nobody notices has drifted.
+     */
+    private static Command edit(String sends, String key, FMString action) {
+        return new Command(FMString.of(sends), FMString.of(key), action);
     }
 
     private static final Command[] EDITING = {
-        edit("undo", "Undo", "z", FMTextAction.UNDO),
-        edit("redo", "Redo", "Z", FMTextAction.REDO),
-        edit("cut", "Cut", "x", FMTextAction.CUT),
-        edit("copy", "Copy", "c", FMTextAction.COPY),
-        edit("paste", "Paste", "v", FMTextAction.PASTE),
-        edit("select all", "Select All", "a", FMTextAction.SELECT_ALL),
+        edit("undo", "z", FMTextAction.UNDO),
+        edit("redo", "Z", FMTextAction.REDO),
+        edit("cut", "x", FMTextAction.CUT),
+        edit("copy", "c", FMTextAction.COPY),
+        edit("paste", "v", FMTextAction.PASTE),
+        edit("select all", "a", FMTextAction.SELECT_ALL),
     };
 
     private static final Command[] FORMATTING = {
-        edit("bold", "Bold", "b", FMTextAction.BOLD),
-        edit("italic", "Italic", "i", FMTextAction.ITALIC),
-        edit("underline", "Underline", "u", FMTextAction.UNDERLINE),
-        edit("align left", "Align Left", "{", FMTextAction.ALIGN_LEFT),
-        edit("center", "Center", "|", FMTextAction.CENTER),
-        edit("align right", "Align Right", "}", FMTextAction.ALIGN_RIGHT),
+        edit("bold", "b", FMTextAction.BOLD),
+        edit("italic", "i", FMTextAction.ITALIC),
+        edit("underline", "u", FMTextAction.UNDERLINE),
+        edit("align left", "{", FMTextAction.ALIGN_LEFT),
+        edit("center", "|", FMTextAction.CENTER),
+        edit("align right", "}", FMTextAction.ALIGN_RIGHT),
     };
 
     /* ---------------------------------------------------------------- the document */

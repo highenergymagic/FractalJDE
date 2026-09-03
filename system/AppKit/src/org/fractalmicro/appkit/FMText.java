@@ -211,13 +211,13 @@ public final class FMText {
     /** The menu itself, built for wherever in the text it was asked for. */
     public static JPopupMenu menuFor(JTextComponent text, Support support, int at) {
         JPopupMenu menu = new JPopupMenu();
-        menu.getAccessibleContext().setAccessibleName("Text");
+        menu.getAccessibleContext().setAccessibleName(word(FMString.of("text.menu")));
 
         SpellChecker.Mistake mistake = support == null ? null : support.spelling().at(at);
         if (mistake != null && text.isEditable()) {
             List<String> suggestions = mistake.suggestions();
             if (suggestions.isEmpty()) {
-                JMenuItem none = new JMenuItem("No suggestions");
+                JMenuItem none = new JMenuItem(word(FMString.of("text.noSuggestions")));
                 none.setEnabled(false);
                 menu.add(none);
             } else {
@@ -229,10 +229,10 @@ public final class FMText {
                 }
             }
             menu.addSeparator();
-            JMenuItem learn = new JMenuItem("Learn Spelling");
+            JMenuItem learn = new JMenuItem(word(FMString.of("text.learnSpelling")));
             learn.addActionListener(e -> support.spelling().learn(mistake));
             menu.add(learn);
-            JMenuItem ignore = new JMenuItem("Ignore Spelling");
+            JMenuItem ignore = new JMenuItem(word(FMString.of("text.ignoreSpelling")));
             ignore.addActionListener(e -> support.spelling().ignore(mistake));
             menu.add(ignore);
             menu.addSeparator();
@@ -253,16 +253,21 @@ public final class FMText {
             }
         }
 
-        menu.add(command(text, "Cut", DefaultEditorKit.cutAction, text.isEditable()));
-        menu.add(command(text, "Copy", DefaultEditorKit.copyAction, true));
-        menu.add(command(text, "Paste", DefaultEditorKit.pasteAction, text.isEditable()));
+        menu.add(command(text, FMString.of("text.cut"), DefaultEditorKit.cutAction, text.isEditable()));
+        menu.add(command(text, FMString.of("text.copy"), DefaultEditorKit.copyAction, true));
+        menu.add(command(text, FMString.of("text.paste"), DefaultEditorKit.pasteAction, text.isEditable()));
         menu.addSeparator();
         menu.add(Services.menuFor(text));
         return menu;
     }
 
-    private static JMenuItem command(JTextComponent text, String label, String action,
+    private static String word(FMString key) {
+        return org.fractalmicro.foundation.FMLocalized.of(key).toString();
+    }
+
+    private static JMenuItem command(JTextComponent text, FMString key, String action,
                                      boolean enabled) {
+        String label = word(key);
         JMenuItem item = new JMenuItem(label);
         Action found = text.getActionMap().get(action);
         item.addActionListener(e -> {
@@ -283,7 +288,8 @@ public final class FMText {
             case PHONE -> java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                 new java.awt.datatransfer.StringSelection(detection.text().toString()), null);
             case DATE -> org.fractalmicro.appkit.FMAlert.tell(detection.text(),
-                FMString.of("This system has no calendar to put a date into."));
+                org.fractalmicro.foundation.FMLocalized.of(
+                    FMString.of("text.noCalendar")));
         }
     }
 

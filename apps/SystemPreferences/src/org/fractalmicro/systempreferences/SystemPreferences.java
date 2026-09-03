@@ -42,8 +42,6 @@ import org.fractalmicro.os.FinderSettings;
  */
 public final class SystemPreferences implements org.fractalmicro.appkit.FMApplicationDelegate {
 
-    public static final FMString NAME = FMString.of("System Preferences");
-
     /** The interface file this program opens, inside its own bundle. */
     private static final FMString INTERFACE = FMString.of("SystemPreferences");
 

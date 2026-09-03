@@ -56,16 +56,29 @@ import java.util.regex.Pattern;
 public final class LocalizationTest {
     private LocalizationTest() {}
 
-    public static int count() { return 6; }
+    public static int count() { return 7; }
 
     /**
-     * How many pieces of text are still written into the source.
+     * How many pieces of text are still written into the source. None, now.
      *
-     * Every one is a sentence a translator cannot reach. The number goes down as they are
-     * moved into the tables and may not go up, which is the only thing that makes a long
-     * job finish rather than drift.
+     * This was a count that had to fall and could not rise, because the job of moving a
+     * few hundred sentences out of the code takes longer than one sitting. It is finished,
+     * so the count is a rule again: text a person reads goes in a table.
      */
-    private static final int LITERALS_ALLOWED = 110;
+    private static final int LITERALS_ALLOWED = 0;
+
+    /**
+     * Strings that look like sentences and are not words.
+     *
+     * A name is not translated: these are programs and folders as they are written on the
+     * volume, the font families asked of the host, and what a binary format is called.
+     * The list is short on purpose, and everything on it is matched whole.
+     */
+    private static final Set<String> NOT_WORDS = Set.of(
+        "System Preferences", "System Profiler", "Activity Monitor",
+        "Menu Extras", "System Volume Information",
+        "Lucida Grande", "Lucida Sans Unicode", "Segoe UI",
+        "Mach-O 64 bit executable ");
 
     /**
      * A key being made into this system's own text type.
@@ -97,10 +110,18 @@ public final class LocalizationTest {
         /* ------------------------------------------------- what the tables offer */
 
         Set<String> offered = new LinkedHashSet<>();
+        Set<String> inFrameworks = new LinkedHashSet<>();
+        java.util.Map<String, Set<String>> byBundle = new java.util.HashMap<>();
         List<Path> tables = englishTables();
         for (Path table : tables) {
             FMDictionary words = read(table);
-            for (FMString key : words.keys()) offered.add(key.toString());
+            String bundle = bundleOf(table);
+            for (FMString key : words.keys()) {
+                offered.add(key.toString());
+                if (bundle.isEmpty()) inFrameworks.add(key.toString());
+                byBundle.computeIfAbsent(bundle, any -> new LinkedHashSet<>())
+                        .add(key.toString());
+            }
         }
         out.println("      " + offered.size() + " entries in " + tables.size()
                     + " English tables");
@@ -110,11 +131,13 @@ public final class LocalizationTest {
         /* --------------------------------------------------- what the source asks */
 
         Set<String> asked = new LinkedHashSet<>();
+        List<String> outOfReach = new ArrayList<>();
         int read = 0;
         for (Path file : javaIn(roots)) {
             String source = source(file);
             if (source == null) continue;
             read++;
+            String bundle = bundleOf(file);
             for (String line : source.split("\n")) {
                 String t = line.trim();
                 if (isComment(t)) continue;
@@ -122,7 +145,18 @@ public final class LocalizationTest {
                 // this system names one. A dotted word anywhere else is a class or a path.
                 Matcher m = KEY.matcher(line);
                 while (m.find()) {
-                    if (!isReverseDomain(m.group(1))) asked.add(m.group(1));
+                    if (isReverseDomain(m.group(1))) continue;
+                    asked.add(m.group(1));
+                    // A framework's words are on the volume for everything to read. A
+                    // program's are read by that program, so a key only one program has
+                    // words for shows as the key itself everywhere else.
+                    if (offered.contains(m.group(1))
+                            && !inFrameworks.contains(m.group(1))
+                            && !offeredBy(byBundle, bundle).contains(m.group(1))) {
+                        outOfReach.add(m.group(1) + ", asked in "
+                                       + (bundle.isEmpty() ? "the system" : bundle)
+                                       + " and written down somewhere else");
+                    }
                 }
             }
         }
@@ -135,6 +169,10 @@ public final class LocalizationTest {
         for (String one : missing) out.println("      no English for " + one);
         failures += check(out, "every key the source asks for has words in English",
             missing.isEmpty());
+
+        for (String one : outOfReach) out.println("      " + one);
+        failures += check(out, "and in a table that program can actually read",
+            outOfReach.isEmpty());
 
         /* -------------------------------------- and every interface file has a table */
 
@@ -165,12 +203,20 @@ public final class LocalizationTest {
             String source = source(file);
             if (source == null) continue;
             int here = 0;
+            // A log line runs on past its first line often enough that following the
+            // statement to its semicolon is the only way to skip the whole of it.
+            boolean logging = false;
             for (String line : source.split("\n")) {
                 String t = line.trim();
                 if (isComment(t)) continue;
+                if (!logging) logging = isSaidToTheLog(t);
+                boolean said = logging;
+                if (t.endsWith(";")) logging = false;
+                if (said) continue;
                 Matcher m = READABLE.matcher(line);
                 while (m.find()) {
                     if (looksTechnical(m.group(1))) continue;
+                    if (NOT_WORDS.contains(m.group(1))) continue;
                     here++;
                 }
             }
@@ -179,9 +225,9 @@ public final class LocalizationTest {
         }
         java.util.Collections.sort(worst, java.util.Collections.reverseOrder());
         for (String one : worst) out.println("      " + one);
-        out.println("      " + literals + " sentences still written into the source, and "
+        out.println("      " + literals + " sentences written into the source, and "
                     + LITERALS_ALLOWED + " allowed");
-        failures += check(out, "no more text is written into the source than was before",
+        failures += check(out, "nothing a person reads is written into the source",
             literals <= LITERALS_ALLOWED);
 
         out.println("      " + (failures == 0
@@ -191,6 +237,28 @@ public final class LocalizationTest {
     }
 
     /* ------------------------------------------------------------------ the files */
+
+    /**
+     * Which program a file belongs to, or nothing when it belongs to the system.
+     *
+     * Everything under system/ is a framework, and a framework's words are on the volume
+     * for every program to read. Everything under apps/ belongs to one program, and only
+     * that program reads its own table.
+     */
+    private static String bundleOf(Path file) {
+        String path = file.toString().replace('\\', '/');
+        int at = path.indexOf("apps/");
+        if (at < 0) return "";
+        String rest = path.substring(at + 5);
+        int slash = rest.indexOf('/');
+        return slash < 0 ? rest : rest.substring(0, slash);
+    }
+
+    private static Set<String> offeredBy(java.util.Map<String, Set<String>> byBundle,
+                                         String bundle) {
+        Set<String> found = byBundle.get(bundle);
+        return found == null ? java.util.Set.of() : found;
+    }
 
     /** Every place a framework or a program keeps its source. The checks are not read:
         nothing a check prints is shown to anybody but whoever ran it. */
@@ -278,6 +346,20 @@ public final class LocalizationTest {
      * it answers the same way twice, since the whole use of it is comparing today with
      * yesterday.
      */
+    /**
+     * Whether this line is writing to the log or the console rather than to a screen.
+     *
+     * The log is not translated, here or on a Mac: it is read by whoever is looking into
+     * something going wrong, and it says the same thing to all of them.
+     */
+    private static boolean isSaidToTheLog(String line) {
+        for (String call : new String[]{"Log.info(", "Log.error(", "Log.say(", "FMLog.say(",
+                                        "Progress.say(", "System.out.print", "System.err.print"}) {
+            if (line.contains(call)) return true;
+        }
+        return false;
+    }
+
     private static boolean looksTechnical(String text) {
         if (text.startsWith("@") || text.startsWith("/") || text.contains("://")) return true;
         if (text.contains("=") || text.contains("<") || text.contains("{")) return true;

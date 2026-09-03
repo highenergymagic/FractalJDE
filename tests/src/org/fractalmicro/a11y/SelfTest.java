@@ -79,7 +79,7 @@ public final class SelfTest {
         step("icon view", () -> Finder.frontWindow().setViewMode("Icon"));
         step("list view", () -> Finder.frontWindow().setViewMode("List"));
         step("column view", () -> Finder.frontWindow().setViewMode("Column"));
-        step("cover flow view", () -> Finder.frontWindow().setViewMode("Cover Flow"));
+        step("cover flow view", () -> Finder.frontWindow().setViewMode("CoverFlow"));
         step("arrange by size", () -> Finder.frontWindow().arrangeBy("Size"));
         step("select all", () -> Finder.frontWindow().selectAll());
         step("applications", Finder::goToApplications);

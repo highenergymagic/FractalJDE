@@ -119,7 +119,7 @@ public class FinderWindow extends JInternalFrame
         content.add(iconView.component(), "Icon");
         content.add(listView.component(), "List");
         content.add(columnView.component(), "Column");
-        content.add(coverView.component(), "Cover Flow");
+        content.add(coverView.component(), "CoverFlow");
 
         sidebar = new Sidebar(this::goToTarget);
         toolbar = buildToolbar();
@@ -232,7 +232,7 @@ public class FinderWindow extends JInternalFrame
         group.setOpaque(false);
         group.getAccessibleContext().setAccessibleName(word(FMString.of("finder.view")));
         ButtonGroup bg = new ButtonGroup();
-        String[] modes = {"Icon", "List", "Column", "Cover Flow"};
+        String[] modes = {"Icon", "List", "Column", "CoverFlow"};
         String[] labels = {word(FMString.of("panel.asIcons")), word(FMString.of("panel.asList")),
                            word(FMString.of("panel.asColumns")), word(FMString.of("finder.asCoverFlow"))};
         for (int i = 0; i < modes.length; i++) {
@@ -291,7 +291,7 @@ public class FinderWindow extends JInternalFrame
                 case "Column":
                     for (int i = 0; i < 3; i++) g.drawRect(i * 5, 1, 4, 11);
                     break;
-                case "Cover Flow":
+                case "CoverFlow":
                     g.drawRect(0, 4, 3, 6);
                     g.fillRect(5, 1, 5, 11);
                     g.drawRect(11, 4, 3, 6);
@@ -471,7 +471,7 @@ public class FinderWindow extends JInternalFrame
         switch (viewMode) {
             case "List": return listView;
             case "Column": return columnView;
-            case "Cover Flow": return coverView;
+            case "CoverFlow": return coverView;
             default: return iconView;
         }
     }
@@ -504,14 +504,14 @@ public class FinderWindow extends JInternalFrame
         return switch (mode) {
             case "List" -> FMString.of("finder.viewList");
             case "Column" -> FMString.of("finder.viewColumn");
-            case "Cover Flow" -> FMString.of("finder.viewCoverFlow");
+            case "CoverFlow" -> FMString.of("finder.viewCoverFlow");
             default -> FMString.of("finder.viewIcon");
         };
     }
 
     private static FMString nameOfArrangement(String key) {
         return switch (key) {
-            case "Date Modified" -> FMString.of("finder.byDateModified");
+            case "DateModified" -> FMString.of("finder.byDateModified");
             case "Size" -> FMString.of("finder.bySize");
             case "Kind" -> FMString.of("finder.byKind");
             default -> FMString.of("finder.byName");

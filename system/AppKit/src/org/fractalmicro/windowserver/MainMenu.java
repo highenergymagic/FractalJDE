@@ -405,10 +405,12 @@ public class MainMenu extends JMenuBar {
 
         int at = firstStatusIndex;
         for (org.fractalmicro.win.TrayHost.Icon icon : org.fractalmicro.win.TrayHost.icons()) {
-            JMenu menu = new JMenu(icon.name());
+            String called = icon.name().isBlank()
+                ? word(FMString.of("menu.notificationIcon")) : icon.name();
+            JMenu menu = new JMenu(called);
             menu.setIcon(new TrayIcon(icon));
             menu.setText("");
-            menu.getAccessibleContext().setAccessibleName(icon.name());
+            menu.getAccessibleContext().setAccessibleName(called);
             menu.add(item(word(FMString.of("menu.open")), null, e -> org.fractalmicro.win.TrayHost.click(icon, false)));
             menu.add(item(word(FMString.of("menu.showMenu")), null, e -> org.fractalmicro.win.TrayHost.click(icon, true)));
             add(menu, at++);

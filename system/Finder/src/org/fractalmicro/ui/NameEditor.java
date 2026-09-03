@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.appkit.FMAlert;
@@ -73,7 +74,7 @@ public final class NameEditor {
             return;
         }
         if (node.isVolume()) {
-            Finder.tell(FMString.of("Volumes cannot be renamed here."), FMString.EMPTY);
+            Finder.tell(FMLocalized.of(FMString.of("finder.volumesNotRenamed")), FMString.EMPTY);
             return;
         }
         cancel();
@@ -162,14 +163,16 @@ public final class NameEditor {
         File from = node.file;
         File to = new File(from.getParentFile(), wanted);
         if (to.exists()) {
-            FMAlert.tell(FMString.of("The name " + '“' + wanted + '”' + " is already taken."),
-                       FMString.of("Please choose a different name."));
+            FMAlert.tell(
+                FMLocalized.filled(FMString.of("finder.nameTaken"), FMString.of(wanted)),
+                FMLocalized.of(FMString.of("finder.chooseAnother")));
             return;
         }
         if (!from.renameTo(to)) {
-            FMAlert.tell(FMString.of("The item " + '\u201c' + from.getName() + '\u201d' + " could"
-                                   + '\u2019' + "t be renamed."),
-                       FMString.of("It may be open, or you may not have permission to change it."));
+            FMAlert.tell(
+                FMLocalized.filled(FMString.of("finder.renameFailedNamed"),
+                                   FMString.of(from.getName())),
+                FMLocalized.of(FMString.of("finder.renameFailedWhy")));
             return;
         }
         // Anything kept beside the file rather than in it has to follow it.

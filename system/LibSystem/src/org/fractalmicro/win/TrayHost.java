@@ -83,13 +83,19 @@ public final class TrayHost {
 
         public String key() { return ownerWindow + ":" + id; }
 
-        /** What the icon is called: its tooltip, or failing that the program's window title. */
+        /**
+         * What the icon is called: its tooltip, or failing that the program's window title.
+         *
+         * An icon that answers to neither has no name here, and nothing is invented for
+         * it. This layer is beneath the one that holds the words, so a name for something
+         * nameless belongs to whoever puts it on the screen.
+         */
         public String name() {
             if (!tooltip.isBlank()) return tooltip.lines().findFirst().orElse(tooltip).trim();
             for (User32.Win w : User32.taskWindows()) {
                 if (w.handle == ownerWindow) return w.title;
             }
-            return "Notification icon";
+            return "";
         }
 
         @Override public String toString() { return name(); }

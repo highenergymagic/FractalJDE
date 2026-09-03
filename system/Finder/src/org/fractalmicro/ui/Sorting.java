@@ -31,7 +31,7 @@ public final class Sorting {
     public static void sort(List<Node> nodes, String key) {
         Comparator<Node> c;
         switch (key == null ? "Name" : key) {
-            case "Date Modified":
+            case "DateModified":
                 c = Comparator.comparingLong((Node n) -> n.modified).reversed();
                 break;
             case "Size":

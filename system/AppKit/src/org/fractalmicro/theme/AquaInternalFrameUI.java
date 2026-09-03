@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.theme;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
@@ -67,7 +69,8 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             setLayout(null);
             setPreferredSize(new Dimension(100, 22));
             setOpaque(true);
-            getAccessibleContext().setAccessibleName("Title bar");
+            getAccessibleContext().setAccessibleName(
+                FMLocalized.of(FMString.of("window.titleBar")).toString());
 
             java.util.List<javax.swing.JComponent> buttons = new java.util.ArrayList<>();
             int x = 8;

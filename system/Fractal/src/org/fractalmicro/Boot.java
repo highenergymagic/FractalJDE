@@ -63,7 +63,7 @@ public final class Boot {
             System.err.println(message);
             try {
                 javax.swing.JOptionPane.showMessageDialog(null, message,
-                    "Fractal Finder", javax.swing.JOptionPane.ERROR_MESSAGE);
+                    "FractalJDE", javax.swing.JOptionPane.ERROR_MESSAGE);
             } catch (Throwable ignored) {
                 // No display either; the console message is all there is.
             }

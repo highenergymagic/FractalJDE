@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.menuextras;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.appkit.FMMenuExtra;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.foundation.FMString;
@@ -40,8 +41,8 @@ public final class VolumeExtra implements FMMenuExtra {
     }
 
     private JMenu build() {
-        JMenu m = new JMenu("Volume");
-        m.add(MainMenu.item("Sound Preferences…", null,
+        JMenu m = new JMenu(FMLocalized.of(FMString.of("extra.volume")).toString());
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.soundPreferences")).toString(), null,
                             e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
         return m;
     }

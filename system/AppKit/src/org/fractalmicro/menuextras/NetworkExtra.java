@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.menuextras;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.appkit.FMMenuExtra;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.foundation.FMString;
@@ -43,10 +44,10 @@ public final class NetworkExtra implements FMMenuExtra {
     private static final String FILE_BROWSER = "org.fractalmicro.finder";
 
     private JMenu build() {
-        JMenu m = new JMenu("Network");
-        m.add(MainMenu.item("Network Preferences…", null,
+        JMenu m = new JMenu(FMLocalized.of(FMString.of("extra.network")).toString());
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.networkPreferences")).toString(), null,
                             e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
-        m.add(MainMenu.item("Connect to Server…", null,
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.connectToServer")).toString(), null,
                             e -> Bundles.openPart(FILE_BROWSER, "connect-to-server")));
         return m;
     }

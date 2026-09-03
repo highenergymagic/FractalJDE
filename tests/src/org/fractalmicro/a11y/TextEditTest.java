@@ -65,7 +65,7 @@ public final class TextEditTest {
             // and what does is put on the control when the window is built.
             if ("undo".equals(action) || "redo".equals(action)) continue;
             if (pane.getActionMap().get(action) == null) {
-                unknown.add(one.title() + " sends " + action);
+                unknown.add(one.sends() + " sends " + action);
             }
         }
         out.println("      " + commands.count() + " editing commands");
@@ -73,7 +73,7 @@ public final class TextEditTest {
                           unknown.isEmpty());
         for (String one : unknown) out.println("      " + one);
 
-        failures += check(out, "and each one has a name a person would recognise",
+        failures += check(out, "and each one is named in the interface file",
             allNamed(commands));
 
         /* --------------------------------------------------------- the description */
@@ -122,7 +122,7 @@ public final class TextEditTest {
 
     private static boolean allNamed(FMArray<TextEdit.Command> commands) {
         for (int i = 0; i < commands.count(); i++) {
-            if (commands.at(i).title().isBlank()) return false;
+            if (commands.at(i).sends().isBlank()) return false;
         }
         return true;
     }

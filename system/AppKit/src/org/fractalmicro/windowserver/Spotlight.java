@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.windowserver;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.bundle.LaunchServices;
 
 
@@ -46,7 +48,7 @@ public class Spotlight extends JDialog {
     private final FMTextField field = new FMTextField(24);
     private final DefaultListModel<Node> model = new DefaultListModel<>();
     private final JList<Node> results = new JList<>(model);
-    private final JLabel summary = new JLabel("Type to search");
+    private final JLabel summary = new JLabel(word(FMString.of("spotlight.typeToSearch")));
     private final Timer debounce;
 
     private Spotlight(Desktop owner) {
@@ -60,11 +62,11 @@ public class Spotlight extends JDialog {
                 BorderFactory.createEmptyBorder(8, 8, 8, 8)));
         panel.setBackground(new Color(0xF4F4F4));
 
-        JLabel label = new JLabel("Spotlight");
+        JLabel label = new JLabel(word(FMString.of("spotlight.name")));
         label.setFont(Aqua.smallFont());
         label.setLabelFor(field);
         field.setFont(Aqua.systemFont());
-        field.getAccessibleContext().setAccessibleName("Spotlight search");
+        field.getAccessibleContext().setAccessibleName(word(FMString.of("spotlight.search")));
 
         results.setCellRenderer(new ResultRenderer());
         results.setVisibleRowCount(10);
@@ -146,23 +148,38 @@ public class Spotlight extends JDialog {
         instance.search();
     }
 
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     private void search() {
         String q = field.getText();
         if (q.isBlank()) {
             model.clear();
-            summary.setText("Type to search");
+            summary.setText(word(FMString.of("spotlight.typeToSearch")));
             return;
         }
-        summary.setText("Searching…");
+        summary.setText(word(FMString.of("spotlight.searching")));
         Shell.async(() -> {
             List<Node> hits = Search.everywhere(q, 60);
             SwingUtilities.invokeLater(() -> {
                 model.clear();
                 for (Node n : hits) model.addElement(n);
-                String how = org.fractalmicro.fs.Search.serverAnswering() ? "" : " (searched without the index)";
-                summary.setText(hits.isEmpty()
-                    ? "No results for " + q + how
-                    : hits.size() + (hits.size() == 1 ? " result" : " results") + " for " + q + how);
+                // Three sentences rather than one built out of pieces: how many, then
+                // what was looked for, then whether the index was there to ask.
+                FMString said;
+                if (hits.isEmpty()) {
+                    said = FMLocalized.filled(FMString.of("spotlight.noResults"), FMString.of(q));
+                } else if (hits.size() == 1) {
+                    said = FMLocalized.filled(FMString.of("spotlight.oneResult"), FMString.of(q));
+                } else {
+                    said = FMLocalized.filled(FMString.of("spotlight.someResults"),
+                        FMString.of(String.valueOf(hits.size())), FMString.of(q));
+                }
+                if (!org.fractalmicro.fs.Search.serverAnswering()) {
+                    said = FMLocalized.filled(FMString.of("spotlight.withoutIndex"), said);
+                }
+                summary.setText(said.toString());
             });
         });
     }

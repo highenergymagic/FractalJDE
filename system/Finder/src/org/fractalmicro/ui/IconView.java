@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.os.FinderSettings;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
@@ -49,7 +51,7 @@ public class IconView extends JScrollPane implements FileView {
         list.setFixedCellHeight(iconSize + 30);
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setBackground(Color.WHITE);
-        list.getAccessibleContext().setAccessibleName("Icon view");
+        list.getAccessibleContext().setAccessibleName(word(FMString.of("finder.iconView")));
 
         list.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
@@ -122,6 +124,11 @@ public class IconView extends JScrollPane implements FileView {
     }
 
     @Override public void focusView() { list.requestFocusInWindow(); }
+
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
 
     @Override public void arrangeBy(String key) {
         sortKey = key;

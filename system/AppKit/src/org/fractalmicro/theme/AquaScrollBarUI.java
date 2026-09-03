@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.theme;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -81,12 +83,14 @@ public class AquaScrollBarUI extends BasicScrollBarUI {
 
     @Override
     protected JButton createDecreaseButton(int orientation) {
-        return new ArrowButton(orientation, "Scroll up");
+        return new ArrowButton(orientation,
+            FMLocalized.of(FMString.of("scrollBar.up")).toString());
     }
 
     @Override
     protected JButton createIncreaseButton(int orientation) {
-        return new ArrowButton(orientation, "Scroll down");
+        return new ArrowButton(orientation,
+            FMLocalized.of(FMString.of("scrollBar.down")).toString());
     }
 
     /* -------------------------------------------------------------- layout */

@@ -284,7 +284,7 @@ public final class DragTest {
             window = org.fractalmicro.ui.Finder.newWindow(root.toFile());
             List<java.awt.Component> unwired = new ArrayList<>();
             List<javax.swing.JComponent> wired = new ArrayList<>();
-            for (String mode : List.of("Icon", "List", "Column", "Cover Flow")) {
+            for (String mode : List.of("Icon", "List", "Column", "CoverFlow")) {
                 window.setViewMode(mode);
                 collect(window, wired, unwired);
             }

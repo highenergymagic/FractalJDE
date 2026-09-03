@@ -392,7 +392,7 @@ public final class FinderMenus implements NibLoader.Commands {
             case "viewAsIcons" -> setView("Icon");
             case "viewAsList" -> setView("List");
             case "viewAsColumns" -> setView("Column");
-            case "viewAsCoverFlow" -> setView("Cover Flow");
+            case "viewAsCoverFlow" -> setView("CoverFlow");
             case "cleanUp" -> {
                 Finder.refreshDesktop();
                 FinderWindow w = Finder.frontWindow();
@@ -403,7 +403,7 @@ public final class FinderMenus implements NibLoader.Commands {
                 if (w != null) w.reload(); else Finder.refreshDesktop();
             }
             case "arrangeByName" -> arrangeBy("Name");
-            case "arrangeByDateModified" -> arrangeBy("Date Modified");
+            case "arrangeByDateModified" -> arrangeBy("DateModified");
             case "arrangeBySize" -> arrangeBy("Size");
             case "arrangeByKind" -> arrangeBy("Kind");
             case "toggleToolbar" -> toggle("toolbar");

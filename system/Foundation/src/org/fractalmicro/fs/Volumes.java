@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.fs;
 
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.core.Shell;
 import org.fractalmicro.win.Kernel32;
 
@@ -122,13 +123,17 @@ public final class Volumes {
         return display.trim();
     }
 
+    private static String word(org.fractalmicro.foundation.FMString key) {
+        return org.fractalmicro.foundation.FMLocalized.of(key).toString();
+    }
+
     /** A drive that answers to nothing at all still needs a name. */
     private static String defaultName(Node.Kind kind, String root) {
         switch (kind) {
-            case EXTERNAL_DISK: return "Removable Disk";
-            case REMOVABLE_MEDIA: return "Optical Drive";
-            case SERVER: return "Network Drive";
-            default: return "Local Disk";
+            case EXTERNAL_DISK: return word(FMString.of("volume.removableDisk"));
+            case REMOVABLE_MEDIA: return word(FMString.of("volume.opticalDrive"));
+            case SERVER: return word(FMString.of("volume.networkDrive"));
+            default: return word(FMString.of("volume.localDisk"));
         }
     }
 

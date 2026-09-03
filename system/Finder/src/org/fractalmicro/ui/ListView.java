@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
 import org.fractalmicro.theme.Aqua;
@@ -48,7 +50,7 @@ public class ListView extends JScrollPane implements FileView {
         table.setFont(Aqua.viewFont());
         table.getTableHeader().setFont(Aqua.smallFont());
         table.getTableHeader().setReorderingAllowed(false);
-        table.getAccessibleContext().setAccessibleName("List view");
+        table.getAccessibleContext().setAccessibleName(word(FMString.of("finder.listView")));
 
         table.getColumnModel().getColumn(0).setPreferredWidth(280);
         table.getColumnModel().getColumn(0).setCellRenderer(new NameRenderer());
@@ -132,8 +134,15 @@ public class ListView extends JScrollPane implements FileView {
         });
     }
 
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     private static class Model extends AbstractTableModel {
-        private final String[] columns = {"Name", "Date Modified", "Size", "Kind"};
+        private final String[] columns = {
+            word(FMString.of("browser.name")), word(FMString.of("browser.dateModified")),
+            word(FMString.of("browser.size")), word(FMString.of("browser.kind"))};
         private List<Node> rows = new ArrayList<>();
 
         @Override public int getRowCount() { return rows.size(); }

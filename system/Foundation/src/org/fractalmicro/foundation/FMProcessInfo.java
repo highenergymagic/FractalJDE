@@ -61,10 +61,10 @@ public final class FMProcessInfo {
     public FMString operatingSystemBuiltAt() { return FMString.of(Version.builtAt()); }
 
     /** The name in full, which is what a specification sheet says. */
-    public FMString operatingSystemLongName() { return FMString.of(SystemProfile.OS_LONG_NAME); }
+    public FMString operatingSystemLongName() { return FMString.of(SystemProfile.longName()); }
 
     /** Who makes it. */
-    public FMString operatingSystemVendor() { return FMString.of(SystemProfile.VENDOR); }
+    public FMString operatingSystemVendor() { return FMString.of(SystemProfile.vendor()); }
 
     /* ------------------------------------------------------------ the machine */
 

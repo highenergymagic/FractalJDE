@@ -224,7 +224,7 @@ public final class FinderSettings {
         switch (code) {
             case "Nlsv": return "List";
             case "clmv": return "Column";
-            case "Flwv": return "Cover Flow";
+            case "Flwv": return "CoverFlow";
             default: return "Icon";
         }
     }
@@ -237,7 +237,7 @@ public final class FinderSettings {
         switch (name) {
             case "List": return "Nlsv";
             case "Column": return "clmv";
-            case "Cover Flow": return "Flwv";
+            case "CoverFlow": return "Flwv";
             default: return "icnv";
         }
     }
@@ -324,8 +324,8 @@ public final class FinderSettings {
     /** Turns Finder's sort keys into the Arrange By menu wording and back. */
     public static String arrangeLabelFor(String key) {
         switch (key) {
-            case "dateModified": return "Date Modified";
-            case "dateCreated": return "Date Created";
+            case "dateModified": return "DateModified";
+            case "dateCreated": return "DateCreated";
             case "size": return "Size";
             case "kind": return "Kind";
             case "label": return "Label";
@@ -335,8 +335,8 @@ public final class FinderSettings {
 
     public static String arrangeKeyFor(String label) {
         switch (label) {
-            case "Date Modified": return "dateModified";
-            case "Date Created": return "dateCreated";
+            case "DateModified": return "dateModified";
+            case "DateCreated": return "dateCreated";
             case "Size": return "size";
             case "Kind": return "kind";
             case "Label": return "label";

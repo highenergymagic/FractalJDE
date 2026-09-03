@@ -59,8 +59,8 @@ public final class WordingTest {
             check(bundle.identifier().toString(), "a bundle identifier", found);
         }
         check(org.fractalmicro.os.SystemProfile.OS_NAME, "the system name", found);
-        check(org.fractalmicro.os.SystemProfile.OS_LONG_NAME, "the long system name", found);
-        check(org.fractalmicro.os.SystemProfile.VENDOR, "the company", found);
+        check(org.fractalmicro.os.SystemProfile.longName(), "the long system name", found);
+        check(org.fractalmicro.os.SystemProfile.vendor(), "the company", found);
 
         if (found.isEmpty()) {
             out.println("ok    nothing on screen names another company");

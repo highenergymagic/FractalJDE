@@ -158,8 +158,28 @@ disk, and requires the two to agree. A key with no entry falls back to showing t
 which reads as nearly-English in the language it was written in and as nothing at all in
 any other. Nobody who speaks only the first will ever see it.
 
-It also counts the sentences still written into the source. That number may fall and may not
-rise, which is the only thing that makes a long job finish rather than drift.
+It also requires the words to be in a table the program can actually read. A framework's
+words are on the volume for everything to read; a program's are read by that program. A key
+asked for in one program and written down in another shows as the key itself on screen, and
+the merged view a check takes of every table on disk is exactly the view that hides it.
+
+Then it counts the sentences still written into the source. That count was a ratchet for a
+while, a number that could fall and could not rise, because moving a few hundred sentences
+out of the code takes longer than one sitting. It is zero now, so it is a rule again.
+
+Two things are not counted, and both are named rather than guessed at. A line writing to the
+log is not translated, here or on a Mac: the log is read by whoever is looking into
+something going wrong and it says the same thing to all of them. And a short list of names
+is not words at all: the programs and folders as they are written on the volume, the font
+families asked of the host, and what a binary format is called.
+
+The trap underneath all of this is not a missing word but a working program that stops
+working when it is translated. A list holds titles somebody reads, and a program acts on
+what they mean, and those are not the same string. System Profiler was switching on the
+title of the row that had been picked, so its window would have shown Hardware for every
+section in any language but English. An event carries the position now, which is the same
+everywhere, and the same rule applies to a view mode, a sort order and a pop-up item: the
+value is an identifier and is spelled as one.
 
 `XibTest` checks that a description survives being written and read, that a translation
 reaches the window, and the one that is easy to get wrong: that a key with no translation

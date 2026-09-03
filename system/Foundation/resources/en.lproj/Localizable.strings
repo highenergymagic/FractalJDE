@@ -241,3 +241,19 @@
 "search.pastWeek" = "Past Week";
 "search.allImages" = "All Images";
 "search.allDocuments" = "All Documents";
+
+/* What the system is, in full, and who makes it. The short name is one word and is the
+   same word everywhere, so it is not here. */
+"system.longName" = "Fractal Java Desktop Environment";
+"system.vendor" = "Fractal Microsystems, Inc.";
+
+/* What a drive is called when it answers to nothing at all. A drive with a name of its
+   own keeps it: that name is on the disk and is not the system's word. */
+"volume.removableDisk" = "Removable Disk";
+"volume.opticalDrive" = "Optical Drive";
+"volume.networkDrive" = "Network Drive";
+"volume.localDisk" = "Local Disk";
+
+/* What is written inside an alias when the volume has no resource fork to keep the real
+   record in. Somebody who opens that file reads this line. */
+"alias.pointsTo" = "This is an alias to %1$@";

@@ -42,8 +42,6 @@ import org.fractalmicro.appkit.FMWorkspace;
  */
 public final class ActivityMonitor implements org.fractalmicro.appkit.FMApplicationDelegate {
 
-    public static final FMString NAME = FMString.of("Activity Monitor");
-
     /** The interface file this program opens, inside its own bundle. */
     private static final FMString INTERFACE = FMString.of("ActivityMonitor");
 

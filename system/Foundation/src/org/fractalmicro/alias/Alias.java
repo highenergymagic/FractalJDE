@@ -95,8 +95,10 @@ public final class Alias {
 
         if (!forkWritten) {
             Files.write(alias.toPath(),
-                ("This is an alias to " + target.getAbsolutePath() + System.lineSeparator())
-                    .getBytes(StandardCharsets.UTF_8));
+                (org.fractalmicro.foundation.FMLocalized.filled(
+                     org.fractalmicro.foundation.FMString.of("alias.pointsTo"),
+                     org.fractalmicro.foundation.FMString.of(target.getAbsolutePath()))
+                 + System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
             org.fractalmicro.core.Log.info("no fork available for " + alias
                                   + "; the alias record is kept beside it");
         }

@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.menuextras;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.appkit.FMMenuExtra;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.foundation.FMString;
@@ -40,12 +41,13 @@ public final class SpotlightExtra implements FMMenuExtra {
     }
 
     private JMenu build() {
-        JMenu m = new JMenu("Spotlight");
-        m.getAccessibleContext().setAccessibleName("Spotlight");
-        m.add(MainMenu.item("Show Spotlight…",
+        String name = FMLocalized.of(FMString.of("extra.spotlight")).toString();
+        JMenu m = new JMenu(name);
+        m.getAccessibleContext().setAccessibleName(name);
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.showSpotlight")).toString(),
             javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, MainMenu.CMD),
             e -> org.fractalmicro.windowserver.Spotlight.open()));
-        m.add(MainMenu.item("Spotlight Preferences…", null,
+        m.add(MainMenu.item(FMLocalized.of(FMString.of("extra.spotlightPreferences")).toString(), null,
                             e -> Bundles.openPart(SYSTEM_PREFERENCES, "system")));
         return m;
     }

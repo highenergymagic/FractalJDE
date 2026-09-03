@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.theme;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicComboBoxUI;
@@ -54,7 +56,8 @@ public class AquaComboBoxUI extends BasicComboBoxUI {
         button.setBorder(BorderFactory.createEmptyBorder());
         button.setFocusable(false);
         // Named. An unnamed button says nothing about what pressing it would do.
-        button.getAccessibleContext().setAccessibleName("Show choices");
+        button.getAccessibleContext().setAccessibleName(
+            FMLocalized.of(FMString.of("popUp.showChoices")).toString());
         return button;
     }
 

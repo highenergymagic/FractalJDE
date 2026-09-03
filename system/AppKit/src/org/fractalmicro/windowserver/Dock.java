@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.windowserver;
 
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.bundle.Bundles;
 import org.fractalmicro.bundle.LaunchServices;
 
@@ -288,12 +289,17 @@ public class Dock extends JPanel {
             m.show(this, 0, -m.getPreferredSize().height);
         }
 
+        private static String word(FMString key) {
+            return org.fractalmicro.foundation.FMLocalized.of(key).toString();
+        }
+
         /** The Dock's own menu: Options with Keep in Dock, then the app's commands. */
         private JPopupMenu menu() {
             JPopupMenu m = new JPopupMenu();
             if (node.kind == Node.Kind.TRASH) {
-                m.add(item("Open", e -> LaunchServices.tellFileBrowser(LaunchServices.TRASH)));
-                JMenuItem empty = item("Empty Trash", e -> LaunchServices.tellFileBrowser(LaunchServices.EMPTY_TRASH));
+                m.add(item(word(FMString.of("dock.open")), e -> LaunchServices.tellFileBrowser(LaunchServices.TRASH)));
+                JMenuItem empty = item(word(FMString.of("dock.emptyTrash")),
+                    e -> LaunchServices.tellFileBrowser(LaunchServices.EMPTY_TRASH));
                 empty.setEnabled(!Trash.isEmpty());
                 m.add(empty);
                 return m;
@@ -305,30 +311,30 @@ public class Dock extends JPanel {
                     String title = window.title.length() > 60
                         ? window.title.substring(0, 57) + "…" : window.title;
                     JMenuItem item = item(title, e -> WindowList.activate(window));
-                    if (window.minimized) item.setToolTipText("Minimized");
+                    if (window.minimized) item.setToolTipText(word(FMString.of("dock.minimized")));
                     m.add(item);
                 }
                 m.addSeparator();
             }
 
-            JMenu options = new JMenu("Options");
+            JMenu options = new JMenu(word(FMString.of("dock.options")));
             File file = node.file;
             boolean pinned = DockSettings.isPinned(file);
             if (file != null) {
-                JCheckBoxMenuItem keep = new JCheckBoxMenuItem("Keep in Dock", pinned);
+                JCheckBoxMenuItem keep = new JCheckBoxMenuItem(word(FMString.of("dock.keepInDock")), pinned);
                 keep.addActionListener(e -> {
                     if (keep.isSelected()) DockSettings.pin(node.name, file);
                     else DockSettings.unpin(file);
                     rebuild();
                 });
                 options.add(keep);
-                options.add(item("Show in Finder", e -> {
+                options.add(item(word(FMString.of("dock.showInFinder")), e -> {
                     File target = Apps.resolve(file);
                     File folder = target.isDirectory() ? target : target.getParentFile();
                     LaunchServices.openFolder(folder);
                 }));
             } else {
-                JMenuItem keep = new JMenuItem("Keep in Dock");
+                JMenuItem keep = new JMenuItem(word(FMString.of("dock.keepInDock")));
                 keep.setEnabled(false);
                 options.add(keep);
             }
@@ -336,16 +342,17 @@ public class Dock extends JPanel {
             m.addSeparator();
 
             if ("Finder".equals(node.name)) {
-                m.add(item("New Finder Window", e -> Bundles.openIdentifier(LaunchServices.FILE_BROWSER)));
+                m.add(item(word(FMString.of("dock.newFinderWindow")),
+                    e -> Bundles.openIdentifier(LaunchServices.FILE_BROWSER)));
                 return m;
             }
             if (app != null) {
-                m.add(item("Hide", e -> WindowList.hide(app)));
-                m.add(item("Quit", e -> WindowList.quit(app)));
+                m.add(item(word(FMString.of("dock.hide")), e -> WindowList.hide(app)));
+                m.add(item(word(FMString.of("dock.quit")), e -> WindowList.quit(app)));
             } else if (running) {
-                m.add(item("Quit", e -> Desktop.quitApplication(node.name)));
+                m.add(item(word(FMString.of("dock.quit")), e -> Desktop.quitApplication(node.name)));
             } else {
-                m.add(item("Open", e -> LaunchServices.open(node)));
+                m.add(item(word(FMString.of("dock.open")), e -> LaunchServices.open(node)));
             }
             return m;
         }

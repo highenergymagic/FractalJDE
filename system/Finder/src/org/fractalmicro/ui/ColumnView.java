@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
 import org.fractalmicro.theme.Aqua;
@@ -56,7 +58,7 @@ public class ColumnView extends JScrollPane implements FileView {
         setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_ALWAYS);
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
         setBorder(BorderFactory.createEmptyBorder());
-        getAccessibleContext().setAccessibleName("Column view");
+        getAccessibleContext().setAccessibleName(word(FMString.of("finder.columnView")));
     }
 
     @Override public void allowDragging(java.util.function.Supplier<java.io.File> showing) {
@@ -170,6 +172,11 @@ public class ColumnView extends JScrollPane implements FileView {
 
     @Override public void focusView() {
         if (!columns.isEmpty()) columns.get(0).requestFocusInWindow();
+    }
+
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
     }
 
     @Override public void arrangeBy(String key) { sortKey = key; }
