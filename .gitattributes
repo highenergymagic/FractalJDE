@@ -1,0 +1,14 @@
+# What a checkout may not change.
+#
+# Git for Windows offers to convert line endings on the way out of the repository, and the
+# option it recommends turns every LF into CRLF. A shell script that arrives that way does
+# not run: the carriage return becomes part of the last word on the line, so the shell
+# looks for a command whose name ends in a character nobody typed.
+#
+# So the scripts are pinned. Everything else is left alone deliberately: the source in this
+# repository is a mix of both endings, file by file, and normalising it would rewrite most
+# of the tree to fix a problem it does not have.
+
+*.sh    text eol=lf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf

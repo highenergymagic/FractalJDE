@@ -49,6 +49,26 @@
 # each other; the checks come last and see everything, because that is their job.
 set -e
 cd "$(dirname "$0")/.."
+# Which find. Windows ships a find.exe of its own that searches inside files for a string
+# and has never heard of -name, and whichever comes first on the path is the one that runs.
+# On a machine where that is Windows' the only output of this whole script was
+# "File not found - *.java". So the one that walks directories is chosen by trying them
+# rather than assumed, and a machine with none says so.
+find=
+for candidate in /usr/bin/find /bin/find find; do
+    if command -v "$candidate" >/dev/null 2>&1 \
+       && "$candidate" tools -name build.sh >/dev/null 2>&1; then
+        find=$candidate
+        break
+    fi
+done
+if [ -z "$find" ]; then
+    echo "no find here understands -name." >&2
+    echo "Windows has one of its own that does not; this needs the one Git Bash," >&2
+    echo "MSYS or Cygwin installs. Run this from a Git Bash prompt." >&2
+    exit 1
+fi
+
 
 tests=yes
 part=patch
@@ -109,7 +129,7 @@ for name in $FRAMEWORKS; do
              done ;;
         *)   roots="system/$name/src" ;;
     esac
-    find $roots -name '*.java' > "$tmp/fractal-fw.txt"
+    "$find" $roots -name '*.java' > "$tmp/fractal-fw.txt"
     [ -s "$tmp/fractal-fw.txt" ] || continue
     out="build/frameworks/$(echo "$name" | tr -d "+")"
     mkdir -p "$out"
@@ -138,7 +158,7 @@ system="$beneath"
 
 # ------------------------------------------------------------------ the executable
 mkdir -p build/system
-find system/Fractal/src -name '*.java' \
+"$find" system/Fractal/src -name '*.java' \
      ! -name 'Boot.java' ! -name 'Kernel.java' ! -name 'BaseImage.java' \
      > "$tmp/fractal-main.txt"
 javac --release 21 --enable-preview -d build/system -encoding UTF-8 \
@@ -158,7 +178,7 @@ javac --release 21 -d build/system -encoding UTF-8 \
 # so that the loader can map it and there is nothing above the frameworks that is not.
 mkdir -p build/frameworks/loginwindow
 cp -r build/system/org build/frameworks/loginwindow/ 2>/dev/null || true
-find build/frameworks/loginwindow -mindepth 3 -maxdepth 3 -type d \
+"$find" build/frameworks/loginwindow -mindepth 3 -maxdepth 3 -type d \
      ! -name 'resources' -exec rm -rf {} + 2>/dev/null || true
 
 cp -r build/frameworks/*/* build/system/ 2>/dev/null || true
@@ -182,7 +202,7 @@ apps=""
 for dir in apps/*/; do
     name=$(basename "$dir")
     [ -d "$dir/src" ] || continue
-    find "$dir/src" -name '*.java' > "$tmp/fractal-app.txt"
+    "$find" "$dir/src" -name '*.java' > "$tmp/fractal-app.txt"
     [ -s "$tmp/fractal-app.txt" ] || continue
     mkdir -p "build/apps/$name"
     javac --release 21 --enable-preview -d "build/apps/$name" -encoding UTF-8 \
@@ -207,7 +227,7 @@ if [ "$tests" = yes ] && [ -d tests/src ]; then
     classpath="$system${sep}build/system"
     for name in $apps; do classpath="$classpath${sep}build/apps/$name"; done
     mkdir -p build/tests
-    find tests/src -name '*.java' > "$tmp/fractal-tests.txt"
+    "$find" tests/src -name '*.java' > "$tmp/fractal-tests.txt"
     javac --release 21 --enable-preview -d build/tests -encoding UTF-8 \
           -cp "$classpath" @"$tmp/fractal-tests.txt"
 fi
@@ -269,9 +289,9 @@ echo "built FractalJDE $version ($build) at $built"
 for name in $FRAMEWORKS loginwindow; do
     out="build/frameworks/$(echo "$name" | tr -d '+')"
     [ -d "$out" ] || continue
-    echo "  $name $(find "$out" -name '*.class' | wc -l | tr -d ' ') classes"
+    echo "  $name $("$find" "$out" -name '*.class' | wc -l | tr -d ' ') classes"
 done
 for name in $apps; do
-    echo "  $name $(find "build/apps/$name" -name '*.class' | wc -l | tr -d ' ') classes"
+    echo "  $name $("$find" "build/apps/$name" -name '*.class' | wc -l | tr -d ' ') classes"
 done
 echo "run it with: java -Dorg.fractalmicro.images=build/frameworks -jar build/FractalJDE.jar"

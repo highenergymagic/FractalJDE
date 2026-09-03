@@ -40,6 +40,17 @@
 # because the volume being built is not the volume this machine runs.
 set -e
 cd "$(dirname "$0")/.."
+# Windows' own find.exe has never heard of -name, and whichever is first on the path runs.
+# The same reason build.sh chooses one rather than assuming.
+find=
+for candidate in /usr/bin/find /bin/find find; do
+    if command -v "$candidate" >/dev/null 2>&1        && "$candidate" tools -name release.sh >/dev/null 2>&1; then
+        find=$candidate
+        break
+    fi
+done
+[ -n "$find" ] || { echo "no find here understands -name; run this from Git Bash." >&2; exit 1; }
+
 
 sh tools/build.sh --no-tests
 
@@ -161,5 +172,5 @@ image=$(wc -c < build/BaseSystem.dmg | tr -d ' ')
 echo "released build/$archive"
 echo "  kernel        $((kernel / 1024))K"
 echo "  launcher      $launcher"
-echo "  base image    $((image / 1024))K, $(find "$volume" -type f | wc -l | tr -d ' ') files"
-echo "  applications  $( find "$volume" -maxdepth 5 -name '*.app' | wc -l | tr -d ' ')"
+echo "  base image    $((image / 1024))K, $("$find" "$volume" -type f | wc -l | tr -d ' ') files"
+echo "  applications  $("$find" "$volume" -maxdepth 5 -name '*.app' | wc -l | tr -d ' ')"
