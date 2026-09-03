@@ -69,6 +69,7 @@ The rest is in `docs/`, roughly in the order it makes sense to read.
 | [finder.md](docs/finder.md) | aliases, labels, renaming, shortcuts |
 | [dragging.md](docs/dragging.md) | what a drop does, where it can land, what it refuses |
 | [text.md](docs/text.md) | the text system, spelling, services |
+| [scripting.md](docs/scripting.md) | Apple events, and telling a program what to do |
 | [keyboard.md](docs/keyboard.md) | the keys, and what announces itself |
 | [aqua.md](docs/aqua.md) | the look, and where it came from |
 | [shell.md](docs/shell.md) | taking over from Explorer |

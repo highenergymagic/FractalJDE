@@ -422,7 +422,11 @@ public class Desktop extends JFrame {
         for (AppFrame frame : frames) {
             if (!frame.window().isClosed()) out.add(frame.window());
         }
-        for (JInternalFrame f : pane.getAllFrames()) out.add(f);
+        // Closed ones are left in the pane by Swing, which disposes a frame without
+        // removing it. Anything asking what is open means what is open.
+        for (JInternalFrame f : pane.getAllFrames()) {
+            if (!f.isClosed()) out.add(f);
+        }
         return out;
     }
 

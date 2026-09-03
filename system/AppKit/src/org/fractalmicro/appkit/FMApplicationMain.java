@@ -56,6 +56,11 @@ public final class FMApplicationMain implements Bundles.Launcher {
     /** Tells LaunchServices that this is what opening a program means. */
     public static void install() {
         Bundles.setLauncher(new FMApplicationMain());
+        // Events sent from this process go through the server directly. It is in here,
+        // so asking it over a connection would be this process writing to itself.
+        org.fractalmicro.scripting.FMAppleEventManager.sharedManager().setCourier(
+            (event, wait) ->
+                org.fractalmicro.windowserver.WindowServer.sharedServer().send(event, wait));
     }
 
     /**

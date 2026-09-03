@@ -25,6 +25,8 @@ import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.core.Log;
 import org.fractalmicro.nib.Nib;
+import org.fractalmicro.scripting.FMAppleEvent;
+import org.fractalmicro.scripting.FMAppleEventManager;
 import org.fractalmicro.os.FMUserDefaultsController;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.windowserver.Desktop;
@@ -162,6 +164,19 @@ public final class WindowServer {
 
     /** The answer, coming back the other way: the commands that can be done. */
     public static final String VALIDATED = "validated";
+
+    /**
+     * An Apple event on its way to a program, and the answer on its way back.
+     *
+     * The server carries these because it is the one process every program is already
+     * connected to and already holds a queue for. Nothing about an event is the window
+     * server's business beyond who it is for.
+     */
+    public static final String APPLE_EVENT = "appleEvent";
+    public static final String APPLE_EVENT_REPLY = "appleEventReply";
+
+    /** How a program is told one has arrived, on the same queue as everything else. */
+    public static final String EVENT_APPLE = "apple";
     public static final String EVENT_NONE = "none";
 
     private static WindowServer instance;
@@ -367,6 +382,8 @@ public final class WindowServer {
                 case SET_ENABLED -> setEnabled(request);
                 case NEXT_EVENT -> nextEvent(request);
                 case VALIDATED -> validated(request);
+                case APPLE_EVENT -> appleEvent(request);
+                case APPLE_EVENT_REPLY -> appleEventReply(request);
                 case LIST -> listWindows();
                 case ASK -> ask(request);
                 case TELL -> tell(request);
@@ -802,6 +819,188 @@ public final class WindowServer {
     private void post(String application, Message event) {
         if (settingFromTheProgram) return;
         deliver(application, event);
+    }
+
+    /* ------------------------------------------------------------- Apple events */
+
+    /** Programs answered in this process rather than over a connection. */
+    private final java.util.Set<String> local =
+        java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * Says that events for this program are answered here.
+     *
+     * The Finder, the Dock and the desktop's own panels run inside the window server, so
+     * an event for one of them has nowhere to travel to. It is handed to the manager in
+     * this process instead, which is the same manager a program in its own process has.
+     */
+    public void serveLocally(FMString identifier) {
+        if (identifier != null && !identifier.isEmpty()) local.add(identifier.toString());
+    }
+
+    /**
+     * Sends an event from inside this process, which is what the courier here does.
+     *
+     * Waits for the answer like any other sender. Nothing on the screen is touched, and
+     * nothing here hops to the event thread, so it is safe to call from a service thread
+     * and merely slow to call from the one drawing.
+     */
+    public org.fractalmicro.foundation.FMDictionary send(FMAppleEvent event, long waitMillis) {
+        Message asking = Message.of(APPLE_EVENT)
+            .put("target", event.target().toString())
+            .put("class", event.eventClass().toString())
+            .put("id", event.eventID().toString())
+            .put("timeout", waitMillis)
+            .put("parameters", event.parameters().asMap());
+        Message reply = appleEvent(asking);
+        Object came = reply.get("reply");
+        return came instanceof java.util.Map<?, ?> map
+            ? org.fractalmicro.foundation.FMDictionary.fromMap(asStringKeys(map))
+            : org.fractalmicro.foundation.FMDictionary.EMPTY;
+    }
+
+    /** A map off the wire with its keys as this system spells them. */
+    public static java.util.Map<String, Object> asStringKeys(java.util.Map<?, ?> map) {
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<?, ?> one : map.entrySet()) {
+            out.put(String.valueOf(one.getKey()), one.getValue());
+        }
+        return out;
+    }
+
+    /** Answers waiting on a program, by the ticket the event went out with. */
+    private final Map<Long, java.util.concurrent.CompletableFuture<Message>> replies =
+        new ConcurrentHashMap<>();
+
+    /** How long to wait for a program that is not running yet to open its queue. */
+    private static final long LAUNCH_WAIT_MILLIS = 4000;
+
+    /**
+     * Carries one event to the program it is addressed to and brings the answer back.
+     *
+     * A program that is not running is started, because telling something to do something
+     * is how it gets opened: that is what a script means by tell application. The wait for
+     * it to be there is bounded, and so is the wait for its answer.
+     */
+    private Message appleEvent(Message request) {
+        String target = request.string("target", "");
+        String application = applicationNamed(target);
+        if (local.contains(target) || local.contains(application)) {
+            return answeredHere(request, target);
+        }
+        if (!events.containsKey(key(application)) && !start(target, application)) {
+            return replyError(FMAppleEventManager.EVENT_FAILED,
+                              "there is no program called " + target);
+        }
+        long wait = Math.max(0, Math.min(request.integer("timeout", 5000), 30_000));
+        long ticket = tickets.incrementAndGet();
+        java.util.concurrent.CompletableFuture<Message> answer =
+            new java.util.concurrent.CompletableFuture<>();
+        replies.put(ticket, answer);
+        try {
+            boolean listening = deliver(application, Message.of(EVENT)
+                .put("event", EVENT_APPLE)
+                .put("ticket", ticket)
+                .put("class", request.string("class", ""))
+                .put("id", request.string("id", ""))
+                .put("target", target)
+                .put("parameters", request.get("parameters")));
+            if (!listening) {
+                return replyError(FMAppleEventManager.EVENT_FAILED,
+                                  application + " is not listening");
+            }
+            Message reply = answer.get(wait, java.util.concurrent.TimeUnit.MILLISECONDS);
+            return Message.of(APPLE_EVENT_REPLY).put("reply", reply.get("reply"));
+        } catch (Exception noAnswer) {
+            return replyError(FMAppleEventManager.EVENT_FAILED,
+                              application + " did not answer");
+        } finally {
+            replies.remove(ticket);
+        }
+    }
+
+    /**
+     * An event for something inside this process, handed straight to the manager.
+     *
+     * Addressed by identifier from here on, whichever of its two names it arrived under,
+     * so a program has one name to write its handlers down against.
+     */
+    private Message answeredHere(Message request, String target) {
+        Object parameters = request.get("parameters");
+        String identifier = identifierOf(target);
+        FMAppleEvent event = new FMAppleEvent(
+            FMString.of(request.string("class", "")),
+            FMString.of(request.string("id", "")),
+            FMString.of(identifier.isEmpty() ? target : identifier),
+            parameters instanceof java.util.Map<?, ?> map
+                ? org.fractalmicro.foundation.FMDictionary.fromMap(asStringKeys(map))
+                : org.fractalmicro.foundation.FMDictionary.EMPTY);
+        return Message.of(APPLE_EVENT_REPLY)
+            .put("reply", FMAppleEventManager.sharedManager().handle(event).asMap());
+    }
+
+    /** A program answering an event it was sent. Never touches the screen. */
+    private Message appleEventReply(Message request) {
+        java.util.concurrent.CompletableFuture<Message> waiting =
+            replies.get(request.integer("ticket", -1));
+        if (waiting != null) waiting.complete(request);
+        return Message.of(APPLE_EVENT_REPLY).put("ok", Boolean.TRUE);
+    }
+
+    /**
+     * The name a program's queue is under, given what an event was addressed to.
+     *
+     * Either name works, because both are used: a bundle identifier is what one program
+     * has of another, and a plain name is what somebody writing a script has. A queue is
+     * under the name the program calls itself, so both end up there.
+     */
+    private static String applicationNamed(String target) {
+        if (target == null || target.isEmpty()) return "";
+        org.fractalmicro.bundle.Bundle bundle =
+            org.fractalmicro.bundle.Bundles.byIdentifier(target);
+        if (bundle != null) return bundle.displayName().toString();
+        for (org.fractalmicro.bundle.Bundle one : org.fractalmicro.bundle.Bundles.all()) {
+            if (one.displayName().toString().equals(target)) {
+                return one.displayName().toString();
+            }
+        }
+        return target;
+    }
+
+    /** The identifier of the program called that, or nothing when none is. */
+    private static String identifierOf(String target) {
+        if (org.fractalmicro.bundle.Bundles.byIdentifier(target) != null) return target;
+        for (org.fractalmicro.bundle.Bundle one : org.fractalmicro.bundle.Bundles.all()) {
+            if (one.displayName().toString().equals(target)) {
+                return one.identifier().toString();
+            }
+        }
+        return "";
+    }
+
+    /** Opens a program and waits for it to be somewhere an event can reach. */
+    private boolean start(String target, String application) {
+        String identifier = identifierOf(target);
+        if (identifier.isEmpty()) return false;
+        if (!org.fractalmicro.bundle.Bundles.openIdentifier(identifier)) return false;
+        long until = System.nanoTime() + LAUNCH_WAIT_MILLIS * 1_000_000L;
+        while (System.nanoTime() < until) {
+            if (events.containsKey(key(application))) return true;
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException stopped) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return events.containsKey(key(application));
+    }
+
+    private static Message replyError(long number, String said) {
+        java.util.Map<String, Object> reply = new java.util.LinkedHashMap<>();
+        reply.put(FMAppleEvent.ERROR_NUMBER.toString(), number);
+        reply.put(FMAppleEvent.ERROR_STRING.toString(), said);
+        return Message.of(APPLE_EVENT_REPLY).put("reply", reply);
     }
 
     /* --------------------------------------------- asking whether a command is live */

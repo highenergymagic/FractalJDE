@@ -25,6 +25,8 @@ import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.foundation.FMURL;
 import org.fractalmicro.fs.FS;
+import org.fractalmicro.scripting.FMAppleEvent;
+import org.fractalmicro.scripting.FMAppleEventManager;
 import org.fractalmicro.ui.Finder;
 
 import java.io.File;
@@ -57,9 +59,11 @@ public final class FinderApp implements FMApplicationDelegate {
         switch (named) {
             // Asked for at login, and it does not open a window. The bar and the icons on
             // the desktop are what this program draws when nothing of its own is in front.
-            case LaunchServices.DESKTOP ->
+            case LaunchServices.DESKTOP -> {
                 org.fractalmicro.ui.FinderMenus.install(
                     org.fractalmicro.windowserver.Desktop.sharedDesktop());
+                installScripting();
+            }
             case LaunchServices.TRASH -> Finder.openTrash();
             case LaunchServices.EMPTY_TRASH -> Finder.emptyTrash(false);
             case LaunchServices.EMPTY_TRASH_SECURELY -> Finder.emptyTrash(true);
@@ -84,6 +88,93 @@ public final class FinderApp implements FMApplicationDelegate {
             if (f.isDirectory()) Finder.newWindow(f);
             else Finder.goTo(f.getParentFile());
         }
+    }
+
+    /* ------------------------------------------------------------ being told things */
+
+    private static boolean scripting;
+
+    /**
+     * Says the Finder answers events, and which ones.
+     *
+     * It runs inside the window server, so an event for it never leaves this process; the
+     * server is told to hand those straight over rather than look for a queue. Done when
+     * the Finder takes the desktop, which is the moment it starts being the Finder.
+     */
+    static synchronized void installScripting() {
+        if (scripting) return;
+        scripting = true;
+        // By both names, because both are used: one program has another's identifier,
+        // and somebody writing a script has the name on the screen.
+        org.fractalmicro.windowserver.WindowServer server =
+            org.fractalmicro.windowserver.WindowServer.sharedServer();
+        server.serveLocally(FMString.of(LaunchServices.FILE_BROWSER));
+        server.serveLocally(FMString.of("Finder"));
+
+        FMAppleEventManager manager = FMAppleEventManager.sharedManager();
+        FMString me = FMString.of(LaunchServices.FILE_BROWSER);
+        manager.setEventHandler(me, FMAppleEvent.REQUIRED_SUITE,
+            FMAppleEvent.OPEN_APPLICATION, event -> onTheScreen(() -> Finder.newWindow(null)));
+        manager.setEventHandler(me, FMAppleEvent.REQUIRED_SUITE,
+            FMAppleEvent.REOPEN, event -> onTheScreen(() -> Finder.newWindow(null)));
+        manager.setEventHandler(me, FMAppleEvent.REQUIRED_SUITE,
+            FMAppleEvent.OPEN_DOCUMENTS, event -> open(event));
+        // Quitting the Finder is relaunching it, here as on the system this imitates:
+        // its windows go and the desktop is drawn again, and it is still running.
+        manager.setEventHandler(me, FMAppleEvent.REQUIRED_SUITE,
+            FMAppleEvent.QUIT, event -> onTheScreen(Finder::relaunch));
+    }
+
+    /** What an odoc event named, opened the way dragging it onto the icon would. */
+    private static Object open(FMAppleEvent event) {
+        java.util.List<File> files = new java.util.ArrayList<>();
+        for (FMString path : pathsIn(event.directObject())) {
+            File named = new File(path.toString());
+            if (!named.exists()) {
+                throw new org.fractalmicro.scripting.FMScriptError(
+                    FMString.of("there is nothing at " + path));
+            }
+            files.add(named);
+        }
+        if (files.isEmpty()) {
+            throw new org.fractalmicro.scripting.FMScriptError(
+                FMString.of("nothing was named to open"));
+        }
+        return onTheScreen(() -> {
+            for (File one : files) {
+                if (one.isDirectory()) Finder.newWindow(one);
+                else Finder.goTo(one.getParentFile());
+            }
+        });
+    }
+
+    /** One path or a list of them, which is what a direct object may be either of. */
+    private static java.util.List<FMString> pathsIn(Object directObject) {
+        java.util.List<FMString> out = new java.util.ArrayList<>();
+        if (directObject instanceof FMArray<?> many) {
+            for (Object one : many) out.add(FMString.describing(one));
+        } else if (directObject != null) {
+            out.add(FMString.describing(directObject));
+        }
+        return out;
+    }
+
+    /**
+     * Does it where windows are made, and waits, so the answer means it happened.
+     *
+     * An event arrives on a service thread and Swing belongs to one thread of its own.
+     * Waiting rather than posting is what lets a reply say a window opened rather than
+     * that one had been asked for.
+     */
+    private static Object onTheScreen(Runnable what) {
+        try {
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) what.run();
+            else javax.swing.SwingUtilities.invokeAndWait(what);
+        } catch (Exception wentWrong) {
+            throw new org.fractalmicro.scripting.FMScriptError(
+                FMString.describing(wentWrong.getMessage()));
+        }
+        return null;
     }
 
     /** Text handed over by a service: show the folder it names, if it names one. */

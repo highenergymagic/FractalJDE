@@ -215,6 +215,10 @@ public final class SelfTest {
             failures.add(validationFailures + " menu validation checks failed");
         }
 
+        steps += ScriptingTest.count();
+        int scriptFailures = ScriptingTest.run(desktop, System.out);
+        if (scriptFailures > 0) failures.add(scriptFailures + " scripting checks failed");
+
         steps += DragTest.count();
         int dragFailures = DragTest.run(System.out);
         if (dragFailures > 0) failures.add(dragFailures + " dragging checks failed");

@@ -19,6 +19,8 @@
  */
 package org.fractalmicro.appkit;
 
+import org.fractalmicro.scripting.FMAppleEvent;
+import org.fractalmicro.scripting.FMAppleEventManager;
 import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMArray;
 import java.util.List;
@@ -137,6 +139,7 @@ public final class FMApplication implements AutoCloseable {
     public static FMApplication named(FMString name) {
         FMApplication made = new FMApplication(name);
         if (SHARED == null) SHARED = made;
+        made.installScripting();
         return made;
     }
 
@@ -805,6 +808,14 @@ public final class FMApplication implements AutoCloseable {
             sayWhatCanBeDone(reply);
             return null;
         }
+        // The same again for an event from another program: answered by whatever the
+        // program wrote down for that command, and never handed to its event loop. A
+        // program handling Apple events in the same switch as its buttons would have to
+        // know the difference between somebody clicking and somebody scripting.
+        if (WindowServer.EVENT_APPLE.equals(kind)) {
+            answerAppleEvent(reply);
+            return null;
+        }
         // A menu command names the item it came from where a control names itself, so
         // both arrive the same shape and a program handles them the same way.
         String from = WindowServer.EVENT_MENU.equals(kind)
@@ -819,6 +830,60 @@ public final class FMApplication implements AutoCloseable {
                          reply.get("value"),
                          FMString.of(reply.string("folder", "")),
                          files.asArray(), (int) reply.integer("row", -1));
+    }
+
+    /**
+     * Answers one Apple event, and sends the answer back the way it came.
+     *
+     * What answers it is the manager, which holds what this program said it could do.
+     * Nothing here knows what any of the commands mean.
+     */
+    private void answerAppleEvent(Message asking) throws IOException {
+        Object parameters = asking.get("parameters");
+        FMAppleEvent event = new FMAppleEvent(
+            FMString.of(asking.string("class", "")),
+            FMString.of(asking.string("id", "")),
+            FMString.of(asking.string("target", "")),
+            parameters instanceof java.util.Map<?, ?> map
+                ? org.fractalmicro.foundation.FMDictionary.fromMap(WindowServer.asStringKeys(map))
+                : org.fractalmicro.foundation.FMDictionary.EMPTY);
+        connection().send(Message.of(WindowServer.APPLE_EVENT_REPLY)
+            .put("ticket", asking.integer("ticket", -1))
+            .put("reply", FMAppleEventManager.sharedManager().handle(event).asMap()));
+    }
+
+    /**
+     * Says how this program's events leave it, and answers the two every program answers.
+     *
+     * Quit and reopen are NSApplication's own, not the delegate's: a program that had to
+     * write down what quit means would be a program that could be told to quit and not.
+     */
+    private void installScripting() {
+        FMAppleEventManager manager = FMAppleEventManager.sharedManager();
+        manager.setCourier((event, wait) -> {
+            try {
+                Message reply = connection().send(Message.of(WindowServer.APPLE_EVENT)
+                    .put("target", event.target().toString())
+                    .put("class", event.eventClass().toString())
+                    .put("id", event.eventID().toString())
+                    .put("timeout", wait)
+                    .put("parameters", event.parameters().asMap()));
+                Object came = reply.get("reply");
+                return came instanceof java.util.Map<?, ?> map
+                    ? org.fractalmicro.foundation.FMDictionary.fromMap(
+                          WindowServer.asStringKeys(map))
+                    : org.fractalmicro.foundation.FMDictionary.EMPTY;
+            } catch (IOException noServer) {
+                return FMAppleEventManager.failure(FMAppleEventManager.EVENT_FAILED,
+                    FMString.of("the window server did not carry it"));
+            }
+        });
+        manager.setEventHandler(FMAppleEvent.REQUIRED_SUITE, FMAppleEvent.QUIT, event -> {
+            stop();
+            return null;
+        });
+        manager.setEventHandler(FMAppleEvent.REQUIRED_SUITE, FMAppleEvent.REOPEN,
+                                event -> null);
     }
 
     /**

@@ -682,6 +682,24 @@ public final class Finder {
         return d != null && d.icons() instanceof DesktopIcons view ? view : null;
     }
 
+    /**
+     * Closes every Finder window and draws the desktop again.
+     *
+     * What quitting the Finder means, which is relaunching it: the file manager is not a
+     * program a person can be left without, so it comes straight back with nothing open.
+     */
+    public static void relaunch() {
+        Desktop d = Desktop.sharedDesktop();
+        if (d == null) return;
+        // Closed the way the close button closes one, so whatever is watching for a
+        // window going away hears about it. Disposing leaves it in the pane, closed,
+        // and everything that counts windows goes on counting it.
+        for (JInternalFrame f : d.windows()) {
+            if (f instanceof FinderWindow) f.doDefaultCloseAction();
+        }
+        refreshDesktop();
+    }
+
     /** Looks at the desktop folder again, when there is a view of it to look with. */
     public static void refreshDesktop() {
         DesktopIcons icons = desktopIcons();
