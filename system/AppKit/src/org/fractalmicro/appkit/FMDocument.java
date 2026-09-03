@@ -26,17 +26,12 @@ import org.fractalmicro.foundation.FMURL;
 /**
  * What a program is editing: where it came from, and whether it has changed since.
  *
- * NSDocument, and the whole of it is those two facts and what follows from them. What
- * follows is more than it sounds. The window is titled after it. The close button shows a
- * dot rather than a cross while it has changes. Closing it asks a question, and the
- * question names the document. Opening or saving it puts it in the recent items menu. Every
- * program that edits anything needs all five, and every program that hand-rolls them gets
- * four of them slightly wrong.
+ * NSDocument. Five things follow from those two facts: the window's title, the dot in the
+ * close button, the question on closing, whether that question is asked, and the entry in
+ * the recent items.
  *
- * It does not know how to read or write anything. A text editor and a picture editor keep
- * different things in a file and this cannot help with that; what it can do is remember
- * what was last written, so that whether there are changes is a fact rather than a flag
- * somebody has to remember to set.
+ * It reads and writes nothing. What it keeps is what was last written, so whether there
+ * are changes is worked out rather than being a flag somebody sets.
  */
 public final class FMDocument {
 

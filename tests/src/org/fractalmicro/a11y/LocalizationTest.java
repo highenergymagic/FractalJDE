@@ -38,20 +38,13 @@ import java.util.regex.Pattern;
 /**
  * Whether the words are in the files that hold words.
  *
- * A program names a key and a strings file says what the key means. Both halves can go
- * wrong quietly. A key with no entry falls back to showing the key itself, which reads as
- * nearly-English in the language it was written in and as nothing at all in any other, and
- * nobody who only speaks the first one will ever see it. An entry with no key is a
- * translator's work that reaches no screen.
+ * Both halves go wrong quietly. A key with no entry shows the key, which reads as
+ * nearly-English to whoever wrote it and as nothing to everyone else; an entry with no key
+ * is a translator's work that reaches no screen.
  *
- * So this reads the source for every key asked for, reads every English table on disk, and
- * requires the two to agree. It reads files rather than running anything, because what is
- * being checked is what a translator would be handed.
- *
- * The last check is a count rather than a rule. Text written straight into the source is
- * being taken out a piece at a time, and until that is finished the number of places left
- * is recorded here: it may fall and may not rise. Without that the work stops being
- * finished and starts being maintained.
+ * So the source is read for every key asked for, every English table is read off disk, and
+ * the two must agree. Files rather than a running system, because a file is what a
+ * translator is handed.
  */
 public final class LocalizationTest {
     private LocalizationTest() {}

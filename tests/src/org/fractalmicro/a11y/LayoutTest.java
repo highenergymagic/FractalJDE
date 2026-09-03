@@ -36,10 +36,6 @@ import java.nio.file.Path;
  * framework. CoreServices is an umbrella whose Versions/A holds a Frameworks directory,
  * and the metadata server is a helper inside the framework whose work it does.
  *
- * None of that is decoration. A system where the loader is a framework and the daemons sit
- * wherever was convenient looks identical from the outside and is a different system, and
- * nothing but a check like this one notices the difference.
- *
  * Skipped where the parts have not been laid out, which is a build running from one jar
  * with no per-image code to take apart.
  */

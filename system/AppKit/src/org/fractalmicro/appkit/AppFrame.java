@@ -35,17 +35,13 @@ import java.awt.event.MouseMotionAdapter;
 /**
  * One window of this system, as a window of the host system.
  *
- * The windows in this program are internal frames: they carry their own title bar, their
- * own buttons, their own focus rules and their own accessible tree, and everything that
- * has been built and checked is built on that. What was missing was that they all lived
- * inside one big window, so the host system saw a single application with one entry in
- * its window list, and moving a Finder window past the edge of the desktop was not a
- * thing that could happen.
+ * The windows here are internal frames, carrying their own title bar, buttons, focus rules
+ * and accessible tree. Inside one big window the host sees one application with one entry
+ * in its window list, and nothing can be moved past the edge of the desktop.
  *
- * This gives each one a real window to live in: an undecorated frame of its own, with the
- * internal frame filled out inside it. The title bar drawn by this program becomes the
- * window's title bar, and dragging it moves the real window; the close, minimise and zoom
- * buttons act on the real window. Nothing above here changes, which is the point.
+ * So each gets an undecorated frame of its own with the internal frame filled out inside
+ * it. The title bar this program draws becomes the window's, dragging it moves the real
+ * window, and the three buttons act on the real window. Nothing above here changes.
  */
 public class AppFrame extends JFrame {
 

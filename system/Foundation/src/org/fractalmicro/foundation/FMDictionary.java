@@ -25,16 +25,13 @@ import java.util.Map;
 /**
  * Values kept under names.
  *
- * A property list is one of these, a bundle's description is one, a message's contents are
- * one, and a program that has this does not need the runtime's own map to read any of
- * them. Keys are text; values are whatever this system's values are.
+ * A property list is one, a bundle's description is one, a message's contents are one.
+ * Keys are text; values are this system's values.
  *
- * Order is kept. A property list read from a file and written back should come out in the
- * order it went in, because a person may be reading the file, and because a difference
- * between two of them should be the difference and not the order.
+ * Order is kept, so a property list read and written back comes out as it went in and a
+ * difference between two of them is the difference rather than the order.
  *
- * This cannot be changed once made. Something that builds one up wants
- * {@link FMMutableDictionary}, and hands over the finished thing with
+ * Cannot be changed once made: build with {@link FMMutableDictionary} and hand over with
  * {@link FMMutableDictionary#asDictionary}.
  */
 public class FMDictionary {

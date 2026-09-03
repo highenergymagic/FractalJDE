@@ -33,17 +33,13 @@ import java.util.List;
  * The text system: what every editable piece of text here gets.
  *
  * Spelling, smart quotes and dashes, the things in the text that are also something else,
- * and the services other programs offer for a selection. None of that belongs to one
- * program. A field asking for a file name has as much right to it as a document does, and
- * the way to make that true is to put it in one place and have every text control go
- * through it.
+ * and the services other programs offer for a selection. A field asking for a file name
+ * gets what a document gets.
  *
- * That place is here. {@link FMTextField} and {@link FMTextView} are the controls, and this
- * is what they both install. Anything else holding text can call {@link #install} and get
- * the same behaviour, so this is a text system rather than a feature of one editor.
+ * {@link FMTextField} and {@link FMTextView} install it; anything else holding text can
+ * call {@link #install}.
  *
- * Nothing here is done to text a person cannot edit: a field showing a value is not
- * checked for spelling, because there would be nothing to do about it.
+ * None of it is done to text a person cannot edit: there would be nothing to do about it.
  */
 public final class FMText {
     private FMText() {}

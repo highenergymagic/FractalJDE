@@ -31,19 +31,11 @@ import java.util.Map;
 /**
  * Whether an application can be written without naming the runtime.
  *
- * This system is either a platform or it is a set of helpers for Java programs, and the
- * difference is visible in one place: what an application has to import. A program that
- * reaches for java.io.File to hold a location, or java.util.List to hold a few of them, is
- * a Java program that happens to draw its windows here. A program that asks the file
- * manager for an FMURL and keeps them in an FMArray is written for this system.
+ * The rule is blunt: an application's source may not import from java or javax. The
+ * language is allowed, so a String literal and an int are fine, needing no import.
  *
- * So the rule is the blunt one: an application's source may not import from java or javax.
- * The language is allowed. A program still writes a String literal and an int, and those
- * need no import. But everything the platform provides, the platform provides.
- *
- * Applications are listed as they are converted rather than all being held to it at once.
- * The ones not yet listed are counted and shown, so the work left is a number that goes
- * down rather than a feeling.
+ * Applications are listed as they are converted. The ones not yet listed are counted and
+ * shown, so what is left is a number rather than a feeling.
  */
 public final class PlatformTest {
     private PlatformTest() {}

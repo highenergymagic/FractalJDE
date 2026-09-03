@@ -37,17 +37,13 @@ import java.io.File;
 /**
  * Renaming a file where the file is.
  *
- * Asking for a new name in a dialog is the wrong shape for this. A name belongs to the
- * thing it names, so editing it happens on the thing: the name under the icon, or in its
- * row, becomes a field, with the part before the extension selected because that is the
- * part people change.
+ * The name under the icon, or in its row, becomes a field, with the part before the
+ * extension selected.
  *
- * Return keeps the new name, Escape restores the old one, and clicking elsewhere keeps
- * it, as clicking away does everywhere else.
+ * Return keeps the new name, Escape restores the old, and clicking away keeps it.
  *
- * The field is a field of this system, so it carries the text system with it; spelling is
- * turned off, because a file name is not prose and a red line under half of them would
- * mean nothing.
+ * The field carries the text system with it, with spelling turned off: a file name is not
+ * prose.
  */
 public final class NameEditor {
     private NameEditor() {}

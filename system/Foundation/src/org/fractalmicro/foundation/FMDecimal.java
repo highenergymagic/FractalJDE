@@ -22,18 +22,13 @@ package org.fractalmicro.foundation;
 /**
  * A number with a decimal point that behaves the way a person expects one to.
  *
- * Money and arithmetic a person typed do not belong in binary floating point: a tenth is
- * not representable, so a tenth plus two tenths is not three tenths, and a calculator that
- * says otherwise is wrong in a way people notice. This keeps its digits in the base it was
- * written in.
+ * Kept in the base it was written in. A tenth is not representable in binary floating
+ * point, so a tenth plus two tenths is not three tenths there.
  *
- * Division is the one operation that has to stop somewhere, since a third has no end. It
- * stops at {@link #DIGITS} significant figures, rounding half away from zero, which is
- * what a person doing it on paper does.
+ * Division stops at {@link #DIGITS} significant figures, rounding half away from zero.
  *
- * Anything that cannot be a number is {@link #NOT_A_NUMBER} rather than an exception: a
- * division by zero, a value that was never a number. Arithmetic a person is typing goes
- * wrong all the time and the answer is a display that says so, not a program that stops.
+ * A division by zero, or a value that was never a number, is {@link #NOT_A_NUMBER} rather
+ * than an exception: arithmetic a person is typing goes wrong all the time.
  */
 public final class FMDecimal implements Comparable<FMDecimal> {
 

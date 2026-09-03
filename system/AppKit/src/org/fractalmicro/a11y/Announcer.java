@@ -30,17 +30,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Saying what a key just did.
  *
- * A screen reader describes whatever has focus. That breaks down for shortcuts: Command W
- * closes a window, and all the reader can then describe is wherever focus landed next, as
- * though the user had gone there on purpose. Nothing says the window closed.
+ * A screen reader describes what has focus. Command W closes a window, and all it can then
+ * describe is where focus landed, as though somebody had gone there on purpose.
  *
- * So each shortcut announces what it did: "Close Window", "Quit TextEdit", "Empty Trash".
- * The wording is taken from the menu item rather than written separately here, so a command
- * and its shortcut cannot drift apart.
+ * So each shortcut announces what it did, in the words of the menu item rather than words
+ * written here, so the two cannot drift apart.
  *
- * This holds keystroke-to-phrase pairs. The menu bar refills them whenever it is rebuilt,
- * which is whenever the front program changes, so Command Q names whatever is actually in
- * front.
+ * The menu bar refills these whenever it is rebuilt, which is whenever the front program
+ * changes, so Command Q names what is actually in front.
  */
 public final class Announcer {
     private Announcer() {}

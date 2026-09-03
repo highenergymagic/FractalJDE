@@ -35,20 +35,15 @@ import java.util.List;
 /**
  * Menus that stop lying about a program in another process.
  *
- * A menu in Cocoa is asked, every time it opens, which of its items can be used. It asks
- * whatever would perform the command, which is a method call, because the menu and the
- * program are the same process. Here they are not: the desktop draws the menu and the
- * program is somewhere else, so the question has to be carried.
+ * A menu in Cocoa asks, every time it opens, which of its items can be used, and asking is
+ * a method call. Here the desktop draws the menu and the program is elsewhere, so the
+ * question is carried.
  *
- * Until it was, a description said whether an item was enabled and that was the last anybody
- * heard of it. Save stayed black in a program with nothing to save. Choosing it sent a
- * command the program ignored, and what that looks like from the outside is Save doing
- * nothing, which is the worst answer a menu can give.
+ * The default costs a program nothing: an item is live when the program has said what it
+ * does. Beyond that a program answers for itself.
  *
- * The default is the one that matters most and costs a program nothing: an item is live when
- * the program has said what it does. Everything after that is a program answering for
- * itself, and the last check here is the one that says what happens when it does not answer
- * at all, since a program that has stopped is the case where a menu bar could freeze.
+ * The last check is what happens when it does not answer at all, a stopped program being
+ * the case where the bar could freeze.
  */
 public final class MenuValidationTest {
     private MenuValidationTest() {}

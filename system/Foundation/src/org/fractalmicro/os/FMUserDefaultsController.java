@@ -32,9 +32,8 @@ import org.fractalmicro.foundation.FMString;
  *     values.global.AppleShowAllExtensions
  *     values.dock.tilesize
  *
- * The point is that nothing in between has to know what the setting means. A checkbox
- * bound to a path reads it, writes it, and hears about it changing, and no program is
- * involved at any step, which is the whole of what a binding is for.
+ * A control bound to a path reads it, writes it and hears it change, with no program in
+ * between.
  */
 public final class FMUserDefaultsController {
     private FMUserDefaultsController() {}
