@@ -37,22 +37,19 @@ import java.util.function.Supplier;
 /**
  * What dragging means in a view of files.
  *
- * The kit knows how a drag works and refuses the drops that would lose somebody's folder.
- * What it cannot know is what the thing under the pointer is, because that is a listing and
- * listings belong to the file manager. This is the join: given a view and a way to ask what
- * is at a point, it says which folder a drop lands in.
+ * The kit knows how a drag works and what it must refuse; what is under the pointer is a
+ * listing, and listings belong to the file manager. This is the join: given a view and a
+ * way to ask what is at a point, which folder a drop lands in.
  *
- * Three answers, and they are the three kinds of thing a Mac lets you drop onto:
+ * Three answers, the three kinds of thing a Mac lets you drop onto:
  *
  *   a folder or a disk    the drop goes into it
  *   the Trash             the files are thrown away, whatever the keys say
  *   anything else         the folder the view is showing, which is what the white space
  *                         between the icons means
  *
- * The last is the one people use without noticing. Dropping onto the empty part of a window
- * puts the file in that window's folder, and it has to work at the edges too: a window
- * showing four files is mostly empty space, and every part of it that is not an icon is the
- * folder.
+ * The last is used without being noticed, and has to hold at the edges: a window showing
+ * four files is mostly empty space, and every part of it that is not an icon is the folder.
  */
 public final class FileDrops {
     private FileDrops() {}

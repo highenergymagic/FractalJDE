@@ -30,25 +30,15 @@ import java.io.File;
 /**
  * The panel a person saves through.
  *
- * Saving is not a program's question to ask. Every program that saves asks the same thing
- * and a person should not have to learn each one's idea of it, so the panel belongs to the
- * system and the program only says what it wants out of it: a suggested name, where to
- * start, which types it can write, and what the button should say.
+ * Belongs to the system, not the program. The program says a suggested name, where to
+ * start, which types it can write, and what the button says.
  *
- * What the program had before this was a one line prompt, which was wrong in the way that
- * matters: a text field has no browsing in it. Somebody who wanted to save into a folder
- * had to know its path and type it, which is a thing nobody does, and the panel it stood in
- * for is the second most used piece of the system after the Finder.
+ * Two forms, as since Mac OS X shipped. Collapsed: a name and a pop-up of the usual
+ * places. Expanded, from the triangle beside the name: a browser with the sidebar, the
+ * folders and a button to make one. Which it was last in is remembered.
  *
- * It has two forms, as it has since Mac OS X shipped. Collapsed it is a name and a
- * pop-up of the usual places, which is the whole of what most saves need. Expanded, from
- * the triangle beside the name, it is a browser with the sidebar, the folders, and a
- * button to make a new one. Which it was last in is remembered, because somebody who wants
- * the big one always wants the big one.
- *
- * The names here are Apple's, from NSSavePanel: nameFieldStringValue, directoryURL,
- * allowedFileTypes, prompt, message, accessory. Using them means somebody who knows the
- * one knows this, which is worth more than a set of names chosen here.
+ * The names are NSSavePanel's: nameFieldStringValue, directoryURL, allowedFileTypes,
+ * prompt, message, accessory.
  */
 public class FMSavePanel {
 

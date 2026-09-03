@@ -33,23 +33,18 @@ import java.util.List;
 /**
  * Opening something with whatever should open it.
  *
- * This is the one question everything asks and nothing should answer for itself: given a
- * file, what happens when somebody double-clicks it. Three answers, and which one it is
- * comes from the file rather than from who is asking.
+ * Given a file, what happens when somebody double-clicks it. Three answers, chosen by the
+ * file rather than by who is asking.
  *
  *   a program        started, out of its bundle
  *   a folder         handed to the file manager, which puts a window on it
  *   anything else    handed to whatever the host says opens that kind of file
  *
- * It lives here, below the screen, because it is not a question about windows. The Dock,
- * the desktop, Spotlight and the recent items menu all open things, and until this existed
- * each of them asked the Finder to do it, which meant the layer that draws was calling up
- * into the file manager to find out what a double-click means. The Finder is one of the
- * three answers, not the place the question goes.
+ * Below the screen, because it is not a question about windows: the Dock, the desktop,
+ * Spotlight and the recent items menu all open things.
  *
- * That is also what it means for the Finder to stop being special. It is reached the way
- * every other program is reached, by identifier, and if it were not installed the other
- * two answers would still work.
+ * The Finder is one of the three answers, reached by identifier like any other program.
+ * Without it installed the other two still work.
  */
 public final class LaunchServices {
     private LaunchServices() {}

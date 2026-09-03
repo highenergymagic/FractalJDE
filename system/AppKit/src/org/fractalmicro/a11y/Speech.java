@@ -38,22 +38,18 @@ import java.nio.file.StandardCopyOption;
 /**
  * Saying something out loud.
  *
- * A screen reader reads what has focus. It cannot read what merely happened, such as a
- * window closing, a program quitting or a view changing, because nothing has focus.
- * That is what this is for: when a key does something, that something is spoken.
+ * A screen reader reads what has focus, so it cannot read what merely happened: a window
+ * closing, a program quitting, a view changing. When a key does one of those, this says it.
  *
- * The talking is done by NVDA, through the controller client it publishes for exactly this.
- * The library is bundled rather than looked for: a copy found lying on a machine is a copy
- * nobody chose, of unknown version, and this needs the one that was tested against.
+ * Spoken by NVDA, through the controller client it publishes for this. The library is
+ * bundled rather than looked for, so the version is the one it was tested against.
  *
- * That library is NVDA's, not this program's. It is under the GNU Lesser General Public
- * License, version 2.1, and is included unmodified, as a library, loaded at run time. The
- * arrangement that licence is written for. Its licence and its readme sit beside it in
- * resources/nvda, and replacing the file with another build of it is what that layout is for
- * that licence and works here without changing anything else.
+ * That library is NVDA's, under the GNU Lesser General Public License version 2.1,
+ * included unmodified and loaded at run time, which is the arrangement that licence is
+ * written for. Its licence and readme sit beside it in resources/nvda, and the file can be
+ * replaced with another build of it without changing anything here.
  *
- * Where NVDA is not running, nothing is said and nothing breaks: {@link #available()} says
- * which, and every call is a no-op.
+ * Without NVDA running, {@link #available()} says so and every call is a no-op.
  */
 public final class Speech {
     private Speech() {}

@@ -305,8 +305,12 @@ public final class DragTest {
             // Out of a view, for real: choose the file and ask the handler to hand it over,
             // through the same call the drag itself makes. Onto a board of this check's own,
             // so a person's clipboard is not taken while it runs.
+            // Drained between the two: a view told to change mode reloads its listing on
+            // the event thread, and selecting all before that arrives selects nothing.
             window.setViewMode("Icon");
+            drain();
             window.selectAll();
+            drain();
             FMArray<FMURL> exported = FMArray.empty();
             for (javax.swing.JComponent control : wired) {
                 java.awt.datatransfer.Clipboard board =
