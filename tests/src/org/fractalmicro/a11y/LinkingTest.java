@@ -30,18 +30,14 @@ import java.util.List;
 /**
  * What linking against something actually means.
  *
- * A library has a name of its own, written in its header, and it is that name a client
- * records when it links: what ends up in the client's LC_LOAD_DYLIB is copied from the
- * library's LC_ID_DYLIB rather than from wherever the file happened to be sitting. Get
- * that wrong and everything still works on the machine it was built on and nowhere else.
+ * A client's LC_LOAD_DYLIB is copied from the library's LC_ID_DYLIB, not from wherever the
+ * file was sitting. Wrong, and it works on the machine it was built on and nowhere else.
  *
- * @rpath means nothing by itself. Each image says what it stands for in LC_RPATH commands,
- * tried in order, which is how the same library is found in the system's frameworks on one
- * machine and inside an application on another with neither recording an absolute path.
+ * @rpath means nothing by itself: each image says what it stands for in LC_RPATH commands,
+ * tried in order.
  *
- * And an umbrella passes on what it covers. Apple's own rule is that a program links
- * CoreServices rather than reaching into LaunchServices, which only works because the
- * umbrella re-exports what is inside it.
+ * An umbrella re-exports what it covers, which is what lets a program link CoreServices
+ * rather than reaching into LaunchServices.
  */
 public final class LinkingTest {
     private LinkingTest() {}

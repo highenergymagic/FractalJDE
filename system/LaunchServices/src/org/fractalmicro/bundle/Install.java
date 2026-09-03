@@ -31,17 +31,14 @@ import java.nio.file.Path;
 /**
  * Putting this system where it belongs.
  *
- * {@link Images} writes the libraries; what is left here is the rest of laying out a
- * volume. Making the pointers a framework is held together by, since Windows will not
- * always give out a symbolic link and something has to be written either way. Moving a
- * volume left under the name this used to use. And taking away what earlier versions put
- * on a volume and later versions must not find.
+ * {@link Images} writes the libraries. What is left is the rest of laying out a volume:
+ * the pointers a framework is held together by, since Windows will not always give out a
+ * symbolic link; moving a volume left under the name this used to use; and taking away
+ * what earlier versions wrote.
  *
- * That last part is most of it. An installation is not a fresh directory: it is whatever
- * the machine had, which may have been written by a version that kept the whole system in
- * one framework, or kept a copy of each library's code in an archive beside it. Both were
- * ways to reach a class without linking anything that offered it, which is the arrangement
- * the images exist to end, so both are removed rather than left for something to find.
+ * That last is most of it. An installation is whatever the machine had, which may hold the
+ * whole system as one framework, or a copy of each library's code in an archive beside it.
+ * Both let a class be reached without linking anything that offered it.
  */
 public final class Install {
     private Install() {}

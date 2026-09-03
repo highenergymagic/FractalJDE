@@ -28,17 +28,14 @@ import java.util.List;
 /**
  * What runs first in a program's own process.
  *
- * The kernel maps two things and then stands back: the program, and the loader named in
- * its LC_LOAD_DYLINKER command. Everything else the program needs is found by the loader,
- * following the load commands from the program outwards until the graph is closed. That is
- * the arrangement this reproduces. The only image the runtime is handed directly is this
- * one; every other library is mapped from the file its load command names, and every class
- * is resolved through the symbol tables rather than by searching a list of archives.
+ * The kernel maps two things and stands back: the program, and the loader named in its
+ * LC_LOAD_DYLINKER. The loader follows the load commands outwards until the graph closes.
  *
- * That distinction is the whole reason for it. A program started with its libraries laid
- * out on a class path can reach any class in any of them, because a class path is a search
- * order and nothing more. A program started here can reach what it linked, and what that
- * linked, and nothing else.
+ * The only image the runtime is handed is this one. Every library is mapped from the file
+ * its load command names, and every class resolved through the symbol tables.
+ *
+ * A class path is a search order, so a program laid out on one can reach any class in any
+ * of them. A program started here reaches what it linked and what that linked.
  */
 public final class Start {
     private Start() {}

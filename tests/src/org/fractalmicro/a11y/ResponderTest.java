@@ -31,18 +31,14 @@ import java.util.List;
 /**
  * Who a command is offered to, and in what order.
  *
- * Whatever has the keyboard first, then out through the things it sits inside, then the
- * program. The first that can do it does. That is why a menu item in Cocoa is connected to
- * First Responder rather than to anything in particular: the item names a command and does
- * not know who will do it.
+ * Whatever has the keyboard, then out through what it sits inside, then the program. The
+ * first that can do it does.
  *
- * The case worth checking is Copy. The file manager copies files, and a text field copies
- * text, and both answer to the same name. Which happens depends only on where the keyboard
- * is, and neither of the two was told about the other.
+ * The case worth checking is Copy: the file manager copies files, a text field copies
+ * text, both answer to the name, and which happens depends only on where the keyboard is.
  *
- * Walked from a named starting point rather than from the real keyboard, because giving
- * something the keyboard means showing a window and these run on a machine somebody is
- * using.
+ * Walked from a named starting point rather than the real keyboard, since giving something
+ * the keyboard means showing a window on a machine somebody is using.
  */
 public final class ResponderTest {
     private ResponderTest() {}

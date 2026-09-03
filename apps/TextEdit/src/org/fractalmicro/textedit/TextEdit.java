@@ -35,17 +35,12 @@ import org.fractalmicro.foundation.FMURL;
 /**
  * TextEdit: a document, in a process of its own.
  *
- * The document is a control in a window the window server owns, and everything that
- * happens to the text happens there: cut, paste, bold, centre. This program does not touch
- * it. It sends the command and the view does the work, which is what a program has always
- * done on a Mac even when both were in the same address space. The menu item does not
- * edit anything; it sends an action down the responder chain until something that knows
- * what "bold" means catches it. Here the chain runs across a process boundary, and the
- * only difference that makes is that the two ends are separately survivable.
+ * The document is a control in a window the window server owns, and cut, paste, bold and
+ * centre all happen there. This program sends the command; the view does the work. The
+ * responder chain runs across a process boundary and is otherwise the same chain.
  *
- * What this program does itself is the part that is actually its own: reading and writing
- * files, remembering what was opened, deciding what a document is called and whether it
- * has been edited, and finding text in it.
+ * What this program does itself: reading and writing files, remembering what was opened,
+ * what a document is called and whether it has been edited, and finding text in it.
  */
 public final class TextEdit implements org.fractalmicro.appkit.FMApplicationDelegate {
 
