@@ -33,24 +33,19 @@ import java.io.IOException;
 /**
  * An interface description: a window and what is in it, written down rather than built.
  *
- * A program that draws its own window has to be where the drawing is. A program that
- * describes its window can be anywhere, and something else can do the drawing, which is
- * the whole reason this exists. The description goes across in one message; after that only
- * values and events do.
+ * A program that draws its own window has to be where the drawing is. This goes across in
+ * one message, and after it only values and events do.
  *
- * The file is a property list, like everything else here, and says only what a window is:
+ * A property list, saying only what a window is:
  *
  *   Window        title, size, and whether it can be resized
  *   Controls      an ordered list, each with a class, a name, a place and a size
  *
- * Every control carries an identifier the program uses to refer to it afterwards, and a
- * name. A control with no name is not a control anyone can use: it cannot be described,
- * found, or told apart from the one next to it. A description that leaves one out is
- * refused.
+ * Every control carries an identifier the program refers to it by, and a name. A control
+ * with no name cannot be described, found or told from the one beside it, and a
+ * description leaving one out is refused.
  *
- * Everything in it is this system's own: the names are FMString, the lists are FMArray, and
- * a description read from a file is an FMDictionary. A program describing a window never
- * has to reach for a type belonging to the runtime underneath.
+ * Names are FMString, lists FMArray, a description read from a file an FMDictionary.
  */
 public final class Nib {
 

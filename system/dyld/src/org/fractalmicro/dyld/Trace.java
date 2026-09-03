@@ -22,12 +22,9 @@ package org.fractalmicro.dyld;
 /**
  * What the loader has to say, said without help.
  *
- * The loader runs before the libraries it is about to map, so it cannot write to the
- * system log: the code that does that is in one of the libraries it has not loaded yet.
- * It writes to the error stream, which is there from the moment the process is, and only
- * when asked. dyld does the same, and for the same reason, which is why its tracing is
- * turned on with an environment variable rather than a setting kept somewhere it would
- * have to go and read.
+ * The loader runs before the libraries it maps, so it cannot write to the system log: that
+ * code is in a library it has not loaded. The error stream instead, and only when asked.
+ * dyld turns its tracing on with an environment variable for the same reason.
  */
 public final class Trace {
     private Trace() {}

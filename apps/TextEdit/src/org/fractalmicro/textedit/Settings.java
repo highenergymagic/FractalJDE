@@ -28,13 +28,11 @@ import org.fractalmicro.os.FMUserDefaults;
 /**
  * What TextEdit remembers between one time it runs and the next.
  *
- * Kept in this program's own preference domain, under the names the original used, so a
- * volume carried forward keeps its settings.
+ * This program's own preference domain, under the names the original used, so a volume
+ * carried forward keeps its settings.
  *
- * There used to be more here: fonts, encodings, page breaks, the substitutions. Those
- * belonged to a version of this program that drew its own window and could act on them.
- * A setting nothing reads is worse than no setting, because it says the program can do
- * something it cannot, so they went with the features rather than being left behind.
+ * Fonts, encodings, page breaks and the substitutions went when the features did. A
+ * setting nothing reads says the program can do something it cannot.
  */
 public final class Settings {
     private Settings() {}

@@ -31,25 +31,15 @@ import java.util.List;
 /**
  * Dragging files out of a view, and dropping them into one.
  *
- * Every view that shows files does the same two things with a drag and neither of them has
- * anything to do with how the view draws. It says which files are under the pointer when a
- * drag starts, and it says what would happen if the drag ended where it is now. Those are
- * the only two questions here.
+ * Two questions, neither about how the view draws: which files are under the pointer when
+ * a drag starts, and what would happen if it ended where it is now.
  *
- * That is why this is in the kit and not in the file manager. A text editor that accepts a
- * dropped document asks the same questions, and the answers should not be different because
- * a different program asked.
+ * A destination answers with an operation rather than a place, as in Cocoa. The Trash
+ * takes a drop and is not a folder; a sidebar takes one and makes a shortcut rather than
+ * moving anything. {@link IntoFolders} covers the ordinary kind.
  *
- * The destination answers with an operation rather than with a place, which is the shape
- * Cocoa uses and it is the right one: the Trash takes a drop and is not a folder, a
- * sidebar takes one and makes a shortcut rather than moving anything, and a view that
- * could only ever say "this folder" would have no way to say either. {@link IntoFolders}
- * is there for the ordinary kind, which is most of them.
- *
- * The answer is worked out while the mouse is still down and shown on the pointer, so a
- * person can change their mind before letting go. A refusal is a pointer that will not
- * take, which is the only warning worth giving: it arrives in time to be heeded and costs
- * nothing.
+ * The answer is worked out while the mouse is down and shown on the pointer, so a refusal
+ * arrives in time to be heeded.
  */
 public class FMFileDragging extends TransferHandler {
 

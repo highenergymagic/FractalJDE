@@ -41,10 +41,6 @@ import org.w3c.dom.NodeList;
 /**
  * An interface, written down where a person can edit it.
  *
- * A window described in code is a window nobody can change without a compiler. Interface
- * Builder answered that by keeping the description in a file, and that separation is why
- * the file rather than the code is what gets translated.
- *
  * XML in the shape Interface Builder writes it:
  *
  *     <button id="digit 7">
@@ -54,13 +50,12 @@ import org.w3c.dom.NodeList;
  *       <connections><action selector="digit 7"/></connections>
  *     </button>
  *
- * A subset of that format. Interface Builder writes a great deal describing how it was
- * drawing at the time, and what is here is only the part that is the window: classes,
- * names, frames, connections and menus. Identifiers are words rather than numbers, since a
- * file written by hand does better with the names the program already uses.
+ * A subset: classes, names, frames, connections and menus, and none of what Interface
+ * Builder records about how it was drawing at the time. Identifiers are words rather than
+ * numbers, a file written by hand doing better with the names the program uses.
  *
- * A compiled interface would be a nib. There is no compiler here, so what ships is what was
- * written, which is the arrangement the format had before ibtool.
+ * A compiled interface would be a nib. There is no compiler here, so what ships is what
+ * was written, as the format was before ibtool.
  */
 public final class Xib {
     private Xib() {}
@@ -157,11 +152,8 @@ public final class Xib {
     /**
      * Every control under a list of subviews, and every control under those.
      *
-     * An interface file nests, because that is what a view holding views looks like written
-     * down and it is what Interface Builder writes. A description does not: it is a flat
-     * list where a control names the one it sits inside. The two say the same thing and
-     * this is where one becomes the other, which is the only place either shape has to be
-     * understood in terms of the other.
+     * An interface file nests, as Interface Builder writes it. A description is flat, each
+     * control naming the one it sits inside. This is where one becomes the other.
      */
     private static void collect(Element subviews, FMString parent,
                                 FMMutableArray<Nib.Control> into) throws IOException {

@@ -376,10 +376,9 @@ public final class User32 {
     /**
      * The handle of one of this program's own windows, found by the title it carries.
      *
-     * The title is matched against every window on the desktop, because that is what the
-     * shell offers, and the answer is then checked to be ours. Two programs can put the
-     * same words in a title bar, and handing back somebody else's window because it was
-     * named the same would have this one reserving screen edges against a stranger.
+     * Matched against every window on the desktop, which is what the shell offers, then
+     * checked to be ours: two programs can carry the same title, and reserving a screen
+     * edge against a stranger's window is what that would cost.
      */
     public static long handleOf(java.awt.Window window) {
         String title = window instanceof java.awt.Dialog dialog ? dialog.getTitle()

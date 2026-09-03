@@ -30,15 +30,10 @@ import org.fractalmicro.os.FinderSettings;
 /**
  * System Preferences: the settings, in a process of its own.
  *
- * Nothing here reaches into the desktop to make it repaint. It writes a preference, and
- * the desktop hears about it: a setting written in one process crosses to every other as a
- * distributed notification, and what each of them does about it is its own business. That
- * is the arrangement a settings program has to have once it stops sharing an address space
- * with the thing it is settings for, and it is better than the arrangement it replaces,
- * where this program knew the names of the classes it had to tell to redraw.
+ * Writes a preference and nothing else. The write crosses to every other process as a
+ * distributed notification, and what each does about it is its own business.
  *
- * The panes are all in one window, in the same place, and one is shown. A pane is not a
- * window and should not close and reopen when somebody clicks a name in the list.
+ * The panes share one window and one place, and one is shown: a pane is not a window.
  */
 public final class SystemPreferences implements org.fractalmicro.appkit.FMApplicationDelegate {
 

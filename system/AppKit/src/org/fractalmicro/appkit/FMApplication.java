@@ -41,11 +41,11 @@ import java.util.Map;
 /**
  * A program, from the program's own side.
  *
- * It opens a window by handing over a description, refers to controls by the names that
- * description gave them, and handles events as they arrive. It never touches a control and
- * never draws. That is what allows it to run in a different process.
+ * Opens a window by handing over a description, refers to controls by the names it gave
+ * them, handles events as they arrive. Never touches a control and never draws, which is
+ * what lets it run in another process.
  *
- * The shape of a program written against this is the shape such programs have always had:
+ * The shape of a program written against it:
  *
  *   FMApplication app = FMApplication.named("Counter");
  *   app.openWindow(description);
