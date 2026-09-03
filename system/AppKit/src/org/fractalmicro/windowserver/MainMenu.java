@@ -503,7 +503,7 @@ public class MainMenu extends JMenuBar {
         recentFolders.removeAll();
         List<File> items = Recent.items();
         if (items.isEmpty()) {
-            JMenuItem none = new JMenuItem("None");
+            JMenuItem none = new JMenuItem(word(FMString.of("system.none")));
             none.setEnabled(false);
             recentItems.add(none);
         }
@@ -512,7 +512,7 @@ public class MainMenu extends JMenuBar {
         }
         List<File> folders = Recent.folders();
         if (folders.isEmpty()) {
-            JMenuItem none = new JMenuItem("None");
+            JMenuItem none = new JMenuItem(word(FMString.of("system.none")));
             none.setEnabled(false);
             recentFolders.add(none);
         }
@@ -521,7 +521,8 @@ public class MainMenu extends JMenuBar {
                                    e -> LaunchServices.openFolder(f)));
         }
         recentItems.addSeparator();
-        recentItems.add(item(word(FMString.of("menu.clearMenu")), null, e -> { Recent.clear(); rebuildRecents(); }));
+        recentItems.add(item(word(FMString.of("system.clearMenu")), null,
+                             e -> { Recent.clear(); rebuildRecents(); }));
     }
     /**
      * Puts the indicators at the right of the bar.

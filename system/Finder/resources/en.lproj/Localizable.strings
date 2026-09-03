@@ -291,3 +291,10 @@
 "finder.fileNotRead" = "This file could not be read: %1$@";
 "finder.andSize" = "%1$@, %2$@";
 "finder.andModified" = "%1$@, modified %2$@";
+
+/* What a screen reader is told about parts of a window that carry no writing. */
+"finder.column" = "Column %1$@";
+"finder.preview" = "Preview";
+"finder.sidebar" = "Sidebar";
+"finder.selectedKind" = "selected %1$@";
+"finder.labelMenu" = "Label";

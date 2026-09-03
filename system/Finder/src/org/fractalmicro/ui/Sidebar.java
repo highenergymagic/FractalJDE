@@ -116,7 +116,7 @@ public class Sidebar extends JScrollPane {
         // Named, and nothing more. The role already says it is a table, and instructions
         // for which keys to press are repeated every time the sidebar is reached while
         // being useful exactly once.
-        table.getAccessibleContext().setAccessibleName("Sidebar");
+        table.getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("finder.sidebar")).toString());
 
         table.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;

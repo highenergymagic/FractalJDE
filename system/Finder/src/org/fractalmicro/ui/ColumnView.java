@@ -87,7 +87,9 @@ public class ColumnView extends JScrollPane implements FileView {
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setBackground(Color.WHITE);
         list.setFixedCellHeight(Aqua.LIST_ROW_HEIGHT);
-        list.getAccessibleContext().setAccessibleName("Column " + (level + 1));
+        list.getAccessibleContext().setAccessibleName(
+            FMLocalized.filled(FMString.of("finder.column"),
+                               FMString.of(String.valueOf(level + 1))).toString());
         if (popup != null) list.setComponentPopupMenu(popup);
 
         list.addListSelectionListener(e -> {
@@ -199,7 +201,9 @@ public class ColumnView extends JScrollPane implements FileView {
             setIcon(new ImageIcon(Icons.forNode(n, 16)));
             setFont(Aqua.viewFont());
             getAccessibleContext().setAccessibleName(n.accessibleName());
-            getAccessibleContext().setAccessibleDescription("selected " + n.kindPhrase());
+            getAccessibleContext().setAccessibleDescription(
+                FMLocalized.filled(FMString.of("finder.selectedKind"),
+                                   FMString.of(n.kindPhrase())).toString());
             // The folder a drag would drop into. It matters more here than in the other
             // views: the columns are narrow, the rows are close together, and every row in
             // a column but the last is a folder, so aiming at the wrong one is easy.
@@ -222,7 +226,7 @@ public class ColumnView extends JScrollPane implements FileView {
         PreviewPane() {
             setPreferredSize(new Dimension(COLUMN_WIDTH, 100));
             setBackground(Color.WHITE);
-            getAccessibleContext().setAccessibleName("Preview");
+            getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("finder.preview")).toString());
         }
 
         void show(Node n) {

@@ -787,8 +787,9 @@ public final class Finder {
      * and a word to read.
      */
     public static JMenu labelMenu(java.util.function.Supplier<List<Node>> selection) {
-        JMenu m = new JMenu("Label");
-        m.getAccessibleContext().setAccessibleName("Label");
+        String called = FMLocalized.of(FMString.of("finder.labelMenu")).toString();
+        JMenu m = new JMenu(called);
+        m.getAccessibleContext().setAccessibleName(called);
         for (int i = 0; i < org.fractalmicro.fs.Labels.COUNT; i++) {
             final int label = i;
             JMenuItem it = new JMenuItem(org.fractalmicro.fs.Labels.nameOf(i), new SwatchIcon(label));

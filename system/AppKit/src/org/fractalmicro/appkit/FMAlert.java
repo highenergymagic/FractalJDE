@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.appkit;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.windowserver.Desktop;
@@ -360,7 +361,7 @@ public final class FMAlert {
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.add(Box.createHorizontalGlue());
 
-        JButton cancel = new JButton("Cancel");
+        JButton cancel = new JButton(FMLocalized.of(FMString.of("panel.cancel")).toString());
         cancel.setFont(Aqua.systemFont());
         cancel.addActionListener(e -> dialog.dispose());
         JButton go = new JButton(actionButton.toString());

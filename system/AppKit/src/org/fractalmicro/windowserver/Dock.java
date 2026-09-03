@@ -65,7 +65,8 @@ public class Dock extends JPanel {
         tiles.setBorder(BorderFactory.createEmptyBorder(6, 12, 4, 12));
         add(tiles, BorderLayout.CENTER);
 
-        getAccessibleContext().setAccessibleName("Dock");
+        getAccessibleContext().setAccessibleName(
+            org.fractalmicro.foundation.FMLocalized.of(FMString.of("desktop.dock")).toString());
 
         Running.onChange(this::rebuild);
         WindowList.onChange(this::rebuild);

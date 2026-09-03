@@ -257,3 +257,14 @@
 /* What is written inside an alias when the volume has no resource fork to keep the real
    record in. Somebody who opens that file reads this line. */
 "alias.pointsTo" = "This is an alias to %1$@";
+
+/* What each label is called before anybody renames one. A renamed label keeps the name it
+   was given: that one is the person's own word and not the system's. */
+"label.none" = "None";
+"label.red" = "Red";
+"label.orange" = "Orange";
+"label.yellow" = "Yellow";
+"label.green" = "Green";
+"label.blue" = "Blue";
+"label.purple" = "Purple";
+"label.gray" = "Gray";

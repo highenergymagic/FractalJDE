@@ -192,7 +192,6 @@
 "menu.window" = "Window";
 "menu.recentItems" = "Recent Items";
 "menu.recentFolders" = "Recent Folders";
-"menu.clearMenu" = "Clear Menu";
 "menu.open" = "Open";
 "menu.showMenu" = "Show Menu";
 
@@ -278,3 +277,4 @@
 
 /* An icon in the notification area that answers to no tooltip and owns no window. */
 "menu.notificationIcon" = "Notification icon";
+"spotlight.results" = "Results";

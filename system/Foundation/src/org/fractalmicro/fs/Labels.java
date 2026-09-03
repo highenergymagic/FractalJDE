@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.fs;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMArray;
 
 import org.fractalmicro.foundation.FMString;
@@ -53,8 +54,16 @@ public final class Labels {
     /** The settings key holding the seven names, in order. */
     public static final FMString NAMES_KEY = FMString.of("LabelNames");
 
-    private static final String[] DEFAULT_NAMES = {
-        "None", "Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Gray"
+    /**
+     * What each label is called before anybody renames one.
+     *
+     * Keys rather than the words: a label can be renamed and then the name is the
+     * person's own, but until it is, it is the system's word and is read in the language.
+     */
+    private static final FMString[] DEFAULT_NAMES = {
+        FMString.of("label.none"), FMString.of("label.red"), FMString.of("label.orange"),
+        FMString.of("label.yellow"), FMString.of("label.green"), FMString.of("label.blue"),
+        FMString.of("label.purple"), FMString.of("label.gray")
     };
 
     /** The colours 10.6 draws, in the order the Finder lists them. */
@@ -78,14 +87,16 @@ public final class Labels {
 
     /** The name of one label, as it is set now. */
     public static String nameOf(int label) {
-        if (label <= 0 || label >= COUNT) return DEFAULT_NAMES[0];
+        if (label <= 0 || label >= COUNT) {
+            return FMLocalized.of(DEFAULT_NAMES[0]).toString();
+        }
         FMArray<Object> names = FMUserDefaults.of(FMUserDefaults.FINDER).array(NAMES_KEY);
         if (names.count() >= COUNT - 1) {
             Object name = names.at(label - 1);
             if (name instanceof FMString text && !text.isBlank()) return text.toString();
             if (name instanceof String s && !s.isBlank()) return s;
         }
-        return DEFAULT_NAMES[label];
+        return FMLocalized.of(DEFAULT_NAMES[label]).toString();
     }
 
     public static List<String> names() {

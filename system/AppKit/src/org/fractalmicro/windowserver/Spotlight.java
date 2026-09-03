@@ -70,7 +70,7 @@ public class Spotlight extends JDialog {
 
         results.setCellRenderer(new ResultRenderer());
         results.setVisibleRowCount(10);
-        results.getAccessibleContext().setAccessibleName("Results");
+        results.getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("spotlight.results")).toString());
         results.setFont(Aqua.smallFont());
 
         summary.setFont(Aqua.smallFont());
@@ -126,7 +126,7 @@ public class Spotlight extends JDialog {
             @Override public void actionPerformed(ActionEvent e) { setVisible(false); }
         });
 
-        getAccessibleContext().setAccessibleName("Spotlight");
+        getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("extra.spotlight")).toString());
     }
 
     public static void open() {

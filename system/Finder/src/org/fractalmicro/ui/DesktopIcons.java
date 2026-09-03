@@ -21,6 +21,8 @@ package org.fractalmicro.ui;
 
 
 
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.fs.*;
 import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
@@ -60,7 +62,7 @@ public class DesktopIcons extends JList<Node> {
         setOpaque(false);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        getAccessibleContext().setAccessibleName("Desktop");
+        getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("place.desktop")).toString());
 
         installBehaviour();
 

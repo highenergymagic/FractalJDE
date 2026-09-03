@@ -87,7 +87,7 @@ public final class NameEditor {
         field.setBorder(BorderFactory.createLineBorder(Aqua.SELECTION));
         // Named, and nothing else. A description saying which keys to press is repeated
         // every time the field is reached and is worth hearing once at most.
-        field.getAccessibleContext().setAccessibleName("Name");
+        field.getAccessibleContext().setAccessibleName(FMLocalized.of(FMString.of("browser.name")).toString());
 
         // Wide enough for the whole name, since the name is the thing being read and
         // changed; centred on the item, and kept inside the view it is drawn in.

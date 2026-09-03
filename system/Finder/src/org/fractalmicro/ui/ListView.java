@@ -177,7 +177,9 @@ public class ListView extends JScrollPane implements FileView {
             if (n != null) {
                 setIcon(new ImageIcon(Icons.forNode(n, 16)));
                 getAccessibleContext().setAccessibleName(n.accessibleName());
-                getAccessibleContext().setAccessibleDescription("selected " + n.kindPhrase());
+                getAccessibleContext().setAccessibleDescription(
+                    FMLocalized.filled(FMString.of("finder.selectedKind"),
+                                       FMString.of(n.kindPhrase())).toString());
             }
             setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
             // The row a drag would drop into, drawn behind the name so it does not look
