@@ -20,6 +20,7 @@
 package org.fractalmicro.appkit;
 
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMMutableArray;
 
@@ -45,7 +46,13 @@ import java.util.function.Predicate;
 public final class Services {
     private Services() {}
 
-    /** One service: its name, when it applies, and what it does with the text. */
+    /**
+     * One service: what it is called, when it applies, and what it does with the text.
+     *
+     * The name is a key rather than the words, the way a Mac reads a service's title out
+     * of the bundle that provides it. A service added by something else brings its own
+     * table along with it.
+     */
     public record Service(FMString name, Predicate<FMString> applies,
                           Function<FMString, FMString> run,
                           boolean replacesSelection) {
@@ -72,21 +79,21 @@ public final class Services {
     }
 
     static {
-        add(new Service(FMString.of("New TextEdit Document Containing Selection"),
+        add(new Service(FMString.of("service.newDocument"),
             text -> true,
             text -> {
                 org.fractalmicro.bundle.Bundles.openText(TEXT_EDITOR.toString(), text.toString());
                 return null;
             }, false));
 
-        add(new Service(FMString.of("Search With Spotlight"),
+        add(new Service(FMString.of("service.searchWithSpotlight"),
             text -> text.length() < 200,
             text -> {
                 org.fractalmicro.windowserver.Spotlight.openSearching(text.trimmed().toString());
                 return null;
             }, false));
 
-        add(new Service(FMString.of("Open URL"),
+        add(new Service(FMString.of("service.openURL"),
             text -> firstOf(text, DataDetectors.Kind.LINK) != null,
             text -> {
                 DataDetectors.Detection link = firstOf(text, DataDetectors.Kind.LINK);
@@ -96,7 +103,7 @@ public final class Services {
                 return null;
             }, false));
 
-        add(new Service(FMString.of("Show Map"),
+        add(new Service(FMString.of("service.showMap"),
             text -> firstOf(text, DataDetectors.Kind.ADDRESS) != null,
             text -> {
                 DataDetectors.Detection address = firstOf(text, DataDetectors.Kind.ADDRESS);
@@ -106,7 +113,7 @@ public final class Services {
                 return null;
             }, false));
 
-        add(new Service(FMString.of("Reveal in Finder"),
+        add(new Service(FMString.of("service.revealInFinder"),
             text -> new java.io.File(text.trimmed().toString()).exists(),
             text -> {
                 org.fractalmicro.bundle.Bundles.openFiles(FILE_BROWSER.toString(),
@@ -115,14 +122,14 @@ public final class Services {
             }, false));
 
         // The three that change the text itself, which a service is allowed to do.
-        add(new Service(FMString.of("Make Upper Case"), text -> true,
+        add(new Service(FMString.of("service.makeUpperCase"), text -> true,
             FMString::uppercase, true));
-        add(new Service(FMString.of("Make Lower Case"), text -> true,
+        add(new Service(FMString.of("service.makeLowerCase"), text -> true,
             FMString::lowercase, true));
-        add(new Service(FMString.of("Capitalize"), text -> true,
+        add(new Service(FMString.of("service.capitalize"), text -> true,
             text -> FMString.of(capitalise(text.toString())), true));
 
-        add(new Service(FMString.of("Copy"), text -> true,
+        add(new Service(FMString.of("service.copy"), text -> true,
             text -> {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                     .setContents(new StringSelection(text.toString()), null);
@@ -152,22 +159,24 @@ public final class Services {
      * with the ones that change the text writing their answer back into it.
      */
     public static JMenu menuFor(javax.swing.text.JTextComponent text) {
-        JMenu menu = new JMenu("Services");
-        menu.getAccessibleContext().setAccessibleName("Services");
+        String title = FMLocalized.of(FMString.of("service.menu")).toString();
+        JMenu menu = new JMenu(title);
+        menu.getAccessibleContext().setAccessibleName(title);
         menu.addMenuListener(new javax.swing.event.MenuListener() {
             @Override public void menuSelected(javax.swing.event.MenuEvent e) {
                 menu.removeAll();
                 FMString selection = FMString.describing(text.getSelectedText());
                 FMArray<Service> available = forSelection(selection);
                 if (available.isEmpty()) {
-                    JMenuItem none = new JMenuItem(selection.isBlank()
-                        ? "No text is selected" : "No services apply");
+                    JMenuItem none = new JMenuItem(FMLocalized.of(FMString.of(
+                        selection.isBlank() ? "service.noSelection" : "service.noneApply"))
+                        .toString());
                     none.setEnabled(false);
                     menu.add(none);
                     return;
                 }
                 for (Service service : available) {
-                    JMenuItem item = new JMenuItem(service.name().toString());
+                    JMenuItem item = new JMenuItem(FMLocalized.of(service.name()).toString());
                     item.addActionListener(e2 -> run(service, text));
                     menu.add(item);
                 }

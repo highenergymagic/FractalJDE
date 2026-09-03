@@ -85,7 +85,16 @@ public final class FMApplication implements AutoCloseable {
 
     /** One thing that happened: which control or command, and what it was for. */
     public record Event(FMString kind, int window, FMString control, FMString action,
-                        Object value, FMString where, FMArray<FMURL> urls) {
+                        Object value, FMString where, FMArray<FMURL> urls, int row) {
+
+        /**
+         * Which one was chosen, where what it says is not what it is.
+         *
+         * A list holds titles somebody reads and a program acts on what they mean, and
+         * those are not the same string: a title is translated and a position is not.
+         * Anything that was not a choice out of a list answers -1.
+         */
+        public int row() { return row; }
 
         /** What the control held, as text, which is what most handlers want. */
         public FMString text() {
@@ -808,7 +817,7 @@ public final class FMApplication implements AutoCloseable {
                          FMString.of(from), FMString.of(reply.string("action", "")),
                          reply.get("value"),
                          FMString.of(reply.string("folder", "")),
-                         files.asArray());
+                         files.asArray(), (int) reply.integer("row", -1));
     }
 
     /**

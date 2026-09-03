@@ -20,6 +20,7 @@
 package org.fractalmicro.windowserver;
 
 
+import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.appkit.AppFrame;
 import org.fractalmicro.appkit.AppWindow;
 
@@ -226,6 +227,10 @@ public class Desktop extends JFrame {
     public Dock dock() { return dock; }
     public MainMenu mainMenu() { return menu; }
 
+    static String word(FMString key) {
+        return org.fractalmicro.foundation.FMLocalized.of(key).toString();
+    }
+
     /** The status line. It is shown in windows; it is not bolted onto icon names. */
     public void setStatus(String text) {
         status = text == null ? "" : text;
@@ -320,9 +325,12 @@ public class Desktop extends JFrame {
     public void openScreen() {
         if (!separateWindows) return;
         if (org.fractalmicro.os.InterfaceStyle.screenMenuBar()) {
+            // The first name is not words: it is the window title the shell is told to
+            // reserve an edge for, so it has to be unlike any other and the same in every
+            // language. What it is called out loud is the second one.
             menuBar = new ScreenBar(this, menu, org.fractalmicro.win.AppBar.ABE_TOP,
-                                    ScreenBar.menuBarHeight(), "Fractal Menu Bar",
-                                    "Menu bar");
+                                    ScreenBar.menuBarHeight(), "FractalMenuBar",
+                                    word(FMString.of("desktop.menuBar")));
             menuBar.show(true);
         }
         JPanel dockHolder = new JPanel(new java.awt.FlowLayout(
@@ -330,7 +338,8 @@ public class Desktop extends JFrame {
         dockHolder.setOpaque(false);
         dockHolder.add(dock);
         dockBar = new ScreenBar(this, dockHolder, org.fractalmicro.win.AppBar.ABE_BOTTOM,
-                                dock.getPreferredSize().height + 8, "Fractal Dock", "Dock");
+                                dock.getPreferredSize().height + 8, "FractalDock",
+                                word(FMString.of("desktop.dock")));
         dockBar.show(true);
 
         // Local shortcuts go through the focus manager rather than a window binding, so
@@ -529,13 +538,13 @@ public class Desktop extends JFrame {
     public void hideAllWindows() {
         for (JInternalFrame f : pane.getAllFrames()) f.setVisible(false);
         if (icons != null) icons.requestFocusInWindow();
-        setStatus("All windows hidden");
+        setStatus(word(FMString.of("desktop.allHidden")));
     }
 
     public void hideOtherWindows() {
         JInternalFrame front = activeWindow();
         for (JInternalFrame f : pane.getAllFrames()) if (f != front) f.setVisible(false);
-        setStatus("Other windows hidden");
+        setStatus(word(FMString.of("desktop.othersHidden")));
     }
 
     public void showAllWindows() {
@@ -543,7 +552,7 @@ public class Desktop extends JFrame {
             f.setVisible(true);
             try { if (f.isIcon()) f.setIcon(false); } catch (java.beans.PropertyVetoException ignored) { }
         }
-        setStatus("All windows shown");
+        setStatus(word(FMString.of("desktop.allShown")));
     }
 
     /** The desktop background, with the wallpaper painted behind everything. */
@@ -552,7 +561,7 @@ public class Desktop extends JFrame {
             setOpaque(true);
             setBackground(new Color(0x1A0B3D));
             setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
-            getAccessibleContext().setAccessibleName("Desktop background");
+            getAccessibleContext().setAccessibleName(word(FMString.of("desktop.background")));
         }
 
         @Override protected void paintComponent(Graphics g) {

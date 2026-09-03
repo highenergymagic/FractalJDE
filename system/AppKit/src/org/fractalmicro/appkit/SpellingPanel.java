@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.appkit;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.theme.Aqua;
@@ -53,7 +54,7 @@ public final class SpellingPanel extends JInternalFrame {
     private SpellChecker.Mistake current;
 
     private SpellingPanel(javax.swing.text.JTextComponent text, Spelling spelling) {
-        super("Spelling and Grammar", true, true, false, false);
+        super(word(FMString.of("spelling.title")), true, true, false, false);
         this.text = text;
         this.spelling = spelling;
 
@@ -61,15 +62,15 @@ public final class SpellingPanel extends JInternalFrame {
         body.setBorder(BorderFactory.createEmptyBorder(14, 20, 14, 20));
 
         JPanel top = new JPanel(new BorderLayout(8, 4));
-        JLabel label = new JLabel("Word:");
+        JLabel label = new JLabel(word(FMString.of("spelling.wordLabel")));
         label.setFont(Aqua.systemFont());
         label.setLabelFor(word);
-        word.getAccessibleContext().setAccessibleName("Word");
+        word.getAccessibleContext().setAccessibleName(word(FMString.of("spelling.word")));
         top.add(label, BorderLayout.WEST);
         top.add(word, BorderLayout.CENTER);
         body.add(top, BorderLayout.NORTH);
 
-        suggestions.getAccessibleContext().setAccessibleName("Suggestions");
+        suggestions.getAccessibleContext().setAccessibleName(word(FMString.of("spelling.suggestions")));
         suggestions.setVisibleRowCount(6);
         suggestions.addListSelectionListener(e -> {
             String chosen = suggestions.getSelectedValue();
@@ -78,15 +79,15 @@ public final class SpellingPanel extends JInternalFrame {
         body.add(new JScrollPane(suggestions), BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 4, 8, 0));
-        buttons.add(button("Ignore", e -> ignore()));
-        buttons.add(button("Learn", e -> learn()));
-        buttons.add(button("Find Next", e -> findNext()));
-        JButton change = button("Change", e -> change());
+        buttons.add(button(FMString.of("spelling.ignore"), e -> ignore()));
+        buttons.add(button(FMString.of("spelling.learn"), e -> learn()));
+        buttons.add(button(FMString.of("spelling.findNext"), e -> findNext()));
+        JButton change = button(FMString.of("spelling.change"), e -> change());
         buttons.add(change);
 
         JPanel bottom = new JPanel(new BorderLayout(0, 8));
         status.setFont(Aqua.smallFont());
-        status.getAccessibleContext().setAccessibleName("Spelling status");
+        status.getAccessibleContext().setAccessibleName(word(FMString.of("spelling.status")));
         bottom.add(status, BorderLayout.NORTH);
         bottom.add(buttons, BorderLayout.SOUTH);
         body.add(bottom, BorderLayout.SOUTH);
@@ -94,7 +95,7 @@ public final class SpellingPanel extends JInternalFrame {
         setContentPane(body);
         getRootPane().setDefaultButton(change);
         pack();
-        getAccessibleContext().setAccessibleName("Spelling and grammar");
+        getAccessibleContext().setAccessibleName(word(FMString.of("spelling.title")));
         addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
             @Override public void internalFrameClosed(javax.swing.event.InternalFrameEvent e) {
                 OPEN.remove(text);
@@ -102,18 +103,23 @@ public final class SpellingPanel extends JInternalFrame {
         });
     }
 
-    private JButton button(String text, java.awt.event.ActionListener action) {
-        JButton b = new JButton(text);
+    private JButton button(FMString key, java.awt.event.ActionListener action) {
+        JButton b = new JButton(word(key));
         b.addActionListener(action);
         return b;
+    }
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
     }
 
     /* -------------------------------------------------------------- opening */
 
     public static void show(javax.swing.text.JTextComponent text, Spelling spelling) {
         if (!Spelling.available()) {
-            org.fractalmicro.appkit.FMAlert.tell(FMString.of("Spelling cannot be checked on this computer."),
-                FMString.of("No spelling dictionary is installed for any language this system asked for."));
+            org.fractalmicro.appkit.FMAlert.tell(
+                FMLocalized.of(FMString.of("spelling.notAvailable")),
+                FMLocalized.of(FMString.of("spelling.noDictionary")));
             return;
         }
         SpellingPanel panel = OPEN.get(text);
@@ -148,7 +154,7 @@ public final class SpellingPanel extends JInternalFrame {
             current = null;
             word.setText("");
             model.clear();
-            status.setText("No misspellings found");
+            status.setText(word(FMString.of("spelling.noneFound")));
             return;
         }
         current = spelling.after(text.getSelectionEnd());
@@ -158,7 +164,10 @@ public final class SpellingPanel extends JInternalFrame {
         model.clear();
         for (String suggestion : current.suggestions()) model.addElement(suggestion);
         if (!model.isEmpty()) suggestions.setSelectedIndex(0);
-        status.setText(all.size() == 1 ? "1 misspelling" : all.size() + " misspellings");
+        status.setText(all.size() == 1
+            ? word(FMString.of("spelling.oneMistake"))
+            : FMLocalized.filled(FMString.of("spelling.someMistakes"),
+                                 FMString.of(String.valueOf(all.size()))).toString());
         // The window keeps the keyboard, so the word and its suggestions can be worked
         // through without going back to the document.
         word.requestFocusInWindow();

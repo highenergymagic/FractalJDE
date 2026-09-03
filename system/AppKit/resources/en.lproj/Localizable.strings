@@ -114,3 +114,84 @@
 "help.shortcutColumn" = "Shortcut";
 "help.meaningColumn" = "What it does";
 "help.notInstalled" = "The help for this system is not installed.";
+
+/* The Services menu. A service's name is a key rather than the words, the way a Mac reads
+   the title out of the bundle that provides it, so a service added by something else
+   brings its own table with it. */
+"service.menu" = "Services";
+"service.noSelection" = "No text is selected";
+"service.noneApply" = "No services apply";
+"service.newDocument" = "New TextEdit Document Containing Selection";
+"service.searchWithSpotlight" = "Search With Spotlight";
+"service.openURL" = "Open URL";
+"service.showMap" = "Show Map";
+"service.revealInFinder" = "Reveal in Finder";
+"service.makeUpperCase" = "Make Upper Case";
+"service.makeLowerCase" = "Make Lower Case";
+"service.capitalize" = "Capitalize";
+"service.copy" = "Copy";
+
+/* Force Quit Applications. The Finder is in the list but cannot be quit: it relaunches,
+   which is what it does on a Mac, where the button reads Relaunch instead. */
+"forceQuit.title" = "Force Quit Applications";
+"forceQuit.hint" = "If an application does not respond, select it and click Force Quit.";
+"forceQuit.applications" = "Applications";
+"forceQuit.button" = "Force Quit";
+"forceQuit.finderRelaunches" = "The Finder relaunches rather than quitting.";
+"forceQuit.ask" = "Do you want to force “%1$@” to quit?";
+"forceQuit.warning" = "You will lose any unsaved changes.";
+
+/* What a data detector found, and what can be done with it. A detection is a kind and a
+   piece of text, and both halves are shown together in one line. */
+"detected.spoken" = "%1$@: %2$@";
+"detected.link" = "Link";
+"detected.openLink" = "Open Link";
+"detected.mail" = "Email address";
+"detected.newMessage" = "New Message";
+"detected.phone" = "Telephone number";
+"detected.copyNumber" = "Copy Number";
+"detected.date" = "Date";
+"detected.showDate" = "Show Date";
+"detected.address" = "Address";
+"detected.showMap" = "Show Map";
+
+/* The spelling panel, which belongs to the system rather than to any program: every
+   program on the volume checks spelling the same way and says so in the same words. */
+"spelling.title" = "Spelling and Grammar";
+"spelling.wordLabel" = "Word:";
+"spelling.word" = "Word";
+"spelling.suggestions" = "Suggestions";
+"spelling.ignore" = "Ignore";
+"spelling.learn" = "Learn";
+"spelling.findNext" = "Find Next";
+"spelling.change" = "Change";
+"spelling.status" = "Spelling status";
+"spelling.noneFound" = "No misspellings found";
+"spelling.oneMistake" = "1 misspelling";
+"spelling.someMistakes" = "%1$@ misspellings";
+"spelling.notAvailable" = "Spelling cannot be checked on this computer.";
+"spelling.noDictionary" = "No spelling dictionary is installed for any language this system asked for.";
+
+/* The desktop itself: the two strips at the edges of the screen, the background behind
+   everything, and what the status line says when windows are hidden and shown. */
+"desktop.menuBar" = "Menu bar";
+"desktop.dock" = "Dock";
+"desktop.background" = "Desktop background";
+"desktop.allHidden" = "All windows hidden";
+"desktop.othersHidden" = "Other windows hidden";
+"desktop.allShown" = "All windows shown";
+
+/* The menu named for whichever program is in front, which cannot be in the bar's own
+   interface file because the name changes with the program. The blank is that name. */
+"menu.about" = "About %1$@";
+"menu.preferences" = "Preferences…";
+"menu.hide" = "Hide %1$@";
+"menu.hideOthers" = "Hide Others";
+"menu.showAll" = "Show All";
+"menu.quit" = "Quit %1$@";
+"menu.window" = "Window";
+"menu.recentItems" = "Recent Items";
+"menu.recentFolders" = "Recent Folders";
+"menu.clearMenu" = "Clear Menu";
+"menu.open" = "Open";
+"menu.showMenu" = "Show Menu";

@@ -21,6 +21,7 @@ package org.fractalmicro.systemprofiler;
 
 import org.fractalmicro.appkit.FMApplication;
 import org.fractalmicro.foundation.FMArray;
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMLog;
 import org.fractalmicro.foundation.FMMutableArray;
 import org.fractalmicro.foundation.FMMutableDictionary;
@@ -42,19 +43,23 @@ import org.fractalmicro.os.OSPaths;
  */
 public final class SystemProfiler implements org.fractalmicro.appkit.FMApplicationDelegate {
 
-    public static final FMString NAME = FMString.of("System Profiler");
-
     /** The interface file this program opens, inside its own bundle. */
     private static final FMString INTERFACE = FMString.of("SystemProfiler");
 
     private static final FMString SECTIONS = FMString.of("sections");
     private static final FMString DETAILS = FMString.of("details");
 
-    /** The four things this can tell you about, in the order the panel lists them. */
-    private static final FMString HARDWARE = FMString.of("Hardware");
-    private static final FMString SOFTWARE = FMString.of("Software");
-    private static final FMString VOLUMES = FMString.of("Volumes");
-    private static final FMString LOCATIONS = FMString.of("Locations");
+    /**
+     * The four things this can tell you about, in the order the panel lists them.
+     *
+     * Which one somebody picked is the position in the list rather than what the row said.
+     * The rows are translated and a program cannot switch on words that change language;
+     * the order they sit in is the same in every one.
+     */
+    private static final int HARDWARE = 0;
+    private static final int SOFTWARE = 1;
+    private static final int VOLUMES = 2;
+    private static final int LOCATIONS = 3;
 
     private final FMApplication app = FMApplication.sharedApplication();
 
@@ -72,7 +77,7 @@ public final class SystemProfiler implements org.fractalmicro.appkit.FMApplicati
                               .appending(app.lastError().description()));
             return;
         }
-        app.on(SECTIONS, event -> show(event.text()));
+        app.on(SECTIONS, event -> show(event.row()));
         app.on(FMString.of("quit"), event -> app.stop());
         app.on(FMString.of("close"), event -> app.stop());
 
@@ -82,53 +87,56 @@ public final class SystemProfiler implements org.fractalmicro.appkit.FMApplicati
     /* ------------------------------------------------------------------ the facts */
 
     /** Puts one section's facts in the details list. */
-    private void show(FMString section) {
-        FMDictionary facts = factsFor(section.isBlank() ? HARDWARE : section);
+    private void show(int section) {
+        FMDictionary facts = factsFor(section < 0 ? HARDWARE : section);
         FMMutableArray<FMString> rows = FMMutableArray.empty();
         FMArray<FMString> names = facts.keys();
         for (int i = 0; i < names.count(); i++) {
-            rows.add(names.at(i).appending(FMString.of(":  "))
-                          .appending(facts.string(names.at(i))));
+            rows.add(FMLocalized.filled(FMString.of("profiler.line"),
+                                        names.at(i), facts.string(names.at(i))));
         }
         app.setRows(DETAILS, rows.asArray());
     }
 
-    private static FMDictionary factsFor(FMString section) {
+    private static FMString word(FMString key) { return FMLocalized.of(key); }
+
+    private static FMDictionary factsFor(int section) {
         FMMutableDictionary facts = FMMutableDictionary.empty();
         org.fractalmicro.foundation.FMProcessInfo machine =
             org.fractalmicro.foundation.FMProcessInfo.processInfo();
-        if (section.sameAs(SOFTWARE)) {
-            facts.set(FMString.of("System Version"),
+        if (section == SOFTWARE) {
+            facts.set(word(FMString.of("profiler.systemVersion")),
                       machine.operatingSystemVersionString());
-            facts.set(FMString.of("System Name"), machine.operatingSystemLongName());
-            facts.set(FMString.of("Built"), machine.operatingSystemBuiltAt());
-            facts.set(FMString.of("Computer Name"), machine.hostName());
-        } else if (section.sameAs(VOLUMES)) {
+            facts.set(word(FMString.of("profiler.systemName")), machine.operatingSystemLongName());
+            facts.set(word(FMString.of("profiler.built")), machine.operatingSystemBuiltAt());
+            facts.set(word(FMString.of("profiler.computerName")), machine.hostName());
+        } else if (section == VOLUMES) {
             org.fractalmicro.foundation.FMByteCountFormatter sizes =
                 org.fractalmicro.foundation.FMByteCountFormatter.formatter();
             for (org.fractalmicro.appkit.FMVolume v
                      : org.fractalmicro.appkit.FMWorkspace.sharedWorkspace().mountedVolumes()) {
+                FMString said = v.isReady()
+                    ? FMLocalized.filled(FMString.of("profiler.volumeSizes"),
+                          sizes.stringFromByteCount(v.totalCapacity()),
+                          sizes.stringFromByteCount(v.availableCapacity()))
+                    : FMLocalized.of(FMString.of("profiler.notReady"));
                 facts.set(v.name(), FMString.of(
-                    (v.url() == null ? "" : v.url().path().toString()) + "  "
-                    + (v.isReady()
-                       ? sizes.stringFromByteCount(v.totalCapacity()) + ", "
-                         + sizes.stringFromByteCount(v.availableCapacity()) + " free"
-                       : "not ready")
+                    (v.url() == null ? "" : v.url().path().toString()) + "  " + said
                     + (v.fileSystem().isEmpty() ? "" : "  " + v.fileSystem())));
             }
-        } else if (section.sameAs(LOCATIONS)) {
-            facts.set(FMString.of("System Volume"), FMString.describing(OSPaths.ROOT));
-            facts.set(FMString.of("Preferences"),
+        } else if (section == LOCATIONS) {
+            facts.set(word(FMString.of("profiler.systemVolume")), FMString.describing(OSPaths.ROOT));
+            facts.set(word(FMString.of("profiler.preferences")),
                       FMString.describing(OSPaths.userPreferences()));
-            facts.set(FMString.of("Icon Resources"),
+            facts.set(word(FMString.of("profiler.iconResources")),
                       FMString.describing(OSPaths.coreTypesResources()));
-            facts.set(FMString.of("Applications"),
+            facts.set(word(FMString.of("profiler.applications")),
                       FMString.describing(OSPaths.applications()));
         } else {
-            facts.set(FMString.of("Processor"), machine.processorDescription());
-            facts.set(FMString.of("Memory"), machine.physicalMemoryDescription());
-            facts.set(FMString.of("Startup Disk"), machine.startupDisk());
-            facts.set(FMString.of("Computer Name"), machine.hostName());
+            facts.set(word(FMString.of("profiler.processor")), machine.processorDescription());
+            facts.set(word(FMString.of("profiler.memory")), machine.physicalMemoryDescription());
+            facts.set(word(FMString.of("profiler.startupDisk")), machine.startupDisk());
+            facts.set(word(FMString.of("profiler.computerName")), machine.hostName());
         }
         return facts.asDictionary();
     }

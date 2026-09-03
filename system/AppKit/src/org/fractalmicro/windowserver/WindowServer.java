@@ -637,8 +637,12 @@ public final class WindowServer {
                 JComboBox<String> popup = new JComboBox<>(
                     textOf(control.choices()));
                 if (control.value() instanceof String chosen) popup.setSelectedItem(chosen);
+                // Which one, as well as what it says. A title is translated and a
+                // position is not, and a program that switched on the title stopped
+                // working the moment somebody translated the window it was in.
                 popup.addActionListener(e -> post(window.application, actionEvent(window, control)
-                    .put("value", String.valueOf(popup.getSelectedItem()))));
+                    .put("value", String.valueOf(popup.getSelectedItem()))
+                    .put("row", (long) popup.getSelectedIndex())));
                 return popup;
             }
             case FMSlider -> {
@@ -694,7 +698,9 @@ public final class WindowServer {
                 JList<String> list = new JList<>(model);
                 list.addListSelectionListener(e -> {
                     if (!e.getValueIsAdjusting() && list.getSelectedValue() != null) {
-                        post(window.application, actionEvent(window, control).put("value", list.getSelectedValue()));
+                        post(window.application, actionEvent(window, control)
+                            .put("value", list.getSelectedValue())
+                            .put("row", (long) list.getSelectedIndex()));
                     }
                 });
                 JScrollPane scroll = new JScrollPane(list);

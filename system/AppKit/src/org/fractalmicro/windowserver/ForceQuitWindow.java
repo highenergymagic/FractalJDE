@@ -20,6 +20,7 @@
 package org.fractalmicro.windowserver;
 
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 
 import org.fractalmicro.appkit.FMAlert;
 import org.fractalmicro.windowserver.Desktop;
@@ -37,11 +38,15 @@ public class ForceQuitWindow extends JInternalFrame {
 
     private static ForceQuitWindow instance;
 
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> list = new JList<>(model);
 
     private ForceQuitWindow() {
-        super("Force Quit Applications", true, true, false, true);
+        super(word(FMString.of("forceQuit.title")), true, true, false, true);
         setFrameIcon(new ImageIcon(Icons.forKind(Node.Kind.APPLICATION, 16)));
         setSize(360, 300);
 
@@ -49,16 +54,16 @@ public class ForceQuitWindow extends JInternalFrame {
         p.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         p.setBackground(Aqua.WINDOW_BG);
 
-        JLabel hint = new JLabel("<html>If an application does not respond, select it and click Force Quit.</html>");
+        JLabel hint = new JLabel("<html>" + word(FMString.of("forceQuit.hint")) + "</html>");
         hint.setFont(Aqua.smallFont());
         p.add(hint, BorderLayout.NORTH);
 
-        list.getAccessibleContext().setAccessibleName("Applications");
+        list.getAccessibleContext().setAccessibleName(word(FMString.of("forceQuit.applications")));
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         p.add(new JScrollPane(list), BorderLayout.CENTER);
 
-        JButton quit = new JButton("Force Quit");
-        quit.getAccessibleContext().setAccessibleName("Force Quit");
+        JButton quit = new JButton(word(FMString.of("forceQuit.button")));
+        quit.getAccessibleContext().setAccessibleName(word(FMString.of("forceQuit.button")));
         quit.addActionListener(e -> forceQuit());
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         south.setOpaque(false);
@@ -66,7 +71,7 @@ public class ForceQuitWindow extends JInternalFrame {
         p.add(south, BorderLayout.SOUTH);
 
         setContentPane(p);
-        getAccessibleContext().setAccessibleName("Force Quit Applications");
+        getAccessibleContext().setAccessibleName(word(FMString.of("forceQuit.title")));
         Running.onChange(this::refresh);
         refresh();
     }
@@ -99,13 +104,13 @@ public class ForceQuitWindow extends JInternalFrame {
             org.fractalmicro.foundation.FMNotificationCenter.defaultCenter()
                 .post(org.fractalmicro.foundation.FMNotificationCenter.PROGRAMS_CHANGED);
             org.fractalmicro.appkit.FMAlert.tell(
-                org.fractalmicro.foundation.FMString.of("The Finder relaunches rather than quitting."),
-                org.fractalmicro.foundation.FMString.EMPTY);
+                FMLocalized.of(FMString.of("forceQuit.finderRelaunches")), FMString.EMPTY);
             return;
         }
         boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,
-            FMString.of("Do you want to force " + '“' + name + '”' + " to quit?"),
-            FMString.of("You will lose any unsaved changes."), FMString.of("Force Quit"));
+            FMLocalized.filled(FMString.of("forceQuit.ask"), FMString.of(name)),
+            FMLocalized.of(FMString.of("forceQuit.warning")),
+            FMLocalized.of(FMString.of("forceQuit.button")));
         if (!go) return;
         Desktop.quitApplication(name);
         refresh();

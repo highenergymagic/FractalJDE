@@ -65,7 +65,7 @@ public final class LocalizationTest {
      * moved into the tables and may not go up, which is the only thing that makes a long
      * job finish rather than drift.
      */
-    private static final int LITERALS_ALLOWED = 163;
+    private static final int LITERALS_ALLOWED = 110;
 
     /**
      * A key being made into this system's own text type.

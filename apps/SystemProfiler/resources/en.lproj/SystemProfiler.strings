@@ -25,3 +25,10 @@
 /* A command in the View menu */
 "menu View.sections.title" = "Refresh";
 
+
+/* The four sections, keyed by where each sits, because a row has no identifier of its
+   own. The program is sent the position as well, and switches on that. */
+"sections.item0" = "Hardware";
+"sections.item1" = "Software";
+"sections.item2" = "Volumes";
+"sections.item3" = "Locations";

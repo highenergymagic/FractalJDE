@@ -241,9 +241,11 @@ public final class FMText {
         if (support != null) {
             for (DataDetectors.Detection detection : support.detections()) {
                 if (at < detection.start() || at > detection.end()) continue;
-                JMenuItem item = new JMenuItem(detection.kind().action.toString());
+                JMenuItem item = new JMenuItem(detection.kind().actionSaid().toString());
                 item.getAccessibleContext().setAccessibleName(
-                    detection.kind().action + ": " + detection.text());
+                    org.fractalmicro.foundation.FMLocalized.filled(
+                        org.fractalmicro.foundation.FMString.of("detected.spoken"),
+                        detection.kind().actionSaid(), detection.text()).toString());
                 item.addActionListener(e -> act(text, detection));
                 menu.add(item);
                 menu.addSeparator();

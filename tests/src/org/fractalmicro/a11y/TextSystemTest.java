@@ -131,7 +131,7 @@ public final class TextSystemTest {
 
             Services.Service upper = null;
             for (Services.Service one : services) {
-                if (one.name().sameAs(FMString.of("Make Upper Case"))) upper = one;
+                if (one.name().sameAs(FMString.of("service.makeUpperCase"))) upper = one;
             }
             if (upper != null) Services.run(upper, field);
             failures += check(out, "a service that changes the text writes it back",

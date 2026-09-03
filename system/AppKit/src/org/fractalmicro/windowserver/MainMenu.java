@@ -60,10 +60,10 @@ public class MainMenu extends JMenuBar {
     public static final int CTRL = InputEvent.CTRL_DOWN_MASK;
 
     private final Desktop desktop;
-    private JMenu windowMenu = new JMenu("Window");
+    private JMenu windowMenu = new JMenu(word(FMString.of("menu.window")));
     private int fixedWindowItems;
-    private final JMenu recentItems = new JMenu("Recent Items");
-    private final JMenu recentFolders = new JMenu("Recent Folders");
+    private final JMenu recentItems = new JMenu(word(FMString.of("menu.recentItems")));
+    private final JMenu recentFolders = new JMenu(word(FMString.of("menu.recentFolders")));
 
     /** The bar’s own interface file, in AppKit’s framework, and what it read. */
     private static final FMString FRAMEWORK = FMString.of("AppKit");
@@ -96,7 +96,7 @@ public class MainMenu extends JMenuBar {
         this.desktop = desktop;
         setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
         setOpaque(true);
-        getAccessibleContext().setAccessibleName("Menu bar");
+        getAccessibleContext().setAccessibleName(word(FMString.of("desktop.menuBar")));
 
         readTheBar();
         buildWindowMenu();
@@ -373,23 +373,23 @@ public class MainMenu extends JMenuBar {
         m.getAccessibleContext().setAccessibleName(currentApplication);
         Font f = m.getFont();
         if (f != null) m.setFont(f.deriveFont(Font.BOLD));
-        m.add(item("About " + currentApplication, null,
+        m.add(item(named("menu.about"), null,
                    e -> AboutWindow.showAboutApplication(currentApplication)));
         m.addSeparator();
-        m.add(item("Preferences…", KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, CMD),
+        m.add(item(word(FMString.of("menu.preferences")), KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, CMD),
                    e -> {
                        javax.swing.JInternalFrame front = desktop.activeWindow();
                        if (front instanceof AppWindow app) app.showPreferences();
                        else Bundles.openPart(SYSTEM_PREFERENCES, "system");
                    }));
         m.addSeparator();
-        m.add(item("Hide " + currentApplication, KeyStroke.getKeyStroke(KeyEvent.VK_H, CMD),
+        m.add(item(named("menu.hide"), KeyStroke.getKeyStroke(KeyEvent.VK_H, CMD),
                    e -> desktop.hideAllWindows()));
-        m.add(item("Hide Others", KeyStroke.getKeyStroke(KeyEvent.VK_H, CMD | OPT),
+        m.add(item(word(FMString.of("menu.hideOthers")), KeyStroke.getKeyStroke(KeyEvent.VK_H, CMD | OPT),
                    e -> desktop.hideOtherWindows()));
-        m.add(item("Show All", null, e -> desktop.showAllWindows()));
+        m.add(item(word(FMString.of("menu.showAll")), null, e -> desktop.showAllWindows()));
         m.addSeparator();
-        m.add(item("Quit " + currentApplication, KeyStroke.getKeyStroke(KeyEvent.VK_Q, CMD),
+        m.add(item(named("menu.quit"), KeyStroke.getKeyStroke(KeyEvent.VK_Q, CMD),
                    e -> desktop.closeWindowsOf(currentApplication)));
         return m;
     }
@@ -409,8 +409,8 @@ public class MainMenu extends JMenuBar {
             menu.setIcon(new TrayIcon(icon));
             menu.setText("");
             menu.getAccessibleContext().setAccessibleName(icon.name());
-            menu.add(item("Open", null, e -> org.fractalmicro.win.TrayHost.click(icon, false)));
-            menu.add(item("Show Menu", null, e -> org.fractalmicro.win.TrayHost.click(icon, true)));
+            menu.add(item(word(FMString.of("menu.open")), null, e -> org.fractalmicro.win.TrayHost.click(icon, false)));
+            menu.add(item(word(FMString.of("menu.showMenu")), null, e -> org.fractalmicro.win.TrayHost.click(icon, true)));
             add(menu, at++);
             trayMenus.add(menu);
         }
@@ -519,7 +519,7 @@ public class MainMenu extends JMenuBar {
                                    e -> LaunchServices.openFolder(f)));
         }
         recentItems.addSeparator();
-        recentItems.add(item("Clear Menu", null, e -> { Recent.clear(); rebuildRecents(); }));
+        recentItems.add(item(word(FMString.of("menu.clearMenu")), null, e -> { Recent.clear(); rebuildRecents(); }));
     }
     /**
      * Puts the indicators at the right of the bar.
@@ -538,6 +538,16 @@ public class MainMenu extends JMenuBar {
     public JMenu recentFoldersMenu() { return recentFolders; }
 
     /** A menu item with a key and something to do. Public: programs build menus too. */
+    private static String word(FMString key) {
+        return org.fractalmicro.foundation.FMLocalized.of(key).toString();
+    }
+
+    /** A command with the program's own name in it: About TextEdit, Quit TextEdit. */
+    private String named(String key) {
+        return org.fractalmicro.foundation.FMLocalized.filled(
+            FMString.of(key), FMString.of(currentApplication)).toString();
+    }
+
     public static JMenuItem item(String text, KeyStroke accel, ActionListener action) {
         JMenuItem mi = new JMenuItem(text);
         if (accel != null) mi.setAccelerator(accel);

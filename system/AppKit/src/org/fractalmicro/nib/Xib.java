@@ -475,7 +475,8 @@ public final class Xib {
                 said(table, c.identifier(), "accessibilityHelp", c.description()),
                 c.text() == null ? null : said(table, c.identifier(), "title", c.text()),
                 c.action(), c.x(), c.y(), c.width(), c.height(), c.value(),
-                c.from(), c.to(), c.choices(), c.defaultButton(), c.in(), c.boundTo()));
+                c.from(), c.to(), translatedChoices(c, table), c.defaultButton(),
+                c.in(), c.boundTo()));
         }
 
         FMMutableArray<Nib.Menu> menus = FMMutableArray.empty();
@@ -488,6 +489,21 @@ public final class Xib {
         return new Nib(said(table, FMString.of("window"), "title", nib.title()),
                        nib.width(), nib.height(), nib.resizable(),
                        controls.asArray(), menus.asArray());
+    }
+
+    /**
+     * The rows of a list, which are words like any others.
+     *
+     * Keyed by where each one sits, "sections.item0", because a row has no identifier of
+     * its own. A program is sent the position as well as the title for the same reason.
+     */
+    private static FMArray<FMString> translatedChoices(Nib.Control c, FMDictionary table) {
+        if (c.choices().isEmpty()) return c.choices();
+        FMMutableArray<FMString> out = FMMutableArray.empty();
+        for (int i = 0; i < c.choices().count(); i++) {
+            out.add(said(table, c.identifier(), "item" + i, c.choices().at(i)));
+        }
+        return out.asArray();
     }
 
     private static FMString said(FMDictionary table, FMString id, String property,
@@ -517,6 +533,9 @@ public final class Xib {
             }
             if (c.text() != null && !c.text().isEmpty()) {
                 out.set(c.identifier().appending(FMString.of(".title")), c.text());
+            }
+            for (int i = 0; i < c.choices().count(); i++) {
+                out.set(c.identifier().appending(FMString.of(".item" + i)), c.choices().at(i));
             }
         }
         for (Nib.Menu menu : nib.menus()) {

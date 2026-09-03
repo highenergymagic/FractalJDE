@@ -20,6 +20,7 @@
 package org.fractalmicro.appkit;
 
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMArray;
 import org.fractalmicro.foundation.FMMutableArray;
 
@@ -42,13 +43,18 @@ import java.util.regex.Pattern;
 public final class DataDetectors {
     private DataDetectors() {}
 
-    /** What a detection turned out to be. */
+    /**
+     * What a detection turned out to be.
+     *
+     * Each carries the keys for what it is and for what can be done with it, rather than
+     * the words: an enum is compiled and a translation is not.
+     */
     public enum Kind {
-        LINK("Link", "Open Link"),
-        MAIL("Email address", "New Message"),
-        PHONE("Telephone number", "Copy Number"),
-        DATE("Date", "Show Date"),
-        ADDRESS("Address", "Show Map");
+        LINK("detected.link", "detected.openLink"),
+        MAIL("detected.mail", "detected.newMessage"),
+        PHONE("detected.phone", "detected.copyNumber"),
+        DATE("detected.date", "detected.showDate"),
+        ADDRESS("detected.address", "detected.showMap");
 
         public final FMString what;
         public final FMString action;
@@ -57,6 +63,12 @@ public final class DataDetectors {
             this.what = FMString.of(what);
             this.action = FMString.of(action);
         }
+
+        /** What it is, in the language this account reads. */
+        public FMString said() { return FMLocalized.of(what); }
+
+        /** What can be done with it, the same way. */
+        public FMString actionSaid() { return FMLocalized.of(action); }
     }
 
     /** One thing found: where it is, what it is, and the text of it. */
@@ -65,7 +77,7 @@ public final class DataDetectors {
 
         /** What it is called: the kind of thing, then the thing. */
         public FMString spoken() {
-            return kind.what.appending(FMString.of(": ")).appending(text);
+            return FMLocalized.filled(FMString.of("detected.spoken"), kind.said(), text);
         }
     }
 
