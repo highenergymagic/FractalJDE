@@ -125,7 +125,8 @@ public final class Places {
 
         if (FinderSettings.sidebarShowSearch()) {
             List<Place> searches = new ArrayList<>();
-            for (String which : new String[]{"today", "week", "images", "documents"}) {
+            for (String which : new String[]{"today", "yesterday", "week",
+                                             "images", "movies", "documents"}) {
                 searches.add(Place.named(FMLocalized.of(savedSearchName(which)).toString(),
                                          FMString.of("search:" + which), Node.Kind.SEARCH));
             }
@@ -158,8 +159,10 @@ public final class Places {
     public static FMString savedSearchName(String which) {
         return switch (which) {
             case "today" -> FMString.of("search.today");
+            case "yesterday" -> FMString.of("search.yesterday");
             case "week" -> FMString.of("search.pastWeek");
             case "images" -> FMString.of("search.allImages");
+            case "movies" -> FMString.of("search.allMovies");
             default -> FMString.of("search.allDocuments");
         };
     }

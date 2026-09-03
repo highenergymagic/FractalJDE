@@ -238,8 +238,10 @@
 
 /* The saved searches under SEARCH FOR. */
 "search.today" = "Today";
+"search.yesterday" = "Yesterday";
 "search.pastWeek" = "Past Week";
 "search.allImages" = "All Images";
+"search.allMovies" = "All Movies";
 "search.allDocuments" = "All Documents";
 
 /* What the system is, in full, and who makes it. The short name is one word and is the

@@ -34,45 +34,75 @@ public final class Aqua {
 
     public static final int MENU_BAR_HEIGHT = 22;
 
+    /* -------------------------------------------------------------- the palette
+     *
+     * Sampled, not guessed at. Every value marked below was read out of a 10.6.8
+     * screenshot pixel by pixel: the chrome and the lights off two windows, the menu
+     * colours off an open Go menu, the list colours off a list view. What is unmarked was
+     * eyeballed, and three of the marked ones had been the modern macOS values.
+     */
+
     // Menu bar and menus
     public static final Color MENUBAR_TOP     = new Color(0xF7F7F7);
     public static final Color MENUBAR_BOTTOM  = new Color(0xD8D8D8);
     public static final Color MENUBAR_EDGE    = new Color(0x9A9A9A);
-    public static final Color MENU_BG         = new Color(0xFFFFFF);
+    public static final Color MENU_BG         = new Color(0xF2F2F4);   // sampled
     public static final Color MENU_BORDER     = new Color(0xB4B4B4);
     public static final Color MENU_TEXT       = new Color(0x000000);
-    public static final Color MENU_DISABLED   = new Color(0x9C9C9C);
+    public static final Color MENU_DISABLED   = new Color(0x928E9B);   // sampled
     public static final Color SEPARATOR       = new Color(0xDCDCDC);
 
     // Highlight (System Preferences > Appearance > Blue)
-    public static final Color HILITE_TOP      = new Color(0x5C9DEF);
-    public static final Color HILITE_BOTTOM   = new Color(0x1E62D0);
+    public static final Color HILITE_TOP      = new Color(0x5C84F5);   // sampled
+    public static final Color HILITE_BOTTOM   = new Color(0x2663F4);   // sampled
     public static final Color HILITE_TEXT     = Color.WHITE;
-    public static final Color SELECTION       = new Color(0x3875D7);
+    public static final Color SELECTION       = new Color(0x3875D7);   // sampled
     public static final Color SELECTION_INACTIVE = new Color(0xC8C8C8);
 
+    /**
+     * The blue a source list uses, which is not the blue a list uses.
+     *
+     * A row in the sidebar is a gradient and a row in a file listing is flat, and they
+     * are not even the same hue. Both sampled from the same window.
+     */
+    public static final Color SOURCE_SELECT_TOP    = new Color(0x69A6DF);
+    public static final Color SOURCE_SELECT_BOTTOM = new Color(0x1D6AB8);
+
     // Windows
-    public static final Color TITLE_ACTIVE_TOP    = new Color(0xE8E8E8);
-    public static final Color TITLE_ACTIVE_BOTTOM = new Color(0xC2C2C2);
+    public static final Color TITLE_ACTIVE_TOP    = new Color(0xCECECE);   // sampled
+    public static final Color TITLE_ACTIVE_BOTTOM = new Color(0xA8A8A8);   // sampled
     public static final Color TITLE_INACTIVE_TOP  = new Color(0xF6F6F6);
     public static final Color TITLE_INACTIVE_BOTTOM = new Color(0xE4E4E4);
+
+    /** The one bright line along the very top of a window, above the gradient. */
+    public static final Color TITLE_HIGHLIGHT = new Color(0xE2E2E2);       // sampled
+
     public static final Color TITLE_TEXT      = new Color(0x2B2B2B);
     public static final Color TITLE_TEXT_OFF  = new Color(0x8C8C8C);
-    public static final Color WINDOW_BG       = new Color(0xF2F2F2);
-    public static final Color WINDOW_EDGE     = new Color(0x7A7A7A);
+    public static final Color WINDOW_BG       = new Color(0xEDEDED);       // sampled
+    public static final Color WINDOW_EDGE     = new Color(0x515151);       // sampled
     public static final Color LIST_BG         = Color.WHITE;
-    public static final Color LIST_STRIPE     = new Color(0xEDF3FE);
-    public static final Color SIDEBAR_BG      = new Color(0xD8DEE6);
+    public static final Color LIST_STRIPE     = new Color(0xEDF3FE);       // sampled
+    public static final Color SIDEBAR_BG      = new Color(0xDEE4EA);       // sampled
     public static final Color SIDEBAR_HEADER  = new Color(0x74808F);
     public static final Color SIDEBAR_TEXT    = new Color(0x2C2C2C);
-    public static final Color TOOLBAR_TOP     = new Color(0xE4E4E4);
-    public static final Color TOOLBAR_BOTTOM  = new Color(0xC9C9C9);
+    public static final Color TOOLBAR_TOP     = new Color(0xD0D0D0);       // sampled
+    public static final Color TOOLBAR_BOTTOM  = new Color(0xA7A7A7);       // sampled
     public static final Color STATUSBAR_BG    = new Color(0xEDEDED);
 
-    // Traffic lights
-    public static final Color CLOSE_RED    = new Color(0xFF5F57);
-    public static final Color MIN_YELLOW   = new Color(0xFFBD2E);
-    public static final Color ZOOM_GREEN   = new Color(0x28C940);
+    /**
+     * The three lights, as 10.6 drew them and not as the system after it did.
+     *
+     * These held the modern values. Snow Leopard's zoom button is a soft yellow-green,
+     * which is the one nobody would guess at, and its yellow is paler.
+     */
+    public static final Color CLOSE_RED    = new Color(0xFF6160);   // sampled
+    public static final Color MIN_YELLOW   = new Color(0xFCCE72);   // sampled
+    public static final Color ZOOM_GREEN   = new Color(0xA6D973);   // sampled
+
+    /** A light for something this window cannot do. Shown, not left out. */
+    public static final Color LIGHT_OFF    = new Color(0xD0D0D0);   // sampled
+    public static final Color LIGHT_OFF_EDGE = new Color(0x8D8D8D); // sampled
 
     // Dock
     public static final Color DOCK_GLASS_TOP    = new Color(255, 255, 255, 40);
@@ -192,10 +222,13 @@ public final class Aqua {
     public static void paintTrafficLight(Graphics2D g, int x, int y, int d, Color base,
                                          boolean active, boolean hover, String glyph) {
         antialias(g);
-        Color fill = active ? base : new Color(0xD4D4D4);
-        g.setPaint(new GradientPaint(x, y, fill.brighter(), x, y + d, fill.darker()));
+        // The gel is centred on the colour rather than run between brighter() and
+        // darker(), which pull unevenly and clip: a light whose middle is not the colour
+        // it was given is a light that does not match what was measured off a screenshot.
+        Color fill = active ? base : LIGHT_OFF;
+        g.setPaint(new GradientPaint(x, y, shade(fill, 1.18f), x, y + d, shade(fill, 0.82f)));
         g.fillOval(x, y, d, d);
-        g.setColor(new Color(0, 0, 0, 60));
+        g.setColor(active ? new Color(0, 0, 0, 60) : LIGHT_OFF_EDGE);
         g.drawOval(x, y, d, d);
         g.setColor(new Color(255, 255, 255, 130));
         g.drawArc(x + 1, y + 1, d - 2, d - 2, 40, 100);
@@ -206,6 +239,16 @@ public final class Aqua {
             g.drawString(glyph, x + (d - fm.stringWidth(glyph)) / 2f,
                          y + (d + fm.getAscent()) / 2f - 1);
         }
+    }
+
+    /** One colour lightened or darkened, staying inside what a channel can hold. */
+    private static Color shade(Color colour, float by) {
+        return new Color(clamp(colour.getRed() * by), clamp(colour.getGreen() * by),
+                         clamp(colour.getBlue() * by));
+    }
+
+    private static int clamp(float value) {
+        return Math.max(0, Math.min(255, Math.round(value)));
     }
 
     /** Focus ring, drawn wherever a real Mac would draw one. */

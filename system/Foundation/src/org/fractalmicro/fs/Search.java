@@ -125,8 +125,13 @@ public final class Search {
         collect(FS.home(), out, limit, 0, n -> {
             switch (which) {
                 case "today": return n.modified > now - day;
+                // Yesterday is the day before, not the last two days: a saved search
+                // called Yesterday that also holds today's work is one nobody can use.
+                case "yesterday":
+                    return n.modified > now - 2 * day && n.modified <= now - day;
                 case "week": return n.modified > now - 7 * day;
                 case "images": return matchesExtension(n, "png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp");
+                case "movies": return matchesExtension(n, "mov", "mp4", "m4v", "avi", "mkv", "wmv", "webm", "mpg");
                 default: return matchesExtension(n, "txt", "rtf", "pdf", "doc", "docx", "odt", "md", "pages");
             }
         });

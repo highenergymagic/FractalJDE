@@ -42,6 +42,26 @@ public class ForceQuitWindow extends JInternalFrame {
         return FMLocalized.of(key).toString();
     }
 
+    /**
+     * A program that has stopped answering says so, in red, as it does on a Mac.
+     *
+     * The mark is drawn and not stored. What the list holds is the program's name, which
+     * is what the button acts on, and a name that had "(Not Responding)" glued onto it
+     * would be a name nothing could match.
+     */
+    private static final class Stuck extends javax.swing.DefaultListCellRenderer {
+        @Override public java.awt.Component getListCellRendererComponent(
+                JList<?> list, Object value, int index, boolean chosen, boolean focused) {
+            super.getListCellRendererComponent(list, value, index, chosen, focused);
+            String name = String.valueOf(value);
+            if (org.fractalmicro.core.WindowList.notResponding(name)) {
+                setText(name + " " + word(FMString.of("forceQuit.notResponding")));
+                if (!chosen) setForeground(java.awt.Color.RED);
+            }
+            return this;
+        }
+    }
+
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> list = new JList<>(model);
 
@@ -59,6 +79,7 @@ public class ForceQuitWindow extends JInternalFrame {
         p.add(hint, BorderLayout.NORTH);
 
         list.getAccessibleContext().setAccessibleName(word(FMString.of("forceQuit.applications")));
+        list.setCellRenderer(new Stuck());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         p.add(new JScrollPane(list), BorderLayout.CENTER);
 

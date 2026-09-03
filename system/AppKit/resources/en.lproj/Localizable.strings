@@ -283,3 +283,4 @@
 "window.close" = "Close";
 "window.minimize" = "Minimize";
 "window.zoom" = "Zoom";
+"forceQuit.notResponding" = "(Not Responding)";

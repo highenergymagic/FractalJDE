@@ -70,6 +70,12 @@ public final class WindowList {
             return !windows.isEmpty();
         }
 
+        /** Whether any of its windows has stopped taking anything off its queue. */
+        public boolean notResponding() {
+            for (User32.Win w : windows) if (w.notResponding) return true;
+            return false;
+        }
+
         @Override public boolean equals(Object o) {
             if (!(o instanceof App)) return false;
             App a = (App) o;
@@ -85,6 +91,14 @@ public final class WindowList {
     private static long ownProcess = ProcessHandle.current().pid();
 
     public static List<App> applications() { return apps; }
+
+    /** Whether the program of that name has stopped answering. */
+    public static boolean notResponding(String name) {
+        for (App app : apps) {
+            if (app.name.equals(name)) return app.notResponding();
+        }
+        return false;
+    }
 
     public static void onChange(Runnable r) { LISTENERS.add(r); }
 

@@ -72,28 +72,23 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             getAccessibleContext().setAccessibleName(
                 FMLocalized.of(FMString.of("window.titleBar")).toString());
 
+            // All three, always. A window that cannot be zoomed shows a grey zoom light
+            // rather than none: leaving it out slides the other two along, and the three
+            // of them are a shape a person recognises before they read anything.
             java.util.List<javax.swing.JComponent> buttons = new java.util.ArrayList<>();
             int x = 8;
-            if (frame.isClosable()) {
-                JButton b = light(x, Aqua.CLOSE_RED, FMString.of("window.close"),
-                                  true, "×", e -> close());
-                add(b);
-                buttons.add(b);
-                x += 20;
-            }
-            if (frame.isIconifiable()) {
-                JButton b = light(x, Aqua.MIN_YELLOW, FMString.of("window.minimize"),
-                                  false, "−", e -> iconify());
-                add(b);
-                buttons.add(b);
-                x += 20;
-            }
-            if (frame.isMaximizable()) {
-                JButton b = light(x, Aqua.ZOOM_GREEN, FMString.of("window.zoom"),
-                                  false, "+", e -> zoom());
-                add(b);
-                buttons.add(b);
-            }
+            JButton closes = light(x, Aqua.CLOSE_RED, FMString.of("window.close"),
+                                   true, "×", frame.isClosable(), e -> close());
+            add(closes);
+            buttons.add(closes);
+            JButton smaller = light(x + 20, Aqua.MIN_YELLOW, FMString.of("window.minimize"),
+                                    false, "−", frame.isIconifiable(), e -> iconify());
+            add(smaller);
+            buttons.add(smaller);
+            JButton bigger = light(x + 40, Aqua.ZOOM_GREEN, FMString.of("window.zoom"),
+                                   false, "+", frame.isMaximizable(), e -> zoom());
+            add(bigger);
+            buttons.add(bigger);
             // One tab stop for the three of them; left and right move between them.
             if (!buttons.isEmpty()) org.fractalmicro.appkit.FocusGroup.horizontal(this, buttons);
 
@@ -123,7 +118,8 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
          * somebody translated it, and then it hung on nothing.
          */
         private JButton light(int x, Color colour, FMString key, boolean closes,
-                              String glyph, java.awt.event.ActionListener action) {
+                              String glyph, boolean live,
+                              java.awt.event.ActionListener action) {
             String name = FMLocalized.of(key).toString();
             JButton b = new JButton() {
                 @Override protected void paintComponent(Graphics g) {
@@ -134,8 +130,8 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
                     // window too, which is where somebody is most likely to have forgotten.
                     boolean marked = closes && edited(frame);
                     Aqua.paintTrafficLight((Graphics2D) g, 0, 0, 13, colour,
-                        frame.isSelected(),
-                        marked || getModel().isRollover() || hasFocus(),
+                        live && frame.isSelected(),
+                        live && (marked || getModel().isRollover() || hasFocus()),
                         marked ? "•" : glyph);
                 }
             };
@@ -144,6 +140,7 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             b.setContentAreaFilled(false);
             b.setFocusPainted(false);
             b.setRolloverEnabled(true);
+            b.setEnabled(live);
             b.setToolTipText(name);
             b.getAccessibleContext().setAccessibleName(name);
             b.addActionListener(action);

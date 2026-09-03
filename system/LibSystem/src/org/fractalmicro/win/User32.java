@@ -72,6 +72,16 @@ public final class User32 {
     private static final MethodHandle IS_ICONIC = Native.handle(U32,
         "IsIconic", FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS));
 
+    /**
+     * Whether a window has stopped answering.
+     *
+     * The host decides this, not a timer here: it knows when a window last took anything
+     * off its queue, and a program deciding for itself that another one is wedged would
+     * be guessing.
+     */
+    private static final MethodHandle IS_HUNG = Native.handle(U32,
+        "IsHungAppWindow", FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS));
+
     private static final MethodHandle GET_WINDOW_LONG = Native.handle(U32,
         "GetWindowLongPtrW", FunctionDescriptor.of(ValueLayout.JAVA_LONG,
             ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
@@ -109,13 +119,16 @@ public final class User32 {
         public final String className;
         public final long pid;
         public final boolean minimized;
+        public final boolean notResponding;
 
-        Win(long handle, String title, String className, long pid, boolean minimized) {
+        Win(long handle, String title, String className, long pid, boolean minimized,
+            boolean notResponding) {
             this.handle = handle;
             this.title = title;
             this.className = className;
             this.pid = pid;
             this.minimized = minimized;
+            this.notResponding = notResponding;
         }
 
         @Override public String toString() { return title + " [" + className + "]"; }
@@ -197,8 +210,10 @@ public final class User32 {
             MemorySegment pid = arena.allocate(ValueLayout.JAVA_INT);
             int ignored = (int) GET_WINDOW_THREAD_PROCESS_ID.invokeExact(hwnd, pid);
             boolean minimized = (int) IS_ICONIC.invokeExact(hwnd) != 0;
+            boolean stuck = (int) IS_HUNG.invokeExact(hwnd) != 0;
             return new Win(hwnd.address(), title(hwnd), className(hwnd),
-                           Integer.toUnsignedLong(pid.get(ValueLayout.JAVA_INT, 0)), minimized);
+                           Integer.toUnsignedLong(pid.get(ValueLayout.JAVA_INT, 0)),
+                           minimized, stuck);
         }
     }
 
