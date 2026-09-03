@@ -209,11 +209,17 @@
                                 <menuItem title="Date Modified">
                                     <connections><action selector="arrangeByDateModified"/></connections>
                                 </menuItem>
+                                <menuItem title="Date Created">
+                                    <connections><action selector="arrangeByDateCreated"/></connections>
+                                </menuItem>
                                 <menuItem title="Size">
                                     <connections><action selector="arrangeBySize"/></connections>
                                 </menuItem>
                                 <menuItem title="Kind">
                                     <connections><action selector="arrangeByKind"/></connections>
+                                </menuItem>
+                                <menuItem title="Label">
+                                    <connections><action selector="arrangeByLabel"/></connections>
                                 </menuItem>
                             </items>
                         </menu>

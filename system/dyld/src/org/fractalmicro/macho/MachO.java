@@ -88,6 +88,13 @@ public final class MachO {
     public static final int LC_LOAD_DYLINKER = 0xE;
     public static final int LC_UUID = 0x1B;
     public static final int LC_REQ_DYLD = 0x80000000;
+    /**
+     * Where the entry code is, and later than the system this imitates.
+     *
+     * 10.6 had no LC_MAIN: an executable named its entry with an LC_UNIXTHREAD carrying a
+     * whole register state, and LC_MAIN arrived in 10.8. The later one is written here
+     * because it says the same thing in sixteen bytes rather than a hundred and eighty.
+     */
     public static final int LC_MAIN = LC_REQ_DYLD | 0x28;
     /** How the loader says which loader it is. */
     public static final int LC_ID_DYLINKER = 0xF;

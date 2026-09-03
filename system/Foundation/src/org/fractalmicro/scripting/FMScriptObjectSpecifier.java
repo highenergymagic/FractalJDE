@@ -46,16 +46,25 @@ public final class FMScriptObjectSpecifier {
     public static final FMString FILE = FMString.of("file");
     public static final FMString DISK = FMString.of("cdis");
 
+    /** A window on a folder, which is a window and something more. */
+    public static final FMString FILE_VIEWER = FMString.of("brow");
+
     /* ------------------------------------------------------------ the properties */
 
     public static final FMString NAME = FMString.of("pnam");
     public static final FMString CLASS = FMString.of("pcls");
     public static final FMString INDEX = FMString.of("pidx");
-    public static final FMString PATH = FMString.of("psxp");
     public static final FMString SIZE = FMString.of("ptsz");
-    public static final FMString BOUNDS = FMString.of("pbnd");
     public static final FMString VERSION = FMString.of("vers");
-    public static final FMString SELECTION = FMString.of("sele");
+
+    /** Where a thing is, which the Finder has always given as a URL. */
+    public static final FMString URL = FMString.of("pURL");
+
+    /** What a thing is, in the words Get Info uses. */
+    public static final FMString KIND = FMString.of("kind");
+
+    /** What a file viewer is looking at. */
+    public static final FMString TARGET = FMString.of("fvtg");
 
     /* --------------------------------------------------------------- the forms */
 

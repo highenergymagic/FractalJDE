@@ -95,6 +95,17 @@ public final class FMURL implements Comparable<FMURL> {
 
     public boolean isFile() { return file.isFile(); }
 
+    /**
+     * The whole thing as a URL, which is what a location written down looks like.
+     *
+     * NSURL's absoluteString. A path is what a file system takes and a URL is what
+     * anything else takes, and the Finder has always given the second when asked where
+     * something is.
+     */
+    public FMString absoluteString() {
+        return FMString.of(file.toURI().toString());
+    }
+
     /** The runtime's own file, for the layers beneath this one. */
     public java.io.File asFile() { return file; }
 

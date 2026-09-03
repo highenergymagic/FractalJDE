@@ -404,6 +404,8 @@ public final class FinderMenus implements NibLoader.Commands {
             }
             case "arrangeByName" -> arrangeBy("Name");
             case "arrangeByDateModified" -> arrangeBy("DateModified");
+            case "arrangeByDateCreated" -> arrangeBy("DateCreated");
+            case "arrangeByLabel" -> arrangeBy("Label");
             case "arrangeBySize" -> arrangeBy("Size");
             case "arrangeByKind" -> arrangeBy("Kind");
             case "toggleToolbar" -> toggle("toolbar");

@@ -41,11 +41,14 @@
             <element type="disk"/>
         </class>
 
-        <class name="window" code="cwin" plural="windows"
-               description="A window on a folder.">
+        <class name="window" code="cwin" plural="windows" description="A window.">
             <property name="name" code="pnam" type="text" access="r"/>
             <property name="index" code="pidx" type="integer" access="r"/>
-            <property name="path" code="psxp" type="text"
+        </class>
+
+        <class name="Finder window" code="brow" inherits="window"
+               plural="Finder windows" description="A window on a folder.">
+            <property name="target" code="fvtg" type="text"
                       description="The folder it is looking at."/>
             <element type="item"/>
         </class>
@@ -54,7 +57,8 @@
                description="Anything on a disk, which is a file or a folder.">
             <property name="name" code="pnam" type="text" access="r"/>
             <property name="class" code="pcls" type="text" access="r"/>
-            <property name="path" code="psxp" type="text" access="r"/>
+            <property name="kind" code="kind" type="text" access="r"/>
+            <property name="URL" code="pURL" type="text" access="r"/>
             <property name="size" code="ptsz" type="integer" access="r"/>
         </class>
 

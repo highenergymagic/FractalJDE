@@ -101,10 +101,12 @@
 "menu View.Arrange By.arrangeByName.title" = "Name";
 
 "menu View.Arrange By.arrangeByDateModified.title" = "Date Modified";
+"menu View.Arrange By.arrangeByDateCreated.title" = "Date Created";
 
 "menu View.Arrange By.arrangeBySize.title" = "Size";
 
 "menu View.Arrange By.arrangeByKind.title" = "Kind";
+"menu View.Arrange By.arrangeByLabel.title" = "Label";
 
 "menu View.toggleToolbar.title" = "Hide Toolbar";
 

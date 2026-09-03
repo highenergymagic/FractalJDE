@@ -34,6 +34,15 @@ public final class Sorting {
             case "DateModified":
                 c = Comparator.comparingLong((Node n) -> n.modified).reversed();
                 break;
+            case "DateCreated":
+                c = Comparator.comparingLong(Sorting::createdAt).reversed();
+                break;
+            case "Label":
+                // Labelled things first, in the order the labels are listed, then the
+                // rest by name, which is how a colour is useful for finding something.
+                c = Comparator.comparingInt((Node n) -> n.label == 0 ? Integer.MAX_VALUE : n.label)
+                              .thenComparing(n -> n.name, String.CASE_INSENSITIVE_ORDER);
+                break;
             case "Size":
                 c = Comparator.comparingLong((Node n) -> n.size).reversed();
                 break;
@@ -45,5 +54,17 @@ public final class Sorting {
                               .thenComparing(n -> n.name, String.CASE_INSENSITIVE_ORDER);
         }
         nodes.sort(c);
+    }
+
+    /** When something was made, which the file system keeps beside when it changed. */
+    private static long createdAt(Node node) {
+        if (node.file == null) return 0;
+        try {
+            return java.nio.file.Files.readAttributes(node.file.toPath(),
+                java.nio.file.attribute.BasicFileAttributes.class)
+                .creationTime().toMillis();
+        } catch (java.io.IOException unreadable) {
+            return 0;
+        }
     }
 }

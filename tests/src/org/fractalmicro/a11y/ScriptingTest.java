@@ -182,7 +182,7 @@ public final class ScriptingTest {
             !FMString.describing(called).isEmpty());
 
         Object where = get(manager, FMAppleEvent.GET_DATA,
-            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.PATH, firstWindow));
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.TARGET, firstWindow));
         failures += check(out, "and what it is showing",
             new java.io.File(FMString.describing(where).toString()).isDirectory());
 
@@ -203,14 +203,14 @@ public final class ScriptingTest {
         // a script means by setting the target of a window.
         FMMutableDictionary going = FMMutableDictionary.empty();
         going.set(FMAppleEvent.DIRECT_OBJECT, FMScriptObjectSpecifier
-            .property(FMScriptObjectSpecifier.PATH, firstWindow).asDictionary());
+            .property(FMScriptObjectSpecifier.TARGET, firstWindow).asDictionary());
         going.set(FMAppleEvent.DATA,
             FMString.describing(org.fractalmicro.fs.FS.desktopFolder().getAbsolutePath()));
         FMDictionary went = manager.sendEvent(new FMAppleEvent(FMAppleEvent.CORE_SUITE,
             FMAppleEvent.SET_DATA, FMString.of("Finder"), going.asDictionary()));
         drain();
         Object now = get(manager, FMAppleEvent.GET_DATA,
-            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.PATH, firstWindow));
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.TARGET, firstWindow));
         failures += check(out, "setting what it is showing moves it there",
             !FMAppleEventManager.failed(went)
             && FMString.describing(now).sameAs(FMString.describing(

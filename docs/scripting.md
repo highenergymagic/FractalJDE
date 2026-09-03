@@ -123,8 +123,20 @@ key value coding; written out like this it suits a language that has no key valu
 to lean on.
 
 The Finder shows its windows and its disks, a window shows what it is looking at and what
-is in it, and an item shows its name, its path and its size. Setting the path of a window
-moves it there, which is what a script means by telling a window to look somewhere else.
+is in it, and an item shows its name, its kind, its URL and its size. Setting the target
+of a window moves it there, which is what a script means by telling a window to look
+somewhere else.
+
+The words and the codes are the Finder's own, checked against its dictionary: a window on
+a folder is a `Finder window`, code `brow`, which inherits `window`, code `cwin`, so
+"window 1" finds one and "Finder window 1" finds only those. An item is `cobj` with `pnam`,
+`pidx`, `ptsz`, `kind` and `pURL`; a folder is `cfol`, a file is `file`, a disk is `cdis`.
+What a file viewer is looking at is `target`, `fvtg`.
+
+One thing is not the same. In a real Finder `target` is a reference to a folder, and
+printing it gives `folder "x" of folder "y"`. Here it is the path, because this system has
+no way to write a reference down as words and a path is the thing a person would have
+typed anyway.
 
 ## The standard suite
 

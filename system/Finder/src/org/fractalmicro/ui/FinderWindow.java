@@ -512,6 +512,8 @@ public class FinderWindow extends JInternalFrame
     private static FMString nameOfArrangement(String key) {
         return switch (key) {
             case "DateModified" -> FMString.of("finder.byDateModified");
+            case "DateCreated" -> FMString.of("finder.byDateCreated");
+            case "Label" -> FMString.of("finder.byLabel");
             case "Size" -> FMString.of("finder.bySize");
             case "Kind" -> FMString.of("finder.byKind");
             default -> FMString.of("finder.byName");

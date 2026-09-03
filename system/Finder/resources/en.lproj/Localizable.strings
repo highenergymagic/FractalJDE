@@ -298,3 +298,5 @@
 "finder.sidebar" = "Sidebar";
 "finder.selectedKind" = "selected %1$@";
 "finder.labelMenu" = "Label";
+"finder.byDateCreated" = "date created";
+"finder.byLabel" = "label";

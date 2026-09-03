@@ -62,7 +62,7 @@ public final class FinderScripting implements FMScriptable {
 
     @Override public FMArray<FMScriptable> elements(FMString wantClass) {
         FMMutableArray<FMScriptable> out = FMMutableArray.empty();
-        if (FMScriptObjectSpecifier.WINDOW.sameAs(wantClass)) {
+        if (isKind(FMScriptObjectSpecifier.FILE_VIEWER, wantClass)) {
             Desktop desktop = Desktop.sharedDesktop();
             if (desktop == null) return out.asArray();
             for (JInternalFrame frame : desktop.windows()) {
@@ -85,14 +85,18 @@ public final class FinderScripting implements FMScriptable {
 
         OneWindow(FinderWindow window) { this.window = window; }
 
-        @Override public FMString scriptClass() { return FMScriptObjectSpecifier.WINDOW; }
+        // A window on a folder is a file viewer, which is a window and something more.
+        // Asking for windows finds one; asking for Finder windows finds only these.
+        @Override public FMString scriptClass() {
+            return FMScriptObjectSpecifier.FILE_VIEWER;
+        }
 
         @Override public FMString scriptName() {
             return FMString.describing(window.getTitle());
         }
 
         @Override public Object property(FMString code) {
-            if (FMScriptObjectSpecifier.PATH.sameAs(code)) {
+            if (FMScriptObjectSpecifier.TARGET.sameAs(code)) {
                 File folder = window.currentFolder();
                 return folder == null ? FMString.EMPTY
                                       : FMString.of(folder.getAbsolutePath());
@@ -104,7 +108,7 @@ public final class FinderScripting implements FMScriptable {
         }
 
         @Override public boolean setProperty(FMString code, Object value) {
-            if (!FMScriptObjectSpecifier.PATH.sameAs(code)) return false;
+            if (!FMScriptObjectSpecifier.TARGET.sameAs(code)) return false;
             File wanted = new File(FMString.describing(value).toString());
             if (!wanted.isDirectory()) return false;
             onTheScreen(() -> window.navigateTo(wanted));
@@ -144,12 +148,15 @@ public final class FinderScripting implements FMScriptable {
         @Override public FMString scriptName() { return FMString.describing(node.name); }
 
         @Override public Object property(FMString code) {
-            if (FMScriptObjectSpecifier.PATH.sameAs(code)) {
+            if (FMScriptObjectSpecifier.URL.sameAs(code)) {
                 return node.file == null ? FMString.EMPTY
-                                         : FMString.of(node.file.getAbsolutePath());
+                    : org.fractalmicro.foundation.FMURL.of(node.file).absoluteString();
             }
             if (FMScriptObjectSpecifier.SIZE.sameAs(code)) {
                 return FMNumber.of(Math.max(0, node.size));
+            }
+            if (FMScriptObjectSpecifier.KIND.sameAs(code)) {
+                return FMString.describing(org.fractalmicro.fs.Kinds.display(node));
             }
             return FMScriptable.super.property(code);
         }
@@ -173,6 +180,18 @@ public final class FinderScripting implements FMScriptable {
     }
 
     /* ------------------------------------------------------------------- pieces */
+
+    /**
+     * Whether one thing answers to the class being asked for.
+     *
+     * A file viewer is a window, so asking for windows finds it. That is what inherits
+     * means in a terminology, and it has to hold here or "window 1" finds nothing.
+     */
+    private static boolean isKind(FMString scriptClass, FMString wantClass) {
+        if (scriptClass.sameAs(wantClass)) return true;
+        return FMScriptObjectSpecifier.FILE_VIEWER.sameAs(scriptClass)
+            && FMScriptObjectSpecifier.WINDOW.sameAs(wantClass);
+    }
 
     /** Whether that class is one of the kinds a folder holds. */
     private static boolean wanted(FMString wantClass) {
