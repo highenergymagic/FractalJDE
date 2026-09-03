@@ -38,10 +38,8 @@ public final class Main {
     /**
      * Runs the checks, which are not part of what ships.
      *
-     * A built system has no checking code in it: the applications and the framework are
-     * what a person installs, and the checks are a separate thing built beside them. So
-     * they are reached by name rather than linked, and a build without them says so
-     * instead of failing to start.
+     * Reached by name rather than linked, so a build without them says so instead of
+     * failing to start.
      */
     private static void runChecks(org.fractalmicro.windowserver.Desktop desktop) {
         try {

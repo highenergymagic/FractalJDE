@@ -33,21 +33,15 @@ import java.util.Set;
 /**
  * Deciding, at build time, which library each symbol will come from.
  *
- * This is the part of linking that happens once rather than every time a program starts.
- * The code mentions a class; the linker looks through the libraries the image was told to
- * link, finds the one that exports it, and writes that down. At run time the loader has
- * only to follow what was decided here, which is why a two level namespace costs nothing
- * to resolve and why a program keeps working when a library it never linked starts
- * exporting the same name.
+ * The code mentions a class; the linker finds the linked library that exports it and
+ * writes that down. At run time the loader follows what was decided here, so a two level
+ * namespace costs nothing to resolve.
  *
- * A library reached through an umbrella is recorded as the umbrella. That is what makes
- * the rule about linking CoreServices rather than the frameworks inside it work: the
- * symbol is found in LaunchServices, but the program never named LaunchServices, so what
- * goes in the load command is the name the program did give.
+ * A library reached through an umbrella is recorded as the umbrella: the symbol is found
+ * in LaunchServices, the program named CoreServices, and the load command carries the name
+ * the program gave.
  *
- * Classes belonging to the runtime are not symbols here. Every image gets those, no image
- * exports them, and recording them would be recording something no loader will ever need
- * to resolve.
+ * Runtime classes are not symbols. Every image gets those and no image exports them.
  */
 public final class Linker {
 

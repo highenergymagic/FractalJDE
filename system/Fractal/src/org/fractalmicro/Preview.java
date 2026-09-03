@@ -22,11 +22,10 @@ package org.fractalmicro;
 /**
  * A class that will not load without --enable-preview.
  *
- * Never called. What matters is how it was compiled: a class built with preview enabled is
- * stamped as such and a machine started without the flag refuses to load it, so trying to
- * load this answers a question the runtime offers no other way to ask. The launcher needs
- * it before deciding whether to start itself again with the flag on, and this ships
- * wherever the launcher does, so a missing class cannot be mistaken for a refused one.
+ * Never called. A class built with preview enabled is stamped as such and a machine
+ * started without the flag refuses to load it, which is the only way to ask the runtime
+ * the question. Ships wherever the launcher does, so missing cannot be mistaken for
+ * refused.
  */
 final class Preview {
     private Preview() {}

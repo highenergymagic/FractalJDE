@@ -39,20 +39,15 @@ import java.util.zip.ZipOutputStream;
 /**
  * A whole system volume in one file.
  *
- * This is what ships. Inside are the frameworks, the loader, launchd, the applications and
- * everything else that belongs on a volume, at the paths they will sit at once installed,
- * plus a manifest saying which build they are and what each of them should hash to.
+ * The frameworks, the loader, launchd and the applications at the paths they will sit at,
+ * plus a manifest of the build and what each file should hash to.
  *
- * The format is a zip. Mac OS X would use a disk image here, and the extension kept is the
- * one it uses, but a disk image is a filesystem in a file and there is no filesystem here
- * for Windows to mount. What is wanted from a disk image is that a system arrives as one
- * file, that the file says what it is, and that a damaged one is caught before any of it
- * is believed. A zip with a manifest is all three, and every machine can already open it.
+ * A zip, under the .dmg extension Mac OS X uses. A disk image is a filesystem in a file
+ * and Windows has no filesystem here to mount, so what is kept is what a disk image is
+ * wanted for: one file, saying what it is, and catching a damaged one before it is
+ * believed.
  *
- * Both ends of the format are here, which is why this is one class rather than a writer in
- * the build and a reader in the kernel. A format described twice is a format that will
- * eventually be described two ways, and the half that finds out is the half running on
- * somebody else's machine.
+ * Writer and reader are both here so the format is described once.
  */
 public final class BaseImage {
     private BaseImage() {}
@@ -251,11 +246,9 @@ public final class BaseImage {
     /**
      * Unpacks an image onto a volume, and answers how many files it wrote.
      *
-     * Each file is checked against the manifest as it comes out, because an image is a
-     * file that travelled and a half-finished download would otherwise show up much later
-     * as something failing to load somewhere unrelated. What is on the volume already and
-     * not in the image stays: none of it came from an image and none of it is an image's
-     * to remove.
+     * Each file is checked against the manifest as it comes out: a half-finished download
+     * otherwise surfaces much later as something failing to load elsewhere. Files already
+     * on the volume and not in the image are left alone.
      */
     public static int unpack(Path image, Path root) throws IOException {
         String manifest = manifestIn(image);
@@ -319,14 +312,10 @@ public final class BaseImage {
     /**
      * Turns a file holding a path into a real link, where the file system allows one.
      *
-     * A framework is a directory of versions with names pointing at the current one, and
-     * Windows gives out the privilege to make real links only to an administrator or an
-     * account in developer mode.
-     *
-     * So the file written first is the fallback rather than a step towards the link: a
-     * small file holding the path it stands for, which this system reads as a pointer. If
-     * the link can be made it replaces the file. The image carries the same bytes either
-     * way, so it hashes the same on a machine that can and one that cannot.
+     * Windows gives the privilege to make one only to an administrator or an account in
+     * developer mode. So the file written first is the fallback, not a step towards the
+     * link: a small file holding the path, which this system reads as a pointer. The image
+     * carries the same bytes either way and hashes the same on both.
      */
     private static void point(Path at, String target) {
         try {

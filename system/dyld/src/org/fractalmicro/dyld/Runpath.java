@@ -26,20 +26,14 @@ import java.util.List;
 /**
  * Turning a name in a load command into a file on this volume.
  *
- * A name beginning @rpath means nothing on its own. The image carrying it says what it
- * stands for in its LC_RPATH commands, and they are tried in the order given, which is how
- * the same library is found in the system's frameworks on one machine and inside an
- * application on another without either recording an absolute path. @loader_path stands
- * for the directory of whatever is doing the loading, and @executable_path for the
- * directory of the program that started.
+ * A name beginning @rpath means nothing alone: the image says what it stands for in its
+ * LC_RPATH commands, tried in the order given. @loader_path is the directory of whatever
+ * is loading; @executable_path the directory of the program that started.
  *
- * An absolute name is absolute within the volume this system is installed on rather than
- * the host's, because that is the root this system has.
+ * An absolute name is absolute within this system's volume, not the host's.
  *
- * This belongs to the loader rather than to anything above it. The loader runs before the
- * libraries it is about to load, so it cannot use them: everything here is done with what
- * the runtime itself provides, which is the same reason the loader on a Mac is not allowed
- * to link the system library it is going to bring in.
+ * Uses nothing but the runtime. The loader runs before the libraries it is about to load,
+ * which is why dyld on a Mac may not link the system library it brings in.
  */
 public final class Runpath {
 

@@ -32,26 +32,15 @@ import java.util.Map;
 /**
  * What runs before there is a system.
  *
- * A release is two files. One is a base image holding a whole volume. The other is this,
- * which is small on purpose and does three things in order.
+ * Finds the volume, .fractaldt in the home directory; unpacks the base image onto it if
+ * it is missing or holds a different build; reads /usr/lib/dyld off it and starts
+ * /sbin/launchd through it.
  *
- * It finds the volume, which is .fractaldt in the home directory and is usually already
- * there.
+ * Unpacking is the whole of installing. Nothing assembles a volume out of parts on the
+ * machine it is installed on, so nothing can come out differently there.
  *
- * If it is not there, or the image beside this one is a different build from the one
- * installed, it unpacks the image onto it. Unpacking is the whole of installing: no step
- * assembles a volume out of parts on the machine it is being installed on, so there is
- * nothing that can come out differently there than it came out here.
- *
- * Then it hands over. The loader is at /usr/lib/dyld on the volume, and the way a system
- * starts is that something small reads the loader off the disk and calls it. That is what
- * happens: the loader is opened as the image it is, its code comes out, and /sbin/launchd
- * is started through it. After that nothing here is involved in anything, which is the
- * point of it being this size.
- *
- * It carries no part of the system. Foundation, AppKit, the window server, launchd and
- * every program are on the volume and nowhere else, so a new system is a new image and
- * this file does not change.
+ * Carries no part of the system: a new release is a new image, and this file does not
+ * change.
  */
 public final class Kernel {
     private Kernel() {}
@@ -171,11 +160,8 @@ public final class Kernel {
     /**
      * Reads the loader off the volume and starts the first program with it.
      *
-     * The loader is a Mach-O carrying its own code, and everything after this point is
-     * loaded by it. Reading it from the volume rather than keeping a copy here is the
-     * arrangement it describes: one loader, on the disk, opened by whatever starts the
-     * machine. It is also what makes a release replaceable by swapping one file, since
-     * a copy kept here would be the one that ran.
+     * The loader is a Mach-O carrying its own code, and everything after this is loaded by
+     * it. Read from the volume rather than kept here, so swapping the image swaps it.
      */
     private static void start(Path volume, Path loader, String[] arguments) throws Exception {
         say("the volume is " + volume);
@@ -200,15 +186,11 @@ public final class Kernel {
     }
 
     /**
-     * What the kernel has to say.
+     * What the kernel has to say, on the error stream.
      *
-     * The error stream, because there is no log until there is a volume and no window until
-     * there is a system, and whoever watches a machine start is watching a terminal.
-     *
-     * The shape is the one everything else uses on the way up, and this is the second copy
-     * of it. The other is org.fractalmicro.core.Progress, in the system library, which is on
-     * the volume this has not opened yet: the kernel carries no framework, and a kernel that
-     * had to load one to say what it was doing could not say anything until it had.
+     * There is no log until there is a volume and no window until there is a system. The
+     * shape is org.fractalmicro.core.Progress's, deliberately copied: that class is on the
+     * volume this has not opened yet.
      */
     private static void say(String what) {
         System.err.printf(java.util.Locale.ROOT, "%6.1f  kernel: %s%n",

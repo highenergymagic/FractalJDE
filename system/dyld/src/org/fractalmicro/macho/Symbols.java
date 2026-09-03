@@ -31,20 +31,15 @@ import java.util.zip.ZipInputStream;
 /**
  * What a body of code defines, and what it expects to find elsewhere.
  *
- * A linker cannot take anyone's word for this. It reads the code and works out two sets:
- * the symbols defined here, which anything linking this may use, and the symbols mentioned
- * here but defined somewhere else, which have to be found in something this links or the
- * image will not load. On a Mach-O those become the external and undefined halves of the
- * symbol table.
+ * Read out of the code, not taken on anyone's word: what is defined here, and what is
+ * mentioned here and defined elsewhere. On a Mach-O those are the external and undefined
+ * halves of the symbol table.
  *
- * For this system a symbol is a class, and the code is class files inside a zip. Every
- * class file carries a constant pool, and every class it mentions is in there as a
- * CONSTANT_Class entry: the compiler has already done the work of listing what a class
- * depends on, and the pool is where it wrote it down.
+ * A symbol here is a class and the code is class files in a zip. Every class a class file
+ * mentions is a CONSTANT_Class entry in its constant pool.
  *
- * Reading the pool means walking it entry by entry, because entries are not fixed width
- * and there is no index. Long and double take two slots each, a rule from the first version
- * of the format that everything since has had to keep.
+ * The pool is walked entry by entry: entries are not fixed width and there is no index,
+ * and long and double take two slots each.
  */
 public final class Symbols {
     private Symbols() {}

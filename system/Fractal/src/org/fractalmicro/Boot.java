@@ -26,20 +26,15 @@ import java.util.List;
 /**
  * The launcher.
  *
- * The layer that talks to Windows uses the foreign function interface, which is a
- * preview feature on Java 21, so those classes will not load unless the virtual
- * machine was started with --enable-preview. Started without it the program half
- * works: no disk names, no Trash count, and About This Computer throws on the way up.
+ * The layer that talks to Windows uses the foreign function interface, a preview feature
+ * on Java 21, so those classes will not load without --enable-preview. Started without
+ * it: no disk names, no Trash count, and About This Computer throws on the way up.
  *
- * This class is compiled without preview, so it always loads. If the rest of the
- * program cannot, it starts a second virtual machine with the right flags and steps
- * aside. Nothing else in the program has to care how it was launched.
+ * Compiled without preview so it always loads. If the rest cannot, it starts a second
+ * virtual machine with the flags and steps aside.
  *
- * What it then starts is named in the manifest of the jar it came out of. A released
- * copy names the kernel, which finds a volume and boots it; a jar built from a checkout
- * names the development entry, which is the whole system in one file. The flag handling
- * is the same problem in both, and this is the only part of either that has to run
- * before it is known whether preview is on.
+ * What it starts is named in the manifest of the jar it came out of: the kernel in a
+ * release, the development entry in a jar built from a checkout.
  */
 public final class Boot {
     private Boot() {}

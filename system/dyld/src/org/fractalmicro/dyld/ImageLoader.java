@@ -29,11 +29,9 @@ import java.util.Set;
 /**
  * The loader for one image, which resolves only what that image linked against.
  *
- * Java gives a class loader one parent and searches it first. That is the wrong shape for
- * a dynamic loader: an image does not have one parent, it has a list of libraries it
- * linked, in the order it named them, and it is allowed to see those and nothing else.
- *
- * So the search order is a linker's rather than Java's:
+ * Java gives a class loader one parent and searches it first. An image has no parent: it
+ * has the libraries it linked, in the order it named them, and may see nothing else. So
+ * the search order is a linker's:
  *
  *   1. classes this loader has already defined
  *   2. the runtime, which every image gets and no image may shadow
@@ -41,19 +39,15 @@ import java.util.Set;
  *   4. the library the symbol table says the class comes from, and only that one
  *   5. failing a table entry, each linked image in the order the load commands named them
  *
- * Step four is the two level namespace: the linker already recorded which load command
- * supplies each class, so this is a lookup rather than a search and two libraries exporting
- * the same name are not in conflict. Step five still only searches libraries this image
- * linked, because not being in the table is not permission to look anywhere. Anything not
- * found by then gets the answer a real loader gives: there is no such symbol.
+ * Step four is the two level namespace: the linker recorded which load command supplies
+ * each class, so it is a lookup and two libraries exporting one name do not conflict.
+ * Step five still searches only libraries this image linked.
  *
- * The bytes come out of the image file itself, read from its code segment, so there is
- * nothing on disk that the executable is not.
+ * The bytes come out of the image's own code segment.
  *
- * It defines its own classes rather than delegating, because the loader that defines a
- * class is the one asked to resolve everything that class mentions. An inner loader has
- * never heard of the linked images, so an image would load and then fail on its first call
- * into a library it linked perfectly legitimately.
+ * It defines its classes rather than delegating: the loader that defines a class is the
+ * one asked to resolve everything that class mentions, and an inner loader has never heard
+ * of the linked images.
  */
 public class ImageLoader extends ClassLoader {
 

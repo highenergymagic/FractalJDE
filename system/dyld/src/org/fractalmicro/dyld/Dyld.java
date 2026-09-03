@@ -35,24 +35,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The dynamic loader: what turns a set of files into a program that can run.
  *
- * An image is anything loadable: a framework, a library, an application. Each one names
- * the images it links in its load commands, and this resolves those names to files, loads
- * each one once, and gives every image a loader that can see itself and its links and
- * nothing else.
+ * An image is anything loadable: a framework, a library, an application. Each names what
+ * it links in its load commands; this resolves those to files, loads each once, and gives
+ * every image a loader seeing itself and its links and nothing else.
  *
- * Two things make that different from putting everything on a class path.
+ * Loaded once and shared, so two applications linking Foundation get the same Foundation
+ * and a value passed between them is the same class at both ends.
  *
- * An image is loaded once and shared. Two applications that both link Foundation get the
- * same Foundation, which is what makes a value passed from one to the other the same kind
- * of thing at both ends. A loader that resolved each application's copy separately would
- * hand back objects whose classes have the same name and are not the same class, and every
- * cast across the boundary would fail for no visible reason.
- *
- * And an image already running is an image. The framework the desktop is running from is
- * registered here at start-up with the loader it was loaded by, rather than being read off
- * the disk a second time. That is what {@link #registerRunning} is for, and it is the
- * difference between an application that can be handed a window and one that gets a class
- * cast exception the first time it is.
+ * An image already running is an image: the framework the desktop runs from is registered
+ * with the loader it was loaded by rather than read off the disk again. See
+ * {@link #registerRunning}. Without it, a window handed across is a class cast exception.
  */
 public final class Dyld {
     private Dyld() {}
