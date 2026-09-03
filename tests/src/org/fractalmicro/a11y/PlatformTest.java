@@ -40,7 +40,7 @@ import java.util.Map;
 public final class PlatformTest {
     private PlatformTest() {}
 
-    public static int count() { return 4; }
+    public static int count() { return 5; }
 
     /** The applications written against the platform and nothing else. */
     private static final Set<String> PURE = Set.of(
@@ -115,10 +115,47 @@ public final class PlatformTest {
             && has("org.fractalmicro.foundation.FMFileManager") && has("org.fractalmicro.appkit.FMPasteboard");
         failures += check(out, "and the platform offers something to use instead", offered);
 
+        // One way to the machine's clipboard, so there is one place to change when a
+        // checking run wants a board of its own. There were three, and the two that went
+        // round FMPasteboard put a word on the clipboard of whoever ran the checks.
+        List<String> roundTheBoard = namesTheClipboard();
+        for (String one : roundTheBoard) out.println("      " + one);
+        failures += check(out, "and only the pasteboard names the machine's clipboard",
+            roundTheBoard.isEmpty());
+
         out.println("      " + (failures == 0
             ? PURE.size() + " of " + reaching.size() + " written against the platform"
             : failures + " failed"));
         return failures;
+    }
+
+    /**
+     * Anything but FMPasteboard reaching for the machine's clipboard.
+     *
+     * Swing's own copy and paste do it too, which is why the text system's editing goes
+     * through the board rather than calling JTextComponent.copy.
+     */
+    private static List<String> namesTheClipboard() {
+        List<String> found = new ArrayList<>();
+        for (String area : new String[]{"system", "apps"}) {
+            Path at = Path.of(area);
+            if (!Files.isDirectory(at)) continue;
+            try (var walk = Files.walk(at)) {
+                for (Path file : (Iterable<Path>) walk::iterator) {
+                    String name = file.getFileName().toString();
+                    if (!name.endsWith(".java") || name.equals("FMPasteboard.java")) continue;
+                    String source = Files.readString(file);
+                    if (source.contains("getSystemClipboard")
+                            || source.contains(".copy();")
+                            || source.contains(".paste();")) {
+                        found.add(file + " goes round the board");
+                    }
+                }
+            } catch (java.io.IOException unreadable) {
+                // A directory that went away while it was read.
+            }
+        }
+        return found;
     }
 
     /** Every import of the runtime in one application's source. */

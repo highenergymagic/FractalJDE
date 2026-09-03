@@ -281,8 +281,7 @@ public final class FMText {
         switch (detection.kind()) {
             case LINK, MAIL, ADDRESS ->
                 org.fractalmicro.core.Shell.browse(DataDetectors.actionTarget(detection).toString());
-            case PHONE -> java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                new java.awt.datatransfer.StringSelection(detection.text().toString()), null);
+            case PHONE -> FMPasteboard.general().setString(detection.text());
             case DATE -> org.fractalmicro.appkit.FMAlert.tell(detection.text(),
                 org.fractalmicro.foundation.FMLocalized.of(
                     FMString.of("text.noCalendar")));

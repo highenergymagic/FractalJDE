@@ -26,7 +26,6 @@ import org.fractalmicro.foundation.FMMutableArray;
 
 
 import javax.swing.*;
-import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -131,8 +130,7 @@ public final class Services {
 
         add(new Service(FMString.of("service.copy"), text -> true,
             text -> {
-                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
-                    .setContents(new StringSelection(text.toString()), null);
+                FMPasteboard.general().setString(text);
                 return null;
             }, false));
     }
