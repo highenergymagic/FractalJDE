@@ -43,7 +43,7 @@ import java.util.List;
 public final class ResponderTest {
     private ResponderTest() {}
 
-    public static int count() { return 9; }
+    public static int count() { return 12; }
 
     private static final FMString COPY = FMString.of("copy");
     private static final FMString PASTE = FMString.of("paste");
@@ -119,6 +119,27 @@ public final class ResponderTest {
         field.setEditable(false);
         failures += check(out, "a field that cannot be typed in cannot paste",
             !field.canPerform(PASTE));
+
+        /* --------------------------------------------- and the board it goes through */
+
+        // A checking run has a board of its own, so this reads back what it just wrote
+        // without going near the one the person is using.
+        failures += check(out, "a checking run has a board of its own",
+            !org.fractalmicro.appkit.FMPasteboard.isShared());
+
+        field.setEditable(true);
+        field.setText("some words");
+        field.setSelectionStart(0);
+        field.setSelectionEnd(4);
+        FMResponderChain.sendAction(field, COPY, program);
+        failures += check(out, "copying in a field puts the selection on the board",
+            org.fractalmicro.appkit.FMPasteboard.general().string()
+                .sameAs(FMString.of("some")));
+
+        field.selectAll();
+        FMResponderChain.sendAction(field, PASTE, program);
+        failures += check(out, "and pasting takes it off again",
+            "some".equals(field.getText()));
 
         out.println("      " + (failures == 0
             ? "a command goes to whoever has the keyboard"

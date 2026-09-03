@@ -51,12 +51,22 @@ final class FMEditingResponder {
         };
     }
 
+    /**
+     * Does one of them, through the board rather than round it.
+     *
+     * Swing's copy, cut and paste go straight to the machine's clipboard and know nothing
+     * of {@link FMPasteboard}, so the system had two ways to one board and only one of
+     * them was its own.
+     */
     static boolean perform(JTextComponent text, FMString action) {
         if (!canPerform(text, action)) return false;
         switch (action.toString()) {
-            case "copy" -> text.copy();
-            case "cut" -> text.cut();
-            case "paste" -> text.paste();
+            case "copy" -> FMPasteboard.general().setString(selected(text));
+            case "cut" -> {
+                FMPasteboard.general().setString(selected(text));
+                text.replaceSelection("");
+            }
+            case "paste" -> text.replaceSelection(FMPasteboard.general().string().toString());
             case "selectAll" -> text.selectAll();
             case "delete" -> text.replaceSelection("");
             default -> {
@@ -64,5 +74,9 @@ final class FMEditingResponder {
             }
         }
         return true;
+    }
+
+    private static FMString selected(JTextComponent text) {
+        return FMString.describing(text.getSelectedText());
     }
 }

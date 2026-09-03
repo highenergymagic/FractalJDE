@@ -327,6 +327,9 @@ public final class Main {
             // checking modes keep everything inside the one frame. This has to be settled
             // before the desktop is built, because that is when it is read.
             if (offscreen || doProbe) org.fractalmicro.os.InterfaceStyle.forceContained();
+            // And a board of its own. The checks copy and paste for real, on a machine
+            // whose owner was in the middle of something.
+            if (offscreen) org.fractalmicro.appkit.FMPasteboard.useAPrivateBoard();
 
             // The desktop is a task like anything else: it has a number, it is in this
             // process, and it says so.

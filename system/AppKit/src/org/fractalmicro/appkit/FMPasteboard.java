@@ -26,9 +26,9 @@ import org.fractalmicro.foundation.FMURL;
 /**
  * What Copy puts things on and Paste takes them off.
  *
- * One board, shared with everything else running on the machine, because that is what a
- * person means by copying: it goes somewhere the next program can find it. Nothing here
- * throws; a board that will not answer is a board with nothing on it.
+ * One board, shared with everything on the machine, because that is what copying means:
+ * it goes where the next program can find it. Nothing here throws; a board that will not
+ * answer has nothing on it. A checking run gets one of its own: {@link #useAPrivateBoard}.
  */
 public final class FMPasteboard {
 
@@ -39,12 +39,34 @@ public final class FMPasteboard {
     /** The board a person's Copy and Paste use. */
     public static FMPasteboard general() { return GENERAL; }
 
+    /**
+     * A board of this process's own, put in the general one's place.
+     *
+     * A checking run copies and pastes for real, and the machine it runs on belongs to
+     * somebody who was in the middle of something. Called before any of the checks, the
+     * way a checking run also contains its windows.
+     */
+    public static void useAPrivateBoard() {
+        privateBoard = new java.awt.datatransfer.Clipboard("checking");
+    }
+
+    /** Whether the general board is the machine's. */
+    public static boolean isShared() { return privateBoard == null; }
+
+    private static volatile java.awt.datatransfer.Clipboard privateBoard;
+
+    /** The board in use. Asked each time: a Toolkit with no clipboard throws. */
+    private static java.awt.datatransfer.Clipboard board() {
+        java.awt.datatransfer.Clipboard mine = privateBoard;
+        return mine != null ? mine
+                            : java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+    }
+
     /** Puts text on the board, answering whether it went. */
     public boolean setString(FMString text) {
         try {
-            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                new java.awt.datatransfer.StringSelection(
-                    text == null ? "" : text.toString()), null);
+            board().setContents(new java.awt.datatransfer.StringSelection(
+                text == null ? "" : text.toString()), null);
             return true;
         } catch (Exception nothingDoing) {
             return false;
@@ -64,8 +86,7 @@ public final class FMPasteboard {
         java.util.List<java.io.File> list = new java.util.ArrayList<>();
         for (FMURL url : files) if (url != null) list.add(url.asFile());
         try {
-            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
-                .setContents(new FileList(list), null);
+            board().setContents(new FileList(list), null);
             return true;
         } catch (Exception nothingDoing) {
             return false;
@@ -75,8 +96,7 @@ public final class FMPasteboard {
     /** The files on the board, which is an empty list when there are none. */
     public FMArray<FMURL> files() {
         try {
-            return filesIn(java.awt.Toolkit.getDefaultToolkit()
-                .getSystemClipboard().getContents(null));
+            return filesIn(board().getContents(null));
         } catch (Exception nothingThere) {
             return FMArray.empty();
         }
@@ -85,8 +105,8 @@ public final class FMPasteboard {
     /** Whether there is anything on it that could be pasted as text. */
     public boolean hasText() {
         try {
-            return java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
-                .isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.stringFlavor);
+            return board().isDataFlavorAvailable(
+                java.awt.datatransfer.DataFlavor.stringFlavor);
         } catch (Exception nothingThere) {
             return false;
         }
@@ -95,8 +115,8 @@ public final class FMPasteboard {
     /** Whether there is anything on it that could be pasted as files. */
     public boolean hasFiles() {
         try {
-            return java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
-                .isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
+            return board().isDataFlavorAvailable(
+                java.awt.datatransfer.DataFlavor.javaFileListFlavor);
         } catch (Exception nothingThere) {
             return false;
         }
@@ -151,8 +171,7 @@ public final class FMPasteboard {
     /** The text on the board, or nothing at all when there is none to be had. */
     public FMString string() {
         try {
-            Object what = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
-                .getData(java.awt.datatransfer.DataFlavor.stringFlavor);
+            Object what = board().getData(java.awt.datatransfer.DataFlavor.stringFlavor);
             return what == null ? FMString.EMPTY : FMString.describing(what);
         } catch (Exception nothingThere) {
             return FMString.EMPTY;
