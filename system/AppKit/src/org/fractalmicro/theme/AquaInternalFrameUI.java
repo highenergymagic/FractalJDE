@@ -75,19 +75,22 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             java.util.List<javax.swing.JComponent> buttons = new java.util.ArrayList<>();
             int x = 8;
             if (frame.isClosable()) {
-                JButton b = light(x, Aqua.CLOSE_RED, "Close", "×", e -> close());
+                JButton b = light(x, Aqua.CLOSE_RED, FMString.of("window.close"),
+                                  true, "×", e -> close());
                 add(b);
                 buttons.add(b);
                 x += 20;
             }
             if (frame.isIconifiable()) {
-                JButton b = light(x, Aqua.MIN_YELLOW, "Minimize", "−", e -> iconify());
+                JButton b = light(x, Aqua.MIN_YELLOW, FMString.of("window.minimize"),
+                                  false, "−", e -> iconify());
                 add(b);
                 buttons.add(b);
                 x += 20;
             }
             if (frame.isMaximizable()) {
-                JButton b = light(x, Aqua.ZOOM_GREEN, "Zoom", "+", e -> zoom());
+                JButton b = light(x, Aqua.ZOOM_GREEN, FMString.of("window.zoom"),
+                                  false, "+", e -> zoom());
                 add(b);
                 buttons.add(b);
             }
@@ -112,13 +115,16 @@ public class AquaInternalFrameUI extends BasicInternalFrameUI {
             return Boolean.TRUE.equals(frame.getClientProperty(DOCUMENT_EDITED));
         }
 
-        private JButton light(int x, Color colour, String name, String glyph,
-                              java.awt.event.ActionListener action) {
-            // The close button of a window holding unsaved changes shows a dot rather than
-            // a cross. It is the smallest thing on the screen and the only warning a person
-            // gets before pressing it, which is why Mac OS X put it there rather than in the
-            // title: the mark belongs on the control that would lose the work.
-            boolean closes = "Close".equals(name);
+        /**
+         * One of the three lights, named by a key and told what it is.
+         *
+         * Which one closes is said outright rather than worked out from what the button
+         * is called. The dot that marks unsaved changes hung on the word Close until
+         * somebody translated it, and then it hung on nothing.
+         */
+        private JButton light(int x, Color colour, FMString key, boolean closes,
+                              String glyph, java.awt.event.ActionListener action) {
+            String name = FMLocalized.of(key).toString();
             JButton b = new JButton() {
                 @Override protected void paintComponent(Graphics g) {
                     // The cross, the minus and the plus appear only while the pointer is

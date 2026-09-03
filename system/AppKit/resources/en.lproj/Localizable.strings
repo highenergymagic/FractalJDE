@@ -278,3 +278,8 @@
 /* An icon in the notification area that answers to no tooltip and owns no window. */
 "menu.notificationIcon" = "Notification icon";
 "spotlight.results" = "Results";
+
+/* The three lights at the left of a title bar. */
+"window.close" = "Close";
+"window.minimize" = "Minimize";
+"window.zoom" = "Zoom";

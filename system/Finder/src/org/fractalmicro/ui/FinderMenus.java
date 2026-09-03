@@ -163,7 +163,10 @@ public final class FinderMenus implements NibLoader.Commands {
 
     private void addLiveMenus(List<JMenu> built) {
         for (JMenu menu : built) {
-            if ("File".equals(menu.getName()) || isNamed(menu, "makeAlias")) {
+            // Found by what is in it rather than by what it is called. A menu's title is
+            // a word in whatever language this account reads, and the one that holds Make
+            // Alias is the File menu whatever that word happens to be.
+            if (isNamed(menu, "makeAlias")) {
                 labels = Finder.labelMenu(this::selection);
                 menu.add(labels, indexAfter(menu, "makeAlias"));
             }
