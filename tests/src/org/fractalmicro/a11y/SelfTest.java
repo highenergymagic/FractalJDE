@@ -231,6 +231,12 @@ public final class SelfTest {
         int extraFailures = MenuExtraTest.run(desktop, System.out);
         if (extraFailures > 0) failures.add(extraFailures + " menu bar checks failed");
 
+        steps += QuickLookTest.count();
+        int quickLookFailures = QuickLookTest.run(System.out);
+        if (quickLookFailures > 0) {
+            failures.add(quickLookFailures + " Quick Look checks failed");
+        }
+
         steps += LayoutTest.count();
         int layoutFailures = LayoutTest.run(System.out);
         if (layoutFailures > 0) failures.add(layoutFailures + " layout checks failed");

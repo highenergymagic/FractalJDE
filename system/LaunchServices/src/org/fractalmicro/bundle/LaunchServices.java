@@ -176,6 +176,7 @@ public final class LaunchServices {
         for (Object entry : bundle.info().array(Bundle.DOCUMENT_TYPES)) {
             FMDictionary one = asDictionary(entry);
             if (one == null) continue;
+            if (!opens(one.string(Bundle.TYPE_ROLE, FMString.EMPTY))) continue;
             int declared = rankOf(one.string(Bundle.HANDLER_RANK, FMString.EMPTY));
             for (Object named : one.array(Bundle.CONTENT_TYPES)) {
                 FMString handles = FMString.describing(named);
@@ -188,6 +189,19 @@ public final class LaunchServices {
             }
         }
         return best;
+    }
+
+    /**
+     * Whether a declaration is about opening a file at all.
+     *
+     * Editor, Viewer and Shell open one. A Quick Look generator names the same types and
+     * shows them instead, and offering one as a way to open a file would be a program
+     * that never appears. A declaration with no role is an editor, which is the old shape.
+     */
+    private static boolean opens(FMString role) {
+        String said = role.toString();
+        return said.isEmpty() || said.equalsIgnoreCase("Editor")
+            || said.equalsIgnoreCase("Viewer") || said.equalsIgnoreCase("Shell");
     }
 
     /** Owner, Default, Alternate, None, which is the order Launch Services puts them in. */

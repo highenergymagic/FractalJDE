@@ -145,9 +145,9 @@ public final class Bundle {
     /**
      * The names a bundle directory may have.
      *
-     * Not every bundle is an application. A menu extra is a .menu, a set of loadable
-     * resources is a .bundle, and a framework is a .framework. They are the same thing
-     * inside, and what the directory is called says what opens it rather than what it is.
+     * Not every bundle is an application. A menu extra is a .menu, a Quick Look generator
+     * a .qlgenerator, a set of loadable resources a .bundle and a framework a .framework.
+     * The same thing inside; what it is called says what loads it rather than what it is.
      */
     public static boolean isBundleName(String name) {
         String lower = name.toLowerCase(java.util.Locale.ROOT);
@@ -157,7 +157,8 @@ public final class Bundle {
         return false;
     }
 
-    private static final String[] BUNDLE_EXTENSIONS = {".app", ".menu", ".bundle", ".framework"};
+    private static final String[] BUNDLE_EXTENSIONS =
+        {".app", ".menu", ".qlgenerator", ".bundle", ".framework"};
 
     /**
      * Where the bundle is.

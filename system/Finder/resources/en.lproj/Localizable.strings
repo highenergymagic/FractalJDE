@@ -286,9 +286,6 @@
 /* Quick Look: a peek at something without opening it, and what a screen reader is told
    about what it is looking at. */
 "finder.quickLookTitle" = "Quick Look: %1$@";
-"finder.imagePreview" = "Image preview of %1$@, %2$@ pixels";
-"finder.contentsOf" = "Contents of %1$@";
-"finder.fileNotRead" = "This file could not be read: %1$@";
 "finder.andSize" = "%1$@, %2$@";
 "finder.andModified" = "%1$@, modified %2$@";
 

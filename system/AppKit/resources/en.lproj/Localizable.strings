@@ -284,3 +284,15 @@
 "window.minimize" = "Minimize";
 "window.zoom" = "Zoom";
 "forceQuit.notResponding" = "(Not Responding)";
+
+/* What the Quick Look generators say. None of this is on the screen: a preview shows the
+   file, and these are what somebody listening to it hears instead. */
+"quicklook.imagePreview" = "Image preview of %1$@, %2$@ pixels";
+"quicklook.contentsOf" = "Contents of %1$@";
+"quicklook.fileNotRead" = "This file could not be read: %1$@";
+"quicklook.propertyList" = "Property list %1$@";
+
+/* A key in a property list with a list or another list of keys under it. Two of them,
+   because one item is not one items. */
+"quicklook.keyOneItem" = "%1$@ (1 item)";
+"quicklook.keySomeItems" = "%1$@ (%2$@ items)";

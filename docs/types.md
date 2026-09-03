@@ -98,6 +98,39 @@ claim on a family it belongs to, so an editor naming `public.plain-text` is offe
 one that only says `public.text`, and `LSHandlerRank` (Owner, Default, Alternate, None)
 breaks the tie after that.
 
+## Who can show what
+
+The same declaration, with a different role. A Quick Look generator is a bundle ending in
+`.qlgenerator` in `System/Library/QuickLook`, and it says what it can show the same way a
+program says what it can open:
+
+```xml
+<key>CFBundleDocumentTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key><string>QLGenerator</string>
+        <key>LSItemContentTypes</key><array><string>public.image</string></array>
+    </dict>
+</array>
+```
+
+Three ship: Image for `public.image`, Text for `public.text`, PropertyList for
+`com.apple.property-list`. Between them that is most of a volume, and none of them names a
+suffix. A PNG reaches the image one because the tree says a PNG is an image, and a language
+nobody had written a generator for previews as text because the tree says source is text.
+
+The panel asks for the file's type, then what that type is a kind of, up to the root, and
+takes the first generator that claims a step. A generator naming `public.png` would be asked
+before one naming `public.image`, and that one before anything that took `public.data`.
+
+The role is what keeps the two lists apart. A generator declares `public.image` exactly as a
+program that opens images would, so Launch Services reads the role and offers Editor, Viewer
+and Shell for opening a file and passes over everything else. Without that, Open With would
+offer a plug-in that has no window to open.
+
+The Finder used to decide this itself, with a list of five suffixes that were images and nine
+that were text. Adding a kind meant editing the file browser.
+
 ## What does not have a type
 
 `public.data`. A file nothing has declared a type for is still data, and something asking

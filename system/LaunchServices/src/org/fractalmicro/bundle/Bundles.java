@@ -105,17 +105,37 @@ public final class Bundles {
                  "org.fractalmicro.menuextras.VolumeExtra", Where.MENU_EXTRAS, true),
         new Spec("Spotlight", PREFIX + "menuextra.spotlight",
                  "org.fractalmicro.menuextras.SpotlightExtra", Where.MENU_EXTRAS, true),
+        // The Quick Look generators, which say what they show as a type rather than as a
+        // list of suffixes. Between them that is most of a volume: the image one is asked
+        // about a kind of image it has never heard of, and the text one about a language
+        // nobody had written when it was built.
+        new Spec("Image", PREFIX + "quicklook.image",
+                 "org.fractalmicro.qlgenerators.ImageGenerator", Where.QUICK_LOOK, true,
+                 java.util.List.of(), Frameworks.COCOA, false,
+                 java.util.List.of("public.image")),
+        new Spec("Text", PREFIX + "quicklook.text",
+                 "org.fractalmicro.qlgenerators.TextGenerator", Where.QUICK_LOOK, true,
+                 java.util.List.of(), Frameworks.COCOA, false,
+                 java.util.List.of("public.text")),
+        new Spec("PropertyList", PREFIX + "quicklook.propertylist",
+                 "org.fractalmicro.qlgenerators.PropertyListGenerator", Where.QUICK_LOOK,
+                 true, java.util.List.of(), Frameworks.COCOA, false,
+                 java.util.List.of("com.apple.property-list")),
     };
 
     /**
      * Where a program installs.
      *
-     * SYSTEM_APPLICATIONS is the system's own, replaced by every install.
-     * SYSTEM_UTILITIES is the same directory's Utilities. CORE_SERVICES is for the parts
-     * of the desktop that are programs but are not things a person opens.
+     * SYSTEM_APPLICATIONS is the system's own, SYSTEM_UTILITIES its Utilities, and
+     * CORE_SERVICES the parts of the desktop that are programs but are not things a person
+     * opens. The last two are plug-ins: loaded by whoever needs one rather than started.
      */
     private enum Where { SYSTEM_APPLICATIONS, SYSTEM_UTILITIES, CORE_SERVICES,
-                         MENU_EXTRAS }
+                         MENU_EXTRAS, QUICK_LOOK }
+
+    /** Where the Quick Look generators live, and what one is called. */
+    static final String QUICK_LOOK_FOLDER = "QuickLook";
+    static final String QUICK_LOOK_EXTENSION = ".qlgenerator";
 
     /**
      * One built-in program.
@@ -189,6 +209,8 @@ public final class Bundles {
                     case CORE_SERVICES -> OSPaths.coreServices().toFile();
                     case MENU_EXTRAS ->
                         OSPaths.coreServices().resolve("Menu Extras").toFile();
+                    case QUICK_LOOK ->
+                        OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile();
                 };
                 if (!parent.isDirectory() && !parent.mkdirs()) continue;
 
@@ -216,12 +238,17 @@ public final class Bundles {
                              spec.name().replace(" ", "") + ".sdef");
                 }
 
-                Bundle bundle = spec.where() == Where.MENU_EXTRAS
-                    ? Bundle.create(parent, spec.name(), info, "", spec.own(), ".menu",
-                                    spec.linked())
-                    : Bundle.create(parent, spec.name(), info,
-                                    "--open-app " + spec.identifier(), spec.own(),
-                                    Bundle.EXTENSION, spec.linked());
+                String extension = switch (spec.where()) {
+                    case MENU_EXTRAS -> ".menu";
+                    case QUICK_LOOK -> QUICK_LOOK_EXTENSION;
+                    default -> Bundle.EXTENSION;
+                };
+                // A plug-in is loaded by whoever wants it, so there is no command that
+                // starts one and nothing to write in its executable to say so.
+                Bundle bundle = Bundle.create(
+                    parent, spec.name(), info,
+                    Bundle.EXTENSION.equals(extension) ? "--open-app " + spec.identifier() : "",
+                    spec.own(), extension, spec.linked());
                 if (bundle != null) {
                     writeIcon(bundle, spec.name());
                     copyResources(spec, bundle);
@@ -243,10 +270,13 @@ public final class Bundles {
      * kinds of document writes several, which is why this is a list.
      */
     private static java.util.List<Object> documentTypes(Spec spec) {
+        boolean generator = spec.where() == Where.QUICK_LOOK;
         FMMutableDictionary one = FMMutableDictionary.empty();
         one.set(Bundle.TYPE_NAME, spec.name() + " document");
-        one.set(Bundle.TYPE_ROLE, "Editor");
-        one.set(Bundle.HANDLER_RANK, "Default");
+        // What the declaration is for. A generator shows a kind of file; it does not open
+        // one, and Launch Services has to be able to tell the two apart.
+        one.set(Bundle.TYPE_ROLE, generator ? "QLGenerator" : "Editor");
+        one.set(Bundle.HANDLER_RANK, generator ? "None" : "Default");
         one.set(Bundle.CONTENT_TYPES, java.util.List.copyOf(spec.opens()));
         return java.util.List.of(one.asDictionary().asMap());
     }
@@ -403,7 +433,8 @@ public final class Bundles {
                 OSPaths.coreServices().toFile(),
                 OSPaths.applications().toFile(),
                 OSPaths.applicationsUtilities().toFile(),
-                OSPaths.coreServices().resolve("Menu Extras").toFile()}) {
+                OSPaths.coreServices().resolve("Menu Extras").toFile(),
+                OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile()}) {
             File[] kids = folder.listFiles();
             if (kids == null) continue;
             for (File child : kids) {

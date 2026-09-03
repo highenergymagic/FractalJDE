@@ -25,17 +25,12 @@ import org.fractalmicro.windowserver.Desktop;
 
 import org.fractalmicro.fs.FS;
 import org.fractalmicro.fs.Node;
+import org.fractalmicro.quicklook.FMQuickLook;
 import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
 
-import org.fractalmicro.appkit.FMTextArea;
-
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Locale;
 
 /** Quick Look: a peek at the selected item without opening anything. */
 public class QuickLook extends JInternalFrame {
@@ -50,78 +45,47 @@ public class QuickLook extends JInternalFrame {
         getAccessibleContext().setAccessibleName(node.name);
     }
 
+    /**
+     * The window, showing whatever a generator makes of the file.
+     *
+     * The Finder does not know how to draw a PNG and has no business knowing. It asks what
+     * kind of thing this is and puts back whatever comes, or the summary when nothing does.
+     */
     public static void show(Node node) {
         if (node == null) { Finder.beep(); return; }
-        JComponent body;
-        File f = node.file;
-        String name = f == null ? node.name : f.getName().toLowerCase(Locale.ROOT);
-
-        if (f != null && f.isFile() && isImage(name)) {
-            ImageIcon icon = new ImageIcon(f.getAbsolutePath());
-            JLabel label = new JLabel(icon);
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.getAccessibleContext().setAccessibleName(
-                FMLocalized.filled(FMString.of("finder.imagePreview"),
-                    FMString.of(node.name),
-                    FMString.of(icon.getIconWidth() + " × " + icon.getIconHeight())).toString());
-            body = new JScrollPane(label);
-        } else if (f != null && f.isFile() && isText(name) && f.length() < 512 * 1024) {
-            String text;
-            try {
-                text = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                text = FMLocalized.filled(FMString.of("finder.fileNotRead"),
-                                          FMString.describing(e.getMessage())).toString();
-            }
-            FMTextArea area = new FMTextArea(org.fractalmicro.foundation.FMString.of(text));
-            area.setEditable(false);
-            area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-            area.setCaretPosition(0);
-            area.getAccessibleContext().setAccessibleName(
-                FMLocalized.filled(FMString.of("finder.contentsOf"),
-                                   FMString.of(node.name)).toString());
-            body = new JScrollPane(area);
-        } else {
-            JPanel p = new JPanel();
-            p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            p.setBackground(Color.WHITE);
-            p.setBorder(BorderFactory.createEmptyBorder(30, 20, 20, 20));
-            JLabel icon = new JLabel(new ImageIcon(Icons.forNode(node, 128)));
-            icon.setAlignmentX(Component.CENTER_ALIGNMENT);
-            p.add(icon);
-            JLabel title = new JLabel(node.name);
-            title.setFont(Aqua.titleFont());
-            title.setAlignmentX(Component.CENTER_ALIGNMENT);
-            p.add(Box.createVerticalStrut(10));
-            p.add(title);
-            FMString said = FMString.of(node.kindLabel());
-            if (node.size >= 0) {
-                said = FMLocalized.filled(FMString.of("finder.andSize"), said,
-                                          FMString.of(FS.formatBytes(node.size)));
-            }
-            if (node.modified > 0) {
-                said = FMLocalized.filled(FMString.of("finder.andModified"), said,
-                                          FMString.of(FS.formatDate(node.modified)));
-            }
-            JLabel detail = new JLabel(said.toString());
-            detail.setFont(Aqua.smallFont());
-            detail.setAlignmentX(Component.CENTER_ALIGNMENT);
-            p.add(Box.createVerticalStrut(6));
-            p.add(detail);
-            body = p;
-        }
+        JComponent body = node.file == null ? null : FMQuickLook.previewOf(node.file);
+        if (body == null) body = summaryOf(node);
         Desktop.sharedDesktop().addWindow(new QuickLook(node, body));
     }
 
-    private static boolean isImage(String name) {
-        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")
-            || name.endsWith(".gif") || name.endsWith(".bmp");
-    }
-
-    private static boolean isText(String name) {
-        return name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".log")
-            || name.endsWith(".json") || name.endsWith(".xml") || name.endsWith(".csv")
-            || name.endsWith(".java") || name.endsWith(".ini") || name.endsWith(".cfg")
-            || name.indexOf('.') < 0;
+    /** What a file is rather than what is in it: the icon, the name, the kind, the size. */
+    private static JComponent summaryOf(Node node) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setBackground(Color.WHITE);
+        p.setBorder(BorderFactory.createEmptyBorder(30, 20, 20, 20));
+        JLabel icon = new JLabel(new ImageIcon(Icons.forNode(node, 128)));
+        icon.setAlignmentX(Component.CENTER_ALIGNMENT);
+        p.add(icon);
+        JLabel title = new JLabel(node.name);
+        title.setFont(Aqua.titleFont());
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        p.add(Box.createVerticalStrut(10));
+        p.add(title);
+        FMString said = FMString.of(node.kindLabel());
+        if (node.size >= 0) {
+            said = FMLocalized.filled(FMString.of("finder.andSize"), said,
+                                      FMString.of(FS.formatBytes(node.size)));
+        }
+        if (node.modified > 0) {
+            said = FMLocalized.filled(FMString.of("finder.andModified"), said,
+                                      FMString.of(FS.formatDate(node.modified)));
+        }
+        JLabel detail = new JLabel(said.toString());
+        detail.setFont(Aqua.smallFont());
+        detail.setAlignmentX(Component.CENTER_ALIGNMENT);
+        p.add(Box.createVerticalStrut(6));
+        p.add(detail);
+        return p;
     }
 }
