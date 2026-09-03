@@ -49,7 +49,7 @@ import java.util.Map;
  *                LC_LOAD_DYLINKER          /usr/lib/dyld
  *                LC_LOAD_DYLIB             one per framework the program links against
  *                LC_UUID                   taken from the contents, so builds repeat
- *                LC_MAIN                   the offset of the entry code
+ *                LC_UNIXTHREAD             the register state the entry starts in
  *   aligned      the entry code
  *   page aligned the code resources
  *
@@ -89,13 +89,30 @@ public final class MachO {
     public static final int LC_UUID = 0x1B;
     public static final int LC_REQ_DYLD = 0x80000000;
     /**
-     * Where the entry code is, and later than the system this imitates.
+     * Where a program starts, said the way 10.6 said it.
      *
-     * 10.6 had no LC_MAIN: an executable named its entry with an LC_UNIXTHREAD carrying a
-     * whole register state, and LC_MAIN arrived in 10.8. The later one is written here
-     * because it says the same thing in sixteen bytes rather than a hundred and eighty.
+     * An executable of that era handed the kernel a whole register state to start in, of
+     * which one register matters. LC_MAIN says the same in sixteen bytes and arrived two
+     * releases later. This writes the older and reads either.
      */
+    public static final int LC_UNIXTHREAD = 0x5;
     public static final int LC_MAIN = LC_REQ_DYLD | 0x28;
+
+    /** The register state of an x86_64 thread: 21 registers, counted in words. */
+    public static final int X86_THREAD_STATE64 = 4;
+    public static final int X86_THREAD_STATE64_COUNT = 42;
+
+    /**
+     * Where rip sits in that state, in bytes.
+     *
+     * The registers are in the order the header lists them, rax through gs, and rip is
+     * the seventeenth of twenty-one. Everything else is left at zero, which is what a
+     * kernel starting a fresh process would find anyway.
+     */
+    private static final int RIP_OFFSET = 16 * 8;
+
+    /** cmd, cmdsize, flavor, count, and then the state. */
+    private static final int THREAD_COMMAND_SIZE = 16 + X86_THREAD_STATE64_COUNT * 4;
     /** How the loader says which loader it is. */
     public static final int LC_ID_DYLINKER = 0xF;
 
@@ -281,7 +298,7 @@ public final class MachO {
                          + dylibSize
                          + rpathSize
                          + 24                                    // LC_UUID
-                         + 24                                    // LC_MAIN
+                         + THREAD_COMMAND_SIZE                   // LC_UNIXTHREAD
                          + SYMTAB_SIZE
                          + DYSYMTAB_SIZE;
         // __PAGEZERO, __TEXT, __LINKEDIT, __FRACTAL, dylinker, uuid, main, symtab,
@@ -332,7 +349,7 @@ public final class MachO {
         for (String r : reexported) commands.add(dylib(LC_REEXPORT_DYLIB, r));
         for (String r : runpaths) commands.add(rpath(r));
         commands.add(uuid(installName, codeResource));
-        commands.add(main(entryOffset));
+        commands.add(unixThread(entryOffset));
         commands.add(symtab(linkeditOffset, symbolCount,
                             linkeditOffset + symbolCount * NLIST_SIZE,
                             linkedit.length - symbolCount * NLIST_SIZE));
@@ -566,12 +583,21 @@ public final class MachO {
         return b.array();
     }
 
-    private static byte[] main(int entryOffset) {
-        ByteBuffer b = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN);
-        b.putInt(LC_MAIN);
-        b.putInt(24);
-        b.putLong(entryOffset);
-        b.putLong(0);           // the default stack
+    /**
+     * The thread state a program starts in, which is rip and nothing else.
+     *
+     * rip is an address rather than an offset into the file, so it is where the entry
+     * code will be once the segment is mapped: the text segment's address plus the offset
+     * the code was written at.
+     */
+    private static byte[] unixThread(int entryOffset) {
+        ByteBuffer b = ByteBuffer.allocate(THREAD_COMMAND_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+        b.putInt(LC_UNIXTHREAD);
+        b.putInt(THREAD_COMMAND_SIZE);
+        b.putInt(X86_THREAD_STATE64);
+        b.putInt(X86_THREAD_STATE64_COUNT);
+        b.position(16 + RIP_OFFSET);
+        b.putLong(TEXT_ADDRESS + entryOffset);
         return b.array();
     }
 
@@ -694,6 +720,10 @@ public final class MachO {
                     out.identifier = new byte[16];
                     System.arraycopy(bytes, at + 8, out.identifier, 0, 16);
                 }
+                // Either spelling. The older one gives an address and the newer an
+                // offset, and what is wanted is the offset, so the older one loses the
+                // segment's address again on the way in.
+                case LC_UNIXTHREAD -> entry = b.getLong(at + 16 + RIP_OFFSET) - TEXT_ADDRESS;
                 case LC_MAIN -> entry = b.getLong(at + 8);
                 default -> { }
             }
