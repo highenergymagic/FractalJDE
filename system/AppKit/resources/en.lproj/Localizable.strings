@@ -105,3 +105,12 @@
 "document.changesWillBeLost" = "Your changes will be lost if you don’t save them.";
 "document.save" = "Save";
 "document.dontSave" = "Don’t Save";
+
+/* Fractal Help, and the list of every shortcut. The list is read out of the menu bar, so
+   its two column headings are all there is to translate; the page of prose beside it is a
+   file of its own, Help.txt, one per language. */
+"help.title" = "Fractal Help";
+"help.shortcutsTitle" = "Keyboard Shortcuts";
+"help.shortcutColumn" = "Shortcut";
+"help.meaningColumn" = "What it does";
+"help.notInstalled" = "The help for this system is not installed.";

@@ -103,6 +103,23 @@ public final class Announcer {
         }
     }
 
+    /**
+     * Every shortcut it knows, sorted by what it does.
+     *
+     * Read out of the menu bar rather than written down, so the list is the bar and cannot
+     * go stale. What used to be beside this was forty rows of a keystroke and a sentence,
+     * kept true by remembering to.
+     */
+    public static java.util.List<KeyStroke> known() {
+        java.util.List<KeyStroke> out = new java.util.ArrayList<>(MENU.keySet());
+        out.addAll(EXTRA.keySet());
+        out.sort((a, b) -> {
+            String said = phraseFor(a), other = phraseFor(b);
+            return said == null || other == null ? 0 : said.compareToIgnoreCase(other);
+        });
+        return out;
+    }
+
     /** What this keystroke would say, or nothing if it says nothing. */
     public static String phraseFor(KeyStroke stroke) {
         Phrase found = lookup(stroke);

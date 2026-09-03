@@ -369,6 +369,18 @@ public final class NibLoader {
      */
     public JMenuItem item(FMString action) { return items.get(action.toString()); }
 
+    /**
+     * What an item is called, in the language this account reads.
+     *
+     * For anything that shows the same command somewhere else. A contextual menu offers
+     * what the bar offers, and taking the words from the bar rather than writing them again
+     * is the difference between one thing translated once and two that can disagree.
+     */
+    public FMString titleOf(FMString action) {
+        JMenuItem found = item(action);
+        return found == null ? FMString.EMPTY : FMString.of(found.getText());
+    }
+
     /** Whether a command in this description exists at all, for a check to ask. */
     public boolean has(FMString action) { return items.containsKey(action.toString()); }
 

@@ -42,3 +42,24 @@
 "finder.moveFailed" = "„%1$@“ konnte nicht bewegt werden.";
 "finder.undoMove" = "Bewegen";
 "finder.undoCopy" = "Kopieren";
+
+"finder.cannotOpen" = "Das Programm „%1$@“ kann nicht geöffnet werden.";
+"finder.cannotOpenWhy" = "Sein Bündel ist möglicherweise beschädigt oder unvollständig.";
+"finder.renamePrompt" = "Objekt umbenennen.";
+"finder.renameLabel" = "Name:";
+"finder.renameButton" = "Umbenennen";
+"finder.nameTaken" = "Der Name „%1$@“ ist bereits vergeben.";
+"finder.nameTakenWhy" = "Bitte wählen Sie einen anderen Namen.";
+"finder.emptyTrashAsk" = "Möchten Sie die Objekte im Papierkorb wirklich endgültig löschen?";
+"finder.emptyTrashWhy" = "Dies kann nicht widerrufen werden.";
+"finder.emptyTrashButton" = "Papierkorb entleeren";
+"finder.secureEmptyTrashButton" = "Papierkorb sicher entleeren";
+"finder.chooseApplication" = "Programm auswählen";
+"finder.connectPrompt" = "Mit dem Server verbinden:";
+"finder.connectLabel" = "Serveradresse:";
+"finder.connectButton" = "Verbinden";
+"finder.connectFailed" = "Beim Verbinden mit dem Server „%1$@“ ist ein Problem aufgetreten.";
+"finder.connectFailedWhy" = "Prüfen Sie den Servernamen oder die Adresse und versuchen Sie es erneut.";
+"finder.showPackageContents" = "Paketinhalt zeigen";
+"finder.pasteItem" = "Objekt einsetzen";
+"finder.showInExplorer" = "Im Windows Explorer zeigen";

@@ -76,6 +76,20 @@ public final class FinderMenus implements NibLoader.Commands {
      */
     public static final String SETTINGS_PANE = "desktop";
 
+    /**
+     * What a command is called in the bar, for anything showing the same command.
+     *
+     * A contextual menu offers what the bar offers, so it takes the words from the bar.
+     * Writing them again would be one command translated twice.
+     */
+    public static FMString titleFor(FMString action) {
+        FinderMenus one = installed;
+        return one == null || one.loaded == null ? FMString.EMPTY : one.loaded.titleOf(action);
+    }
+
+    /** The one the bar is using, so the words it read can be asked for. */
+    private static FinderMenus installed;
+
     /** The interface file the bar is built from, inside the Finder's own bundle. */
     private static final FMString INTERFACE = FMString.of("FinderMenus");
 
@@ -123,6 +137,7 @@ public final class FinderMenus implements NibLoader.Commands {
             return menus;
         }
 
+        installed = menus;
         List<JMenu> built = menus.loaded.menus(menus);
         menus.addLiveMenus(built);
         desktop.mainMenu().setDefaultApplication("Finder", built);
@@ -550,9 +565,9 @@ public final class FinderMenus implements NibLoader.Commands {
     }
 
     void goToFolder() {
-        String path = Finder.prompt(FMLocalized.of(GO_TO_PROMPT).toString(),
-                                    FMLocalized.of(GO_TO_TITLE).toString(), "",
-                                    FMLocalized.of(GO_TO_BUTTON).toString());
+        String path = Finder.prompt(FMLocalized.of(GO_TO_PROMPT),
+                                    FMLocalized.of(GO_TO_TITLE), FMString.EMPTY,
+                                    FMLocalized.of(GO_TO_BUTTON));
         if (path == null || path.isBlank()) return;
         File dir = new File(path.replace("~", System.getProperty("user.home")));
         if (!dir.isDirectory()) {

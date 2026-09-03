@@ -1,0 +1,25 @@
+FractalJDE
+The Fractal Java Desktop Environment
+-----------------------------------
+
+A desktop and a Finder, written in Java Swing, running on Windows. It reads and writes real files.
+
+The desktop shows the folder Desktop-Folder in your home directory and, depending on Finder Preferences, your disks and connected servers beside it.
+
+Command is the Alt key and Option is the Windows key, because that is where they sit on a PC keyboard. Command N, for a new Finder window, is Alt N here.
+
+The Dock holds the Finder, your default web browser and mail client, anything started from here, and the Trash. The Trash is the Windows Recycle Bin: items moved there really are recycled, and emptying it really does empty it.
+
+Keyboard
+--------
+Alt Windows M puts the keyboard on the menu bar; again for the status menus. Alt Space opens Spotlight. Tab moves between the sidebar, the file list and the toolbar; the toolbar, the window buttons and the Dock are each one stop, with the arrow keys moving inside them and Escape leaving.
+
+Every shortcut this system has is in Keyboard Shortcuts, under Help, which is read out of the menu bar itself rather than written down.
+
+Screen readers
+--------------
+Swing talks to Windows screen readers through the Java Access Bridge. If nothing is read, run jabswitch -enable once, then sign out and back in.
+
+What is pretend
+---------------
+Sleep dims the screen until a key is pressed. Restart, Shut Down and Log Out close this program and leave Windows alone. Software Update has nothing to update.

@@ -21,6 +21,7 @@ package org.fractalmicro.a11y;
 
 import org.fractalmicro.foundation.FMDictionary;
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.plist.Strings;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ import java.util.regex.Pattern;
 public final class LocalizationTest {
     private LocalizationTest() {}
 
-    public static int count() { return 5; }
+    public static int count() { return 6; }
 
     /**
      * How many pieces of text are still written into the source.
@@ -64,7 +65,7 @@ public final class LocalizationTest {
      * moved into the tables and may not go up, which is the only thing that makes a long
      * job finish rather than drift.
      */
-    private static final int LITERALS_ALLOWED = 310;
+    private static final int LITERALS_ALLOWED = 225;
 
     /**
      * A key being made into a constant of this system's own text type.
@@ -146,6 +147,15 @@ public final class LocalizationTest {
         for (String one : without) out.println("      no table beside " + one);
         failures += check(out, "and every window that ships has one beside it",
             without.isEmpty());
+
+        /* ------------------------------------ and the long text is a file as well */
+
+        // A page of help is too long to be one entry in a table, so it is a file in the
+        // language directories. Missing, it falls back to a sentence saying so, which is
+        // the one way this could break without anything else noticing.
+        FMString help = FMLocalized.resource(FMString.of("Help.txt"));
+        failures += check(out, "the help page is a file beside the words, not a page of source",
+            help.length() > 200);
 
         /* ------------------------------------------ what is still in the source */
 

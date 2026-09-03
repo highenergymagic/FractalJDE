@@ -26,6 +26,8 @@ import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
 
 import org.fractalmicro.appkit.FMTextArea;
+import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -43,98 +45,66 @@ public class HelpWindow extends JInternalFrame {
     }
 
     public static void openHelp() {
-        FMTextArea text = new FMTextArea(org.fractalmicro.foundation.FMString.of(HELP));
+        FMTextArea text = new FMTextArea(helpText());
         text.setEditable(false);
         text.setLineWrap(true);
         text.setWrapStyleWord(true);
         text.setFont(Aqua.systemFont());
         text.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
         text.setCaretPosition(0);
-        text.getAccessibleContext().setAccessibleName("Fractal Help");
-        Desktop.sharedDesktop().addWindow(new HelpWindow("Fractal Help", new JScrollPane(text), 560, 460));
+        String title = FMLocalized.of(HELP_TITLE).toString();
+        text.getAccessibleContext().setAccessibleName(title);
+        Desktop.sharedDesktop().addWindow(
+            new HelpWindow(title, new JScrollPane(text), 560, 460));
     }
 
+    /**
+     * Every shortcut, read out of the menu bar.
+     *
+     * There were forty rows written here, each a keystroke and a sentence, kept true by
+     * somebody remembering to. The bar already holds every shortcut and what it does, in
+     * the language this account reads, so the list is the bar.
+     */
     public static void showShortcuts() {
-        DefaultTableModel model = new DefaultTableModel(new String[]{"Shortcut", "What it does"}, 0) {
+        String title = FMLocalized.of(SHORTCUTS_TITLE).toString();
+        DefaultTableModel model = new DefaultTableModel(new String[]{
+            FMLocalized.of(SHORTCUT_COLUMN).toString(),
+            FMLocalized.of(MEANING_COLUMN).toString()}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (String[] row : SHORTCUTS) model.addRow(row);
+        org.fractalmicro.a11y.Announcer.learn(Desktop.sharedDesktop().mainMenu());
+        for (javax.swing.KeyStroke stroke : org.fractalmicro.a11y.Announcer.known()) {
+            String says = org.fractalmicro.a11y.Announcer.phraseFor(stroke);
+            if (says == null || says.isBlank()) continue;
+            model.addRow(new String[]{
+                org.fractalmicro.theme.AquaMenuPainter.acceleratorText(stroke), says});
+        }
         JTable table = new JTable(model);
         table.setFont(Aqua.smallFont());
         table.setRowHeight(20);
         table.getColumnModel().getColumn(0).setPreferredWidth(200);
         table.getColumnModel().getColumn(1).setPreferredWidth(340);
-        table.getAccessibleContext().setAccessibleName("Keyboard shortcuts");
-        Desktop.sharedDesktop().addWindow(new HelpWindow("Keyboard Shortcuts", new JScrollPane(table), 600, 500));
+        table.getAccessibleContext().setAccessibleName(title);
+        Desktop.sharedDesktop().addWindow(
+            new HelpWindow(title, new JScrollPane(table), 600, 500));
+    }
+    /**
+     * The help text, read from the framework rather than written in here.
+     *
+     * A page of prose in the source is a page nobody can translate and nobody can correct
+     * without a compiler. It sits beside AppKit's other words, one file per language,
+     * which is where a Help Book would be on a Mac.
+     */
+    private static FMString helpText() {
+        FMString text = FMLocalized.resource(HELP_FILE);
+        return text.isEmpty() ? FMLocalized.of(NO_HELP) : text;
     }
 
-    private static final String HELP =
-        "FractalJDE\n"
-      + "The Fractal Java Desktop Environment\n"
-      + "-----------------------------------\n\n"
-      + "A desktop and a Finder, written in Java Swing, running on Windows. "
-      + "It reads and writes real files.\n\n"
-      + "The desktop shows the folder Desktop-Folder in your home directory and, "
-      + "depending on Finder Preferences, your disks and connected servers beside it.\n\n"
-      + "Command is the Alt key and Option is the Windows key, because that is where "
-      + "they sit on a PC keyboard. Command N, for a new Finder window, is Alt N here.\n\n"
-      + "The Dock holds the Finder, your default web browser and mail client, anything "
-      + "started from here, and the Trash. The Trash is the Windows Recycle Bin: items "
-      + "moved there really are recycled, and emptying it really does empty it.\n\n"
-      + "Keyboard\n"
-      + "--------\n"
-      + "Alt Windows M puts the keyboard on the menu bar; again for the status menus. "
-      + "Alt Space opens Spotlight. Tab moves between the sidebar, the file list and "
-      + "the toolbar; the toolbar, the window buttons and the Dock are each one stop, "
-      + "with the arrow keys moving inside them and Escape leaving.\n\n"
-      + "Screen readers\n"
-      + "--------------\n"
-      + "Swing talks to Windows screen readers through the Java Access Bridge. If "
-      + "nothing is read, run jabswitch -enable once, then sign out and back in.\n\n"
-      + "What is pretend\n"
-      + "---------------\n"
-      + "Sleep dims the screen until a key is pressed. Restart, Shut Down and Log Out "
-      + "close this program and leave Windows alone. Software Update has nothing to "
-      + "update.\n";
+    private static final FMString HELP_FILE = FMString.of("Help.txt");
 
-    private static final String[][] SHORTCUTS = {
-        {"Alt Space", "Spotlight"},
-        {"Alt Windows M", "Move to the menu bar; again for the status menus"},
-        {"Alt Windows D", "Move to the Dock"},
-        {"Alt N", "New Finder window"},
-        {"Shift Alt N", "New folder"},
-        {"Alt O", "Open the selection"},
-        {"Alt Down", "Open the selection"},
-        {"Return", "Rename the selection"},
-        {"Alt W", "Close the front window"},
-        {"Alt I", "Get Info"},
-        {"Alt D", "Duplicate"},
-        {"Alt L", "Make alias"},
-        {"Alt Y", "Quick Look"},
-        {"Alt Backspace", "Move to Trash"},
-        {"Shift Alt Backspace", "Empty Trash"},
-        {"Alt C / Alt V", "Copy and paste items"},
-        {"Alt A", "Select all"},
-        {"Alt 1 to Alt 4", "Icon, list, column and Cover Flow views"},
-        {"Alt J", "Show view options"},
-        {"Alt Up", "Enclosing folder"},
-        {"Alt [ / Alt ]", "Back and forward"},
-        {"Shift Alt A", "Applications"},
-        {"Shift Alt U", "Utilities"},
-        {"Shift Alt H", "Home"},
-        {"Shift Alt D", "Desktop"},
-        {"Shift Alt C", "Computer"},
-        {"Shift Alt O", "Documents"},
-        {"Shift Alt K", "Network"},
-        {"Windows Alt L", "Downloads"},
-        {"Shift Alt G", "Go to folder"},
-        {"Alt K", "Connect to server"},
-        {"Alt M", "Minimize the front window"},
-        {"Alt backtick", "Cycle through windows"},
-        {"Alt comma", "Finder preferences"},
-        {"Windows Alt Escape", "Force Quit"},
-        {"Alt F", "Find"},
-        {"Alt /", "Show or hide the status bar"},
-        {"Shift Alt /", "Fractal Help"},
-    };
+    private static final FMString HELP_TITLE = FMString.of("help.title");
+    private static final FMString SHORTCUTS_TITLE = FMString.of("help.shortcutsTitle");
+    private static final FMString SHORTCUT_COLUMN = FMString.of("help.shortcutColumn");
+    private static final FMString MEANING_COLUMN = FMString.of("help.meaningColumn");
+    private static final FMString NO_HELP = FMString.of("help.notInstalled");
 }

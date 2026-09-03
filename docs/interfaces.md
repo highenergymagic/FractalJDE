@@ -1,48 +1,4 @@
-# Interface files
-
-## Bindings
-
-A control can say which setting it shows, and from then on nothing else is involved:
-
-```xml
-<button id="show labels" type="check">
-    <buttonCell key="cell" title="Show labels behind names"/>
-    <connections>
-        <binding name="value" keyPath="values.finder.ShowLabels"/>
-    </connections>
-</button>
-```
-
-The control reads the setting when the window opens, writes it when somebody uses it, and
-follows it when something else writes it. The program that described the window is not told
-about any of that and has no code that could get it wrong. A binding sits beside the action
-in the same connections element because the two are the same kind of thing: something the
-control is joined to that nobody had to write code for.
-
-The key path is written the way `NSUserDefaultsController` writes one, `values.` and then the
-setting. There are several preference domains here where a Mac has one, so the domain is the
-middle part: `values.finder.ShowLabels`, `values.global.AppleShowAllExtensions`,
-`values.dock.tilesize`.
-
-Following it across processes is free. A setting written in one program is a distributed
-notification in all of them, so a window bound to something changed elsewhere catches up
-without anything asking it to.
-
-What this took out of System Preferences was a table of fourteen switches, each with a getter
-and a setter, and every one of them a chance for the switch and the setting to disagree. What
-is left in that table is which pane each control is on, because the description has no notion
-of a pane yet.
-
-The one control still wired by hand is the spring-loading delay, because the slider is in
-tenths of a second and the setting is in seconds. Cocoa binds through an `NSValueTransformer`
-for exactly that and there is not one here yet.
-
-**A bound setting needs a registered default.** An unset key reads as nothing, so the control
-comes up empty while the rest of the system goes on using the fallback written in its code:
-the switch says one thing and the machine does another, with no error anywhere. It happened
-to Show Labels the first time this was tried, and there is now a check that reads every
-binding in every interface file and fails when one has nothing to start from.
- and the words in them
+# Interface files and the words in them
 
 A window is a file, not a function. What is in it and what it is called are separate
 questions, and the second one is answered in a language the reader chose.
@@ -164,6 +120,17 @@ sentence as the key, the English lives in the source and everything else lives i
 and there is no way to check that the two agree. With an identifier, English is one
 language among the others and a check can require it to be there.
 
+Text too long to be one entry in a table is a file of its own, in the same language
+directories: `Help.txt` beside `Localizable.strings`. `FMLocalized.resource` finds it the
+same way, so a program can carry its own copy of something a framework also has. Fractal
+Help was a page of prose in a Java string until then, which is a page no translator can
+open and no writer can correct without a compiler.
+
+The list of keyboard shortcuts is not translated at all, because it is not written down.
+It is read out of the menu bar, which already holds every shortcut and what it does in
+the language this account reads. What was there before was forty rows of a keystroke and
+a sentence, kept true by somebody remembering to.
+
 ## Which bundle
 
 `FMLocalized` searches in order:
@@ -209,3 +176,46 @@ ones, and each of them is in a process of its own.
 Asking the preference on every lookup cost about a microsecond a word, which is nothing
 alone and a visible pause across a window full of them. It is read once and kept until
 something says it changed.
+
+## Bindings
+
+A control can say which setting it shows, and from then on nothing else is involved:
+
+```xml
+<button id="show labels" type="check">
+    <buttonCell key="cell" title="Show labels behind names"/>
+    <connections>
+        <binding name="value" keyPath="values.finder.ShowLabels"/>
+    </connections>
+</button>
+```
+
+The control reads the setting when the window opens, writes it when somebody uses it, and
+follows it when something else writes it. The program that described the window is not told
+about any of that and has no code that could get it wrong. A binding sits beside the action
+in the same connections element because the two are the same kind of thing: something the
+control is joined to that nobody had to write code for.
+
+The key path is written the way `NSUserDefaultsController` writes one, `values.` and then the
+setting. There are several preference domains here where a Mac has one, so the domain is the
+middle part: `values.finder.ShowLabels`, `values.global.AppleShowAllExtensions`,
+`values.dock.tilesize`.
+
+Following it across processes is free. A setting written in one program is a distributed
+notification in all of them, so a window bound to something changed elsewhere catches up
+without anything asking it to.
+
+What this took out of System Preferences was a table of fourteen switches, each with a getter
+and a setter, and every one of them a chance for the switch and the setting to disagree. What
+is left in that table is which pane each control is on, because the description has no notion
+of a pane yet.
+
+The one control still wired by hand is the spring-loading delay, because the slider is in
+tenths of a second and the setting is in seconds. Cocoa binds through an `NSValueTransformer`
+for exactly that and there is not one here yet.
+
+**A bound setting needs a registered default.** An unset key reads as nothing, so the control
+comes up empty while the rest of the system goes on using the fallback written in its code:
+the switch says one thing and the machine does another, with no error anywhere. It happened
+to Show Labels the first time this was tried, and there is now a check that reads every
+binding in every interface file and fails when one has nothing to start from.

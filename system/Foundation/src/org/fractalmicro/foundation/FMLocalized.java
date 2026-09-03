@@ -163,6 +163,36 @@ public final class FMLocalized {
         return filled(key, values.asArray());
     }
 
+
+    /**
+     * A whole file out of a bundle, in the language this account reads.
+     *
+     * Some text is too long to be one entry in a table: a page of help, a licence, a
+     * release note. Cocoa keeps those as files in the language directories and asks for
+     * them by name, and so does this. Nothing found is empty rather than an error.
+     */
+    public static FMString resource(FMString name) {
+        if (name == null || name.isEmpty()) return FMString.EMPTY;
+        for (Path place : searchPath()) {
+            for (FMString language : Languages.preferred()) {
+                FMString text = contents(place.resolve(language + ".lproj").resolve(name.toString()));
+                if (text != null) return text;
+            }
+            FMString beside = contents(place.resolve(name.toString()));
+            if (beside != null) return beside;
+        }
+        return FMString.EMPTY;
+    }
+
+    /** A file read whole, or null when there is no such file. */
+    private static FMString contents(Path file) {
+        if (!Files.isReadable(file)) return null;
+        try {
+            return FMString.of(Files.readString(file));
+        } catch (IOException unreadable) {
+            return null;
+        }
+    }
     /**
      * Forgets what was read, so the next question is answered in the language asked for
      * now. Changing the language changes every window, and nothing would change if the

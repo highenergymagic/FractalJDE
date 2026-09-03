@@ -115,3 +115,29 @@
 "finder.moveFailed" = "Could not move “%1$@”.";
 "finder.undoMove" = "Move";
 "finder.undoCopy" = "Copy";
+
+/* What the file manager says in an alert or asks for in a prompt. Each of these was
+   written into the source until now, which put it out of reach of anybody translating. */
+"finder.cannotOpen" = "The application “%1$@” can’t be opened.";
+"finder.cannotOpenWhy" = "Its bundle may be damaged or incomplete.";
+"finder.renamePrompt" = "Rename this item.";
+"finder.renameLabel" = "Name:";
+"finder.renameButton" = "Rename";
+"finder.nameTaken" = "The name “%1$@” is already taken.";
+"finder.nameTakenWhy" = "Please choose a different name.";
+"finder.emptyTrashAsk" = "Are you sure you want to permanently erase the items in the Trash?";
+"finder.emptyTrashWhy" = "You can’t undo this action.";
+"finder.emptyTrashButton" = "Empty Trash";
+"finder.secureEmptyTrashButton" = "Secure Empty Trash";
+"finder.chooseApplication" = "Choose Application";
+"finder.connectPrompt" = "Connect to the server:";
+"finder.connectLabel" = "Server Address:";
+"finder.connectButton" = "Connect";
+"finder.connectFailed" = "There was a problem connecting to the server “%1$@”.";
+"finder.connectFailedWhy" = "Check the server name or address and try again.";
+
+/* The contextual menu. Most of it takes its words from the menu bar, because it offers the
+   same commands; these three are the ones a Mac words differently there. */
+"finder.showPackageContents" = "Show Package Contents";
+"finder.pasteItem" = "Paste Item";
+"finder.showInExplorer" = "Show in Windows Explorer";

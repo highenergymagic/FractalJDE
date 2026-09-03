@@ -99,9 +99,8 @@ public final class Finder {
         if (bundle == null) return false;
         Recent.noteItem(n.file);
         if (!org.fractalmicro.bundle.Bundles.open(bundle, null)) {
-            FMAlert.tell(FMString.of("The application " + '“' + bundle.displayName() + '”' + (" can") + '’' + "t be opened."),
-
-                       FMString.of("Its bundle may be damaged or incomplete."));
+            FMAlert.tell(FMLocalized.filled(CANNOT_OPEN, bundle.displayName()),
+                         FMLocalized.of(CANNOT_OPEN_WHY));
         }
         return true;
     }
@@ -189,12 +188,13 @@ public final class Finder {
         if (n == null || n.file == null) { beep(); return; }
         if (n.isVolume()) { tell(NO_VOLUME_RENAME); return; }
         String current = n.file.getName();
-        String next = prompt("Rename this item.", "Name:", current, "Rename");
+        String next = prompt(FMLocalized.of(RENAME_PROMPT), FMLocalized.of(RENAME_LABEL),
+                             FMString.of(current), FMLocalized.of(RENAME_BUTTON));
         if (next == null || next.isBlank() || next.equals(current)) return;
         File dest = new File(n.file.getParentFile(), next);
         if (dest.exists()) {
-            FMAlert.tell(FMString.of("The name " + '\u201c' + next + '\u201d' + " is already taken."),
-                       FMString.of("Please choose a different name."));
+            FMAlert.tell(FMLocalized.filled(NAME_TAKEN, FMString.of(next)),
+                         FMLocalized.of(NAME_TAKEN_WHY));
             return;
         }
         if (!n.file.renameTo(dest)) {
@@ -353,9 +353,9 @@ public final class Finder {
         if (Trash.isEmpty()) { beep(); return; }
         if (FinderSettings.warnOnEmptyTrash()) {
             boolean go = FMAlert.confirm(FMAlert.Kind.CAUTION,
-                FMString.of("Are you sure you want to permanently erase the items in the Trash?"),
-                FMString.of("You can" + '\u2019' + "t undo this action."),
-                FMString.of(secure ? "Secure Empty Trash" : "Empty Trash"));
+                FMLocalized.of(EMPTY_TRASH_ASK),
+                FMLocalized.of(EMPTY_TRASH_WHY),
+                FMLocalized.of(secure ? SECURE_EMPTY_BUTTON : EMPTY_TRASH_BUTTON));
             if (!go) return;
         }
         Trash.empty(secure);
@@ -599,7 +599,7 @@ public final class Finder {
         String programs = System.getenv("ProgramFiles");
         JFileChooser chooser = new JFileChooser(
             programs == null ? org.fractalmicro.fs.Volumes.systemDrive() : programs);
-        chooser.setDialogTitle("Choose Application");
+        chooser.setDialogTitle(FMLocalized.of(CHOOSE_APPLICATION).toString());
         if (chooser.showOpenDialog(Desktop.sharedDesktop()) != JFileChooser.APPROVE_OPTION) return;
         File app = chooser.getSelectedFile();
         List<String> command = new ArrayList<>();
@@ -656,12 +656,13 @@ public final class Finder {
      * mounting is the system's, but showing what was mounted is the browser's.
      */
     public static void connectToServer() {
-        String path = Finder.prompt("Connect to the server:", "Server Address:", "\\\\", "Connect");
+        String path = Finder.prompt(FMLocalized.of(CONNECT_PROMPT), FMLocalized.of(CONNECT_LABEL),
+                                    FMString.of("\\\\"), FMLocalized.of(CONNECT_BUTTON));
         if (path == null || path.isBlank()) return;
         File dir = new File(path);
         if (!dir.exists()) {
-            FMAlert.tell(FMString.of("There was a problem connecting to the server " + '“' + path + '”' + "."),
-                       FMString.of("Check the server name or address and try again."));
+            FMAlert.tell(FMLocalized.filled(CONNECT_FAILED, FMString.of(path)),
+                         FMLocalized.of(CONNECT_FAILED_WHY));
             return;
         }
         goTo(dir);
@@ -727,37 +728,53 @@ public final class Finder {
     }
 
     /** Asks for one piece of text, with a button named for what it will do. */
-    public static String prompt(String message, String fieldLabel, String initial,
-                                String actionButton) {
-        return FMAlert.ask(FMString.of(message), FMString.of(fieldLabel),
-                         FMString.of(initial), FMString.of(actionButton)).toString();
+    public static String prompt(FMString message, FMString fieldLabel, FMString initial,
+                                FMString actionButton) {
+        return FMAlert.ask(message, fieldLabel, initial, actionButton).toString();
     }
 
-    /** The contextual menu shared by the desktop and the Finder views. */
+    /**
+     * The contextual menu shared by the desktop and the Finder views.
+     *
+     * Most of its words come from the menu bar, because it offers the same commands and a
+     * command translated twice is a command that can be translated two ways. The three
+     * that name their own are the three a Mac words differently here.
+     */
     public static JPopupMenu contextMenu(Supplier<List<Node>> selection, Supplier<File> folder) {
         JPopupMenu m = new JPopupMenu();
-        m.add(item("Open", e -> openAll(selection.get())));
-        m.add(item("Show Package Contents", e -> showPackageContents(first(selection.get()))));
-        m.add(item("Get Info", e -> getInfo(first(selection.get()))));
+        m.add(item(inTheBar("open"), e -> openAll(selection.get())));
+        m.add(item(FMLocalized.of(SHOW_PACKAGE_CONTENTS),
+                   e -> showPackageContents(first(selection.get()))));
+        m.add(item(inTheBar("getInfo"), e -> getInfo(first(selection.get()))));
         m.addSeparator();
-        m.add(item("New Folder", e -> newFolder(folder.get())));
-        m.add(item("Rename", e -> rename(first(selection.get()))));
-        m.add(item("Duplicate", e -> duplicate(selection.get())));
-        m.add(item("Make Alias", e -> makeAlias(selection.get())));
+        m.add(item(inTheBar("newFolder"), e -> newFolder(folder.get())));
+        m.add(item(inTheBar("rename"), e -> rename(first(selection.get()))));
+        m.add(item(inTheBar("duplicate"), e -> duplicate(selection.get())));
+        m.add(item(inTheBar("makeAlias"), e -> makeAlias(selection.get())));
         m.add(labelMenu(() -> selection.get()));
-        m.add(item("Compress", e -> compress(selection.get())));
+        m.add(item(inTheBar("compress"), e -> compress(selection.get())));
         m.addSeparator();
-        m.add(item("Copy", e -> copy(selection.get())));
-        m.add(item("Paste Item", e -> paste(folder.get())));
+        m.add(item(inTheBar("copy"), e -> copy(selection.get())));
+        m.add(item(FMLocalized.of(PASTE_ITEM), e -> paste(folder.get())));
         m.addSeparator();
-        m.add(item("Move to Trash", e -> moveToTrash(selection.get())));
-        m.add(item("Eject", e -> eject(first(selection.get()))));
+        m.add(item(inTheBar("moveToTrash"), e -> moveToTrash(selection.get())));
+        m.add(item(inTheBar("eject"), e -> eject(first(selection.get()))));
         m.addSeparator();
-        m.add(item("Show in Windows Explorer", e -> {
+        m.add(item(FMLocalized.of(SHOW_IN_EXPLORER), e -> {
             Node n = first(selection.get());
             if (n != null && n.file != null) FS.reveal(n.file);
         }));
         return m;
+    }
+
+    /**
+     * What the menu bar calls a command.
+     *
+     * Empty before the bar has been read, which happens only in a checking run with no
+     * menus, and an item with no words is better than a second copy of them here.
+     */
+    private static FMString inTheBar(String action) {
+        return FinderMenus.titleFor(FMString.of(action));
     }
 
     public static Node first(List<Node> nodes) {
@@ -808,8 +825,8 @@ public final class Finder {
         @Override public int getIconHeight() { return 13; }
     }
 
-    public static JMenuItem item(String text, java.awt.event.ActionListener a) {
-        JMenuItem mi = new JMenuItem(text);
+    public static JMenuItem item(FMString text, java.awt.event.ActionListener a) {
+        JMenuItem mi = new JMenuItem(text.toString());
         mi.addActionListener(a);
         return mi;
     }
@@ -830,6 +847,26 @@ public final class Finder {
     private static final FMString ALIAS_FAILED = FMString.of("finder.aliasFailed");
     private static final FMString NO_ORIGINAL = FMString.of("finder.noOriginal");
     private static final FMString PASTE_FAILED = FMString.of("finder.pasteFailed");
+    private static final FMString CANNOT_OPEN = FMString.of("finder.cannotOpen");
+    private static final FMString CANNOT_OPEN_WHY = FMString.of("finder.cannotOpenWhy");
+    private static final FMString RENAME_PROMPT = FMString.of("finder.renamePrompt");
+    private static final FMString RENAME_LABEL = FMString.of("finder.renameLabel");
+    private static final FMString RENAME_BUTTON = FMString.of("finder.renameButton");
+    private static final FMString NAME_TAKEN = FMString.of("finder.nameTaken");
+    private static final FMString NAME_TAKEN_WHY = FMString.of("finder.nameTakenWhy");
+    private static final FMString EMPTY_TRASH_ASK = FMString.of("finder.emptyTrashAsk");
+    private static final FMString EMPTY_TRASH_WHY = FMString.of("finder.emptyTrashWhy");
+    private static final FMString EMPTY_TRASH_BUTTON = FMString.of("finder.emptyTrashButton");
+    private static final FMString SECURE_EMPTY_BUTTON = FMString.of("finder.secureEmptyTrashButton");
+    private static final FMString CHOOSE_APPLICATION = FMString.of("finder.chooseApplication");
+    private static final FMString CONNECT_PROMPT = FMString.of("finder.connectPrompt");
+    private static final FMString CONNECT_LABEL = FMString.of("finder.connectLabel");
+    private static final FMString CONNECT_BUTTON = FMString.of("finder.connectButton");
+    private static final FMString CONNECT_FAILED = FMString.of("finder.connectFailed");
+    private static final FMString CONNECT_FAILED_WHY = FMString.of("finder.connectFailedWhy");
+    private static final FMString SHOW_PACKAGE_CONTENTS = FMString.of("finder.showPackageContents");
+    private static final FMString PASTE_ITEM = FMString.of("finder.pasteItem");
+    private static final FMString SHOW_IN_EXPLORER = FMString.of("finder.showInExplorer");
     private static final FMString MOVE_FAILED = FMString.of("finder.moveFailed");
     private static final FMString ALREADY_THERE = FMString.of("finder.alreadyThere");
     private static final FMString REPLACED_TO_TRASH = FMString.of("finder.replacedToTrash");
