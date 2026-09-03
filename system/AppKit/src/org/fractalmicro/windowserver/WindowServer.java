@@ -48,19 +48,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The window server: the one place that draws.
  *
  * A program in another process sends a description of a window. This builds it as real
- * controls, in the process that owns the screen, and sends back events as they happen. The
- * program never touches a control; it refers to them by the names its own description gave
- * them.
+ * controls, in the process that owns the screen, and sends events back. The program refers
+ * to controls by the names its description gave them and never touches one.
  *
- * There are two places to cut a window server. Mac OS X cuts at the pixel: each program
- * draws into a buffer and the server composites. That is not available here. A window
- * drawn into an image is a picture of a window. It has the appearance of controls and
- * none of the controls, so nothing can say what is in it, move through it, or act on it.
+ * Mac OS X cuts at the pixel: each program draws into a buffer and the server composites.
+ * Here the cut is at the widget, because a window drawn into an image has the appearance
+ * of controls and none of the controls, and nothing can read it or move through it.
  *
- * So the cut is at the widget instead. The controls live in this process and they are
- * real ones, each with a name. A description that leaves a control unnamed is refused.
- *
- * What crosses the boundary is small: a description once, then values and events.
+ * So the controls are real and each has a name, and a description leaving one unnamed is
+ * refused. What crosses is a description once, then values and events.
  */
 public final class WindowServer {
 

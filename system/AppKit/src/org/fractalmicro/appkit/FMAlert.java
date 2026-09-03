@@ -39,22 +39,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An Aqua alert.
+ * An Aqua alert, laid out as the guidelines specify.
  *
- * The layout the guidelines specify, which most imitations get wrong. The icon is 64 by 64
- * at the top left. The message is one sentence in the emphasized system font, usually a
- * question. Below it, in the small system font, the informative text says what will happen;
- * the guidelines are explicit that it should not be omitted. Buttons sit bottom right, the
- * rightmost being the action button, Cancel to its left. Margins are 24 at the sides, 20 at
+ * The icon 64 by 64 at the top left. The message one sentence in the emphasized system
+ * font, usually a question. Below it, in the small system font, the informative text
+ * saying what will happen, which the guidelines say not to omit. Buttons bottom right,
+ * the rightmost the action button and Cancel to its left. Margins 24 at the sides, 20 at
  * the bottom.
  *
- * Buttons are named for what they do. There is no OK button, since "OK" does not say what is being
- * agreed to.
+ * Buttons are named for what they do; there is no OK. They are passed in NSAlert's order,
+ * the first appearing rightmost.
  *
- * Buttons are passed in NSAlert's order: first is the action button and appears rightmost.
- *
- * The default button is the one Return presses wherever the keyboard focus happens to be.
- * That single fact drives {@link #confirmIrreversible} and the checks around it.
+ * The default button is the one Return presses wherever the focus is, which is what
+ * {@link #confirmIrreversible} turns on.
  */
 public final class FMAlert {
     private FMAlert() {}

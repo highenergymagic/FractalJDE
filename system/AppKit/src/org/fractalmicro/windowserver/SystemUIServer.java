@@ -35,20 +35,15 @@ import java.util.List;
 /**
  * What puts the indicators at the right of the menu bar.
  *
- * The two halves of the bar have different owners and it took a while to admit it. The
- * menus on the left belong to whichever program is in front and change when it does. The
- * clock and the volume and the network do not: they stay where they are whatever is
- * running, they are not any program's, and the bar has no business building them.
+ * The menus on the left belong to whichever program is in front. The clock, the volume and
+ * the network are nobody's program's and stay where they are.
  *
- * So they are somebody else's. Each one is a bundle: a directory ending in .menu, kept in
- * CoreServices under Menu Extras, whose principal class is an {@link FMMenuExtra}. This
- * finds them, loads each through the loader out of its own executable, and puts what they
- * hand back into the bar in the order they ask for.
+ * Each is a bundle: a directory ending in .menu, in CoreServices under Menu Extras, whose
+ * principal class is an {@link FMMenuExtra}. This finds them, loads each through the
+ * loader out of its own executable, and places what it hands back in the order it asks
+ * for. Adding one is putting a bundle in a directory.
  *
- * The system this imitates does the same thing with a process of its own, and one day this
- * will too. What matters first is that the bar stops knowing what a clock is: an extra can
- * be added by putting a bundle in a directory, and nothing in the window server has to be
- * told it exists.
+ * The system this imitates gives this a process of its own, and one day this will too.
  */
 public final class SystemUIServer {
 

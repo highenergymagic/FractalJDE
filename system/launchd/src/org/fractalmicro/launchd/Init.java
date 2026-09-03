@@ -31,18 +31,15 @@ import java.util.List;
 /**
  * The first thing that runs, and the last thing left.
  *
- * The loader maps this and calls it, and everything else starts from here. It is task 1,
- * which is arithmetic rather than convention: numbers are handed out in order and this one
- * was first, so everything else is descended from it.
+ * The loader maps this and calls it. Task 1 by arithmetic rather than convention: numbers
+ * are handed out in order and this one was first.
  *
- * Three things belong to task 1 and nothing else. It brings the system up in an order it
- * decides: the metadata server before the screen, so searching works the moment there is
- * somewhere to type, and the screen before anything a person can open. It is the parent of
- * last resort, so a task whose parent has gone still has somebody to report to rather than
- * sitting as a zombie holding a number. And it reaps, since a system that does not leaks a
- * number every time a program quits and eventually cannot start one.
+ * Three things are its alone. The order the system comes up in: the metadata server before
+ * the screen, the screen before anything a person can open. Being the parent of last
+ * resort, so a task whose parent has gone is not a zombie holding a number. And reaping,
+ * since not reaping leaks a number every time a program quits.
  *
- * It does not exit. If it did there would be no system.
+ * It does not exit.
  */
 public final class Init {
     private Init() {}

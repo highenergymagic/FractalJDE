@@ -53,9 +53,7 @@ import java.util.Map;
  * server is not a program in its own right but a helper inside the framework whose work it
  * does, at Metadata.framework/Versions/A/Support/mds.
  *
- * This writes that. It is a layout rather than a pile because the layout is the thing being
- * imitated: a system where the loader is a framework and the daemons live wherever is
- * convenient looks the same from outside and is not the same system.
+ * This writes that layout.
  */
 public final class Images {
     private Images() {}

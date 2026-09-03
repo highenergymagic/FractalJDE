@@ -25,19 +25,14 @@ import java.util.Deque;
 /**
  * What to do to put something back, and what to call it.
  *
- * NSUndoManager, and the shape is the interesting part: nothing here records what happened.
- * What is registered is the way back. Something about to rename a file registers the rename
- * that would undo it, and a manager holding a stack of those can walk backwards without
- * knowing what any of them were for.
+ * NSUndoManager. Nothing here records what happened: what is registered is the way back,
+ * so something about to rename a file registers the rename that would undo it, and the
+ * stack walks backwards without knowing what any of it was for.
  *
- * That is why the name is registered with it. "Undo" on its own is a menu item that gives a
- * person no idea what is about to change; "Undo Rename" is a promise. Cocoa has said so in
- * its menus since the beginning, and a manager that could not name its own actions would
- * make that impossible for every program at once.
+ * The name is registered with it, since the menu says "Undo Rename" rather than "Undo".
  *
- * Redo is the same stack read the other way. While an undo is running, anything registered
- * goes on the redo stack rather than the undo one, which is how one method serves both: the
- * way back from the way back is the way forward, and nothing has to be written twice.
+ * Redo is the same stack read the other way: while an undo runs, what is registered goes
+ * on the redo stack, so one method serves both.
  */
 public final class FMUndoManager {
 

@@ -37,19 +37,15 @@ import java.util.function.Predicate;
 /**
  * A column browser: the way this system has shown a tree since NeXTSTEP.
  *
- * One column per level, side by side. Choosing a folder in a column opens the next one
- * beside it; choosing something that is not a folder is the end of that path. What is on
- * screen is therefore the whole route rather than the destination, which is the thing a
- * list cannot show: in a list you know what is in the folder you are in and nothing about
- * how you got there or what was beside it on the way.
+ * One column per level, side by side. Choosing a folder opens the next beside it; choosing
+ * anything else ends that path. What is on screen is the whole route rather than the
+ * destination.
  *
- * The columns scroll sideways as a group, so going deep pushes the earlier ones off the
- * left rather than shrinking any of them. The last column is kept in view, because that is
- * the one being worked in.
+ * The columns scroll sideways as a group, so depth pushes the earlier ones off the left
+ * rather than shrinking them, and the last is kept in view.
  *
- * Each column is a real list with a name, so moving through it with the keyboard works the
- * way moving through any list does, and anything reading the screen says which column it is
- * in and what is in it.
+ * Each column is a real list with a name, so the keyboard and anything reading the screen
+ * treat it as one.
  */
 public final class FMBrowser extends JPanel {
 

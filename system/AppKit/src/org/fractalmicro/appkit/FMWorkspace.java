@@ -37,19 +37,13 @@ import java.io.File;
 /**
  * What the system does with a file, for a program that does not want to know how.
  *
- * Open this. Show me where it is. What kind of thing is it. What is mounted. What is
- * running. Put this in the Trash. Every one of those is a question about the system rather
- * than about the program asking, and NSWorkspace is where a Cocoa program asks them.
+ * Open this. Show me where it is. What kind of thing is it. What is mounted, what is
+ * running, put this in the Trash. NSWorkspace is where a Cocoa program asks these, and
+ * this is the one door so a program does not reach into LaunchServices, the file layer and
+ * the volume list separately.
  *
- * There was no such door here. Opening a file meant reaching into LaunchServices; asking
- * what a file was meant reaching into the file layer; the mounted volumes were somewhere
- * else again and what was running somewhere else after that. So the applications shipped
- * with this system named six or seven packages between them, most of which were the
- * plumbing under the platform rather than the platform. A platform is what its programs
- * can see, and what they could see was the inside.
- *
- * This is in AppKit for the reason NSWorkspace is: it is about what a person can see
- * happening. The answers still come from the layers below, which have not moved.
+ * In AppKit for NSWorkspace's reason: it is about what a person sees happening. The
+ * answers still come from the layers below.
  */
 public final class FMWorkspace {
 
