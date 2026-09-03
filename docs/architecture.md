@@ -14,8 +14,8 @@ Also real, and worth saying twice: Sleep, Lock, Restart, Shut Down and Log Out a
 the machine, not on this program. The dialogs say so and offer Quit FractalJDE instead.
 
 Pretend: Software Update has nothing to update. Burn to Disc, Customize Toolbar and
-colour labels are not implemented and say so. Spotlight walks the file tree rather than
-an index, so it is capped and skips deep folders.
+colour labels are not implemented and say so. Spotlight walks the file tree when the
+metadata server is not running, so it is capped and skips deep folders.
 
 ## Programs are Mach-O
 
@@ -271,6 +271,11 @@ holds 24,698 items, and the difference is the point:
 Spotlight asks the server when it is running and walks the disk when it is not, and says
 which it did rather than quietly being slow. A search that works slowly beats a search that
 fails because a daemon is down.
+
+What the index holds is not the server's business. It walks, and for each file it asks the
+importers, which are bundles in `System/Library/Spotlight` declaring the types they read.
+That is why a search finds a word inside a document: the server has never heard of a
+document. See [types](types.md) for how an importer says what it can read.
 
 ## How it talks to Windows
 

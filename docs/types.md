@@ -131,6 +131,29 @@ offer a plug-in that has no window to open.
 The Finder used to decide this itself, with a list of five suffixes that were images and nine
 that were text. Adding a kind meant editing the file browser.
 
+## Who can read what
+
+An importer, declared the same way again. A `.mdimporter` in `System/Library/Spotlight`
+names the types it can read, with the role `MDImporter`, and returns a dictionary of
+`kMDItem` attributes for the index to keep.
+
+```java
+public FMDictionary attributesFor(File file) {
+    FMMutableDictionary said = FMMutableDictionary.empty();
+    said.set(FMMetadataAttributes.TEXT_CONTENT, FMString.of(text));
+    return said.asDictionary();
+}
+```
+
+Three ship: Text for `public.text`, Image for `public.image`, Application for
+`org.fractalmicro.application`. The index held a path and a lowercased file name, so it
+found a file called Invoice and never a file that said invoice. It holds what an importer
+read now, which is what makes searching for a word inside a document find the document.
+
+`kMDItemTextContent` is the words, `kMDItemPixelWidth` and `kMDItemPixelHeight` how big a
+picture is, `kMDItemCFBundleIdentifier` and `kMDItemVersion` what a program calls itself.
+The names are Spotlight's, so a query written against one importer works against the next.
+
 ## What does not have a type
 
 `public.data`. A file nothing has declared a type for is still data, and something asking

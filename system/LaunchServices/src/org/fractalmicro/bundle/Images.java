@@ -293,12 +293,18 @@ public final class Images {
             // for knowing where anything is.
             case "launchd" -> List.of(installPathOf("Foundation"), installPathOf("dyld"),
                                       installPathOf("LibSystem"));
-            case "LaunchServices", "Metadata" ->
+            case "LaunchServices" ->
                 List.of(installPathOf("Foundation"), installPathOf("LibSystem"));
+            // Metadata reaches Launch Services to read an importer: a plug-in is a bundle
+            // and loading one is the loader's business, which is where both of those live.
+            case "Metadata" -> List.of(installPathOf("Foundation"),
+                                       installPathOf("LaunchServices"),
+                                       installPathOf("LibSystem"));
             // The support program inside Metadata.framework. It carries the framework's
             // code, so it links what the framework links; without the log it gets as far
             // as its own first line and no further, on every restart, forever.
             case "mds" -> List.of(installPathOf("Metadata"), installPathOf("Foundation"),
+                                  installPathOf("LaunchServices"),
                                   installPathOf("LibSystem"));
             // AppKit reaches LaunchServices to open a program and Metadata to search,
             // and links the umbrella rather than the frameworks inside it.

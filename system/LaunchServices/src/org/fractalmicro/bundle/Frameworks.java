@@ -61,6 +61,14 @@ public final class Frameworks {
     public static final List<String> COCOA_AND_SERVICES =
         List.of(FOUNDATION, APPKIT, CORE_SERVICES);
 
+    /**
+     * What a Spotlight importer links, which is not AppKit.
+     *
+     * It reads a file and returns a dictionary. Nothing it does puts anything on a screen,
+     * and it runs inside the metadata server, which has no screen to put it on.
+     */
+    public static final List<String> IMPORTER = List.of(FOUNDATION, CORE_SERVICES);
+
     /** Every library this system installs, in the order they depend on each other. */
     private static final List<String> ALL = List.of(
         LIB_SYSTEM, DYLD, LAUNCHD, FOUNDATION, LAUNCH_SERVICES, METADATA, APPKIT,

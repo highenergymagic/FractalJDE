@@ -158,7 +158,7 @@ public final class Bundle {
     }
 
     private static final String[] BUNDLE_EXTENSIONS =
-        {".app", ".menu", ".qlgenerator", ".bundle", ".framework"};
+        {".app", ".menu", ".qlgenerator", ".mdimporter", ".bundle", ".framework"};
 
     /**
      * Where the bundle is.

@@ -237,6 +237,12 @@ public final class SelfTest {
             failures.add(quickLookFailures + " Quick Look checks failed");
         }
 
+        steps += SpotlightTest.count();
+        int importerFailures = SpotlightTest.run(System.out);
+        if (importerFailures > 0) {
+            failures.add(importerFailures + " Spotlight checks failed");
+        }
+
         steps += LayoutTest.count();
         int layoutFailures = LayoutTest.run(System.out);
         if (layoutFailures > 0) failures.add(layoutFailures + " layout checks failed");

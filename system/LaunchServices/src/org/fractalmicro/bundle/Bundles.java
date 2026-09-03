@@ -121,6 +121,20 @@ public final class Bundles {
                  "org.fractalmicro.qlgenerators.PropertyListGenerator", Where.QUICK_LOOK,
                  true, java.util.List.of(), Frameworks.COCOA, false,
                  java.util.List.of("com.apple.property-list")),
+        // The Spotlight importers, which say what they can read the same way. Without one
+        // the index knows a file is called something and nothing about what it holds.
+        new Spec("Text", PREFIX + "spotlight.text",
+                 "org.fractalmicro.mdimporters.TextImporter", Where.SPOTLIGHT, true,
+                 java.util.List.of(), Frameworks.IMPORTER, false,
+                 java.util.List.of("public.text")),
+        new Spec("Image", PREFIX + "spotlight.image",
+                 "org.fractalmicro.mdimporters.ImageImporter", Where.SPOTLIGHT, true,
+                 java.util.List.of(), Frameworks.IMPORTER, false,
+                 java.util.List.of("public.image")),
+        new Spec("Application", PREFIX + "spotlight.application",
+                 "org.fractalmicro.mdimporters.ApplicationImporter", Where.SPOTLIGHT, true,
+                 java.util.List.of(), Frameworks.IMPORTER, false,
+                 java.util.List.of("org.fractalmicro.application")),
     };
 
     /**
@@ -131,11 +145,15 @@ public final class Bundles {
      * opens. The last two are plug-ins: loaded by whoever needs one rather than started.
      */
     private enum Where { SYSTEM_APPLICATIONS, SYSTEM_UTILITIES, CORE_SERVICES,
-                         MENU_EXTRAS, QUICK_LOOK }
+                         MENU_EXTRAS, QUICK_LOOK, SPOTLIGHT }
 
     /** Where the Quick Look generators live, and what one is called. */
     static final String QUICK_LOOK_FOLDER = "QuickLook";
     static final String QUICK_LOOK_EXTENSION = ".qlgenerator";
+
+    /** The same for the Spotlight importers. */
+    static final String SPOTLIGHT_FOLDER = "Spotlight";
+    static final String SPOTLIGHT_EXTENSION = ".mdimporter";
 
     /**
      * One built-in program.
@@ -211,6 +229,8 @@ public final class Bundles {
                         OSPaths.coreServices().resolve("Menu Extras").toFile();
                     case QUICK_LOOK ->
                         OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile();
+                    case SPOTLIGHT ->
+                        OSPaths.systemLibrary().resolve(SPOTLIGHT_FOLDER).toFile();
                 };
                 if (!parent.isDirectory() && !parent.mkdirs()) continue;
 
@@ -241,6 +261,7 @@ public final class Bundles {
                 String extension = switch (spec.where()) {
                     case MENU_EXTRAS -> ".menu";
                     case QUICK_LOOK -> QUICK_LOOK_EXTENSION;
+                    case SPOTLIGHT -> SPOTLIGHT_EXTENSION;
                     default -> Bundle.EXTENSION;
                 };
                 // A plug-in is loaded by whoever wants it, so there is no command that
@@ -270,13 +291,18 @@ public final class Bundles {
      * kinds of document writes several, which is why this is a list.
      */
     private static java.util.List<Object> documentTypes(Spec spec) {
-        boolean generator = spec.where() == Where.QUICK_LOOK;
+        String role = switch (spec.where()) {
+            case QUICK_LOOK -> "QLGenerator";
+            case SPOTLIGHT -> "MDImporter";
+            default -> "Editor";
+        };
+        boolean plugIn = !"Editor".equals(role);
         FMMutableDictionary one = FMMutableDictionary.empty();
         one.set(Bundle.TYPE_NAME, spec.name() + " document");
-        // What the declaration is for. A generator shows a kind of file; it does not open
-        // one, and Launch Services has to be able to tell the two apart.
-        one.set(Bundle.TYPE_ROLE, generator ? "QLGenerator" : "Editor");
-        one.set(Bundle.HANDLER_RANK, generator ? "None" : "Default");
+        // What the declaration is for. A plug-in shows or reads a kind of file; it does
+        // not open one, and Launch Services has to be able to tell the two apart.
+        one.set(Bundle.TYPE_ROLE, role);
+        one.set(Bundle.HANDLER_RANK, plugIn ? "None" : "Default");
         one.set(Bundle.CONTENT_TYPES, java.util.List.copyOf(spec.opens()));
         return java.util.List.of(one.asDictionary().asMap());
     }
@@ -434,7 +460,8 @@ public final class Bundles {
                 OSPaths.applications().toFile(),
                 OSPaths.applicationsUtilities().toFile(),
                 OSPaths.coreServices().resolve("Menu Extras").toFile(),
-                OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile()}) {
+                OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile(),
+                OSPaths.systemLibrary().resolve(SPOTLIGHT_FOLDER).toFile()}) {
             File[] kids = folder.listFiles();
             if (kids == null) continue;
             for (File child : kids) {

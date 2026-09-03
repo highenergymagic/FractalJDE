@@ -24,6 +24,7 @@ import org.fractalmicro.launchd.Job;
 import org.fractalmicro.launchd.Launchd;
 import org.fractalmicro.plist.Plist;
 import org.fractalmicro.foundation.FMArray;
+import org.fractalmicro.foundation.FMDictionary;
 import org.fractalmicro.foundation.FMMutableArray;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.foundation.FMURL;
@@ -134,6 +135,32 @@ public final class Metadata {
             }
         }
         return walkFor(text, limit);
+    }
+
+    /**
+     * Everything the index knows about one file, which is the question mdls asks.
+     *
+     * What was indexed rather than what a fresh read would say, and nothing at all when
+     * the server is not running. Reading the file here instead would answer a different
+     * question in the same shape, which is worse than saying nothing.
+     */
+    public static FMDictionary attributesOf(FMURL file) {
+        if (file == null || !running()) return FMDictionary.fromMap(Map.of());
+        try {
+            Message reply = Connection.ask(Server.SERVICE,
+                Message.of(Server.ATTRIBUTES)
+                       .put("path", file.asFile().getAbsolutePath()));
+            if (!reply.isError() && reply.get(Server.ATTRIBUTES) instanceof Map<?, ?> said) {
+                Map<String, Object> out = new LinkedHashMap<>();
+                for (Map.Entry<?, ?> one : said.entrySet()) {
+                    out.put(String.valueOf(one.getKey()), one.getValue());
+                }
+                return FMDictionary.fromMap(out);
+            }
+        } catch (IOException e) {
+            Log.info("the metadata server could not be asked: " + e.getMessage());
+        }
+        return FMDictionary.fromMap(Map.of());
     }
 
     /** The slow way, for when there is no server: look through the same places by hand. */
