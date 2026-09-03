@@ -41,16 +41,18 @@ public final class CommentTest {
     public static int count() { return 2; }
 
     /**
-     * Where "long" starts, for a doc comment on a member.
+     * Where "long" starts for a doc comment.
      *
-     * A summary line, a blank, and four of reason. Past that it is an essay, and an essay
-     * about one method belongs at the top of the class with the rest of the reasoning.
-     * Only members are counted: a class doc is where the long explanation is meant to be.
+     * A summary line, a blank, and four of reason. Past that it is an essay.
+     *
+     * Class docs are counted too. They were not, on the grounds that a class doc is where
+     * the long explanation belongs, and the number that governed the habit was therefore
+     * looking at 99 comments while 146 more sat outside it.
      */
     private static final int LONG = 8;
 
     /** How many long ones there still are. It goes down. */
-    private static final int LONG_ONES_ALLOWED = 108;
+    private static final int LONG_ONES_ALLOWED = 302;
 
     public static int run(PrintStream out) {
         out.println();
@@ -89,11 +91,8 @@ public final class CommentTest {
                 boolean opensDoc = line.startsWith("/**");
                 boolean opensBlock = line.startsWith("/*");
                 boolean closes = line.contains("*/");
-                // Indented, which is what tells a member's doc from a class's. A class
-                // sits at the left margin and its doc does too.
-                boolean onAMember = opensDoc && !lines[i].startsWith("/");
 
-                if (opensDoc && !closes && onAMember) {
+                if (opensDoc && !closes) {
                     inDoc = true;
                     docFrom = i + 1;
                     docLines = 1;
@@ -125,7 +124,7 @@ public final class CommentTest {
         int share = comment + code == 0 ? 0 : comment * 100 / (comment + code);
         out.println("      " + comment + " lines of comment against " + code + " of code, "
                     + share + " per cent");
-        out.println("      " + longOnes + " doc comments on members of " + LONG
+        out.println("      " + longOnes + " doc comments of " + LONG
                     + " lines or more, and " + LONG_ONES_ALLOWED + " allowed");
 
         failures += check(out, "no more essays are written than were before",
