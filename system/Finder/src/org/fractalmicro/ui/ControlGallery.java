@@ -26,6 +26,8 @@ import org.fractalmicro.theme.Aqua;
 import org.fractalmicro.theme.Icons;
 
 import org.fractalmicro.appkit.FMTextField;
+import org.fractalmicro.foundation.FMLocalized;
+import org.fractalmicro.foundation.FMString;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,8 +41,19 @@ import java.awt.*;
  */
 public class ControlGallery extends JInternalFrame {
 
+    /**
+     * A word out of the table, by the name it is filed under.
+     *
+     * Every specimen here is something a person reads, so none of them is written in this
+     * file. Swing wants a String and the tables give an FMString, and that conversion is
+     * the whole of this.
+     */
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     public ControlGallery() {
-        super("Controls", true, true, true, true);
+        super(word(FMString.of("gallery.title")), true, true, true, true);
         setFrameIcon(new ImageIcon(Icons.forKind(Node.Kind.APPLICATION, 16)));
         setSize(480, 640);
 
@@ -50,11 +63,11 @@ public class ControlGallery extends JInternalFrame {
                                                     Aqua.WINDOW_MARGIN, Aqua.WINDOW_MARGIN));
         p.setBackground(Aqua.WINDOW_BG);
 
-        p.add(heading("Push buttons"));
+        p.add(heading(word(FMString.of("gallery.pushButtons"))));
         JPanel buttons = row();
-        JButton plain = new JButton("Cancel");
-        JButton action = new JButton("Empty Trash");
-        JButton off = new JButton("Disabled");
+        JButton plain = new JButton(word(FMString.of("panel.cancel")));
+        JButton action = new JButton(word(FMString.of("finder.emptyTrashButton")));
+        JButton off = new JButton(word(FMString.of("gallery.disabled")));
         off.setEnabled(false);
         buttons.add(plain);
         buttons.add(Box.createHorizontalStrut(Aqua.CONTROL_SPACING));
@@ -64,9 +77,9 @@ public class ControlGallery extends JInternalFrame {
         p.add(buttons);
         p.add(gap());
 
-        p.add(heading("Checkboxes and radio buttons"));
-        JCheckBox on = new JCheckBox("Show all filename extensions", true);
-        JCheckBox offBox = new JCheckBox("Show warning before emptying the Trash", false);
+        p.add(heading(word(FMString.of("gallery.checkboxes"))));
+        JCheckBox on = new JCheckBox(word(FMString.of("gallery.showExtensions")), true);
+        JCheckBox offBox = new JCheckBox(word(FMString.of("gallery.warnOnTrash")), false);
         on.setBackground(Aqua.WINDOW_BG);
         offBox.setBackground(Aqua.WINDOW_BG);
         on.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -75,8 +88,8 @@ public class ControlGallery extends JInternalFrame {
         p.add(offBox);
 
         ButtonGroup group = new ButtonGroup();
-        JRadioButton first = new JRadioButton("Together", true);
-        JRadioButton second = new JRadioButton("At top and bottom", false);
+        JRadioButton first = new JRadioButton(word(FMString.of("gallery.together")), true);
+        JRadioButton second = new JRadioButton(word(FMString.of("gallery.atTopAndBottom")), false);
         for (JRadioButton r : new JRadioButton[]{first, second}) {
             r.setBackground(Aqua.WINDOW_BG);
             r.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -85,19 +98,19 @@ public class ControlGallery extends JInternalFrame {
         }
         p.add(gap());
 
-        p.add(heading("Text field"));
-        FMTextField field = new FMTextField(org.fractalmicro.foundation.FMString.of("Local Disk"));
-        field.getAccessibleContext().setAccessibleName("Volume name");
+        p.add(heading(word(FMString.of("gallery.textField"))));
+        FMTextField field = new FMTextField(org.fractalmicro.foundation.FMString.of(word(FMString.of("gallery.localDisk"))));
+        field.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.volumeName")));
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
         field.setMaximumSize(new Dimension(240, field.getPreferredSize().height));
         p.add(field);
         p.add(gap());
 
-        p.add(heading("Scroll bars"));
+        p.add(heading(word(FMString.of("gallery.scrollBars"))));
         DefaultListModel<String> model = new DefaultListModel<>();
-        for (int i = 1; i <= 40; i++) model.addElement("Item " + i);
+        for (int i = 1; i <= 40; i++) model.addElement(FMLocalized.filled(FMString.of("gallery.item"), FMString.of(String.valueOf(i))).toString());
         JList<String> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Items");
+        list.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.items")));
         list.setFont(Aqua.viewFont());
         list.setVisibleRowCount(5);
         JScrollPane scroll = new JScrollPane(list);
@@ -107,40 +120,41 @@ public class ControlGallery extends JInternalFrame {
         p.add(scroll);
         p.add(gap());
 
-        p.add(heading("Sliders"));
+        p.add(heading(word(FMString.of("gallery.sliders"))));
         JSlider slider = new JSlider(0, 100, 40);
-        slider.getAccessibleContext().setAccessibleName("Plain slider");
+        slider.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.plainSlider")));
         slider.setAlignmentX(Component.LEFT_ALIGNMENT);
         slider.setMaximumSize(new Dimension(240, slider.getPreferredSize().height));
         p.add(slider);
         JSlider ticked = new JSlider(0, 100, 70);
         ticked.setPaintTicks(true);
         ticked.setMajorTickSpacing(25);
-        ticked.getAccessibleContext().setAccessibleName("Slider with tick marks");
+        ticked.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.tickedSlider")));
         ticked.setAlignmentX(Component.LEFT_ALIGNMENT);
         ticked.setMaximumSize(new Dimension(240, ticked.getPreferredSize().height));
         p.add(ticked);
         p.add(gap());
 
-        p.add(heading("Pop-up button"));
+        p.add(heading(word(FMString.of("gallery.popUpButton"))));
         JComboBox<String> popup = new JComboBox<>(new String[]{
-            "Name", "Date Modified", "Size", "Kind"});
-        popup.getAccessibleContext().setAccessibleName("Arrange by");
+            word(FMString.of("browser.name")), word(FMString.of("browser.dateModified")),
+            word(FMString.of("browser.size")), word(FMString.of("browser.kind"))});
+        popup.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.arrangeBy")));
         popup.setAlignmentX(Component.LEFT_ALIGNMENT);
         popup.setMaximumSize(new Dimension(200, popup.getPreferredSize().height));
         p.add(popup);
         p.add(gap());
 
-        p.add(heading("Progress"));
+        p.add(heading(word(FMString.of("gallery.progress"))));
         JProgressBar bar = new JProgressBar(0, 100);
         bar.setValue(62);
-        bar.getAccessibleContext().setAccessibleName("Copying");
+        bar.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.copying")));
         bar.setAlignmentX(Component.LEFT_ALIGNMENT);
         bar.setMaximumSize(new Dimension(240, 16));
         p.add(bar);
         JProgressBar spinner = new JProgressBar();
         spinner.setIndeterminate(true);
-        spinner.getAccessibleContext().setAccessibleName("Working");
+        spinner.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.working")));
         spinner.setAlignmentX(Component.LEFT_ALIGNMENT);
         spinner.setMaximumSize(new Dimension(240, 16));
         p.add(spinner);
@@ -149,17 +163,17 @@ public class ControlGallery extends JInternalFrame {
         // The three that arrived with the description protocol, which the gallery predates.
         // A control a program can name and this cannot show is a control nobody can look at
         // before they use it, which is the one thing a gallery is for.
-        p.add(heading("Toolbar"));
+        p.add(heading(word(FMString.of("gallery.toolbar"))));
         JPanel toolbar = new JPanel(new BorderLayout());
         toolbar.setOpaque(false);
         JPanel toolbarLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
         toolbarLeft.setOpaque(false);
-        toolbarLeft.add(named(new JButton("◀"), "Back"));
-        toolbarLeft.add(named(new JButton("▶"), "Forward"));
+        toolbarLeft.add(named(new JButton("◀"), word(FMString.of("panel.back"))));
+        toolbarLeft.add(named(new JButton("▶"), word(FMString.of("panel.forward"))));
         JPanel toolbarRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
         toolbarRight.setOpaque(false);
         FMTextField search = new FMTextField(12);
-        search.getAccessibleContext().setAccessibleName("Search");
+        search.getAccessibleContext().setAccessibleName(word(FMString.of("panel.search")));
         toolbarRight.add(search);
         toolbar.add(toolbarLeft, BorderLayout.WEST);
         toolbar.add(toolbarRight, BorderLayout.EAST);
@@ -168,17 +182,17 @@ public class ControlGallery extends JInternalFrame {
         p.add(toolbar);
         p.add(gap());
 
-        p.add(heading(org.fractalmicro.foundation.FMLocalized.of(
-            org.fractalmicro.foundation.FMString.of("gallery.splitView")).toString()));
+        p.add(heading(word(FMString.of("gallery.splitView"))));
         JList<String> places = new JList<>(new String[]{
-            "DEVICES", "Startup", "PLACES", "Desktop", "Documents"});
-        places.getAccessibleContext().setAccessibleName("Places");
+            word(FMString.of("sidebar.devices")), word(FMString.of("gallery.startup")), word(FMString.of("sidebar.places")),
+            word(FMString.of("gallery.desktop")), word(FMString.of("gallery.documents"))});
+        places.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.places")));
         places.setFont(Aqua.viewFont());
         org.fractalmicro.appkit.FMBrowser browser = new org.fractalmicro.appkit.FMBrowser();
         browser.setRoot(org.fractalmicro.fs.FS.home());
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                                           new JScrollPane(places), browser);
-        split.getAccessibleContext().setAccessibleName("Sidebar and folder");
+        split.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.sidebarAndFolder")));
         split.setDividerLocation(120);
         split.setDividerSize(6);
         split.setBorder(null);
@@ -188,28 +202,31 @@ public class ControlGallery extends JInternalFrame {
         p.add(split);
         p.add(gap());
 
-        p.add(heading("Tabs"));
+        p.add(heading(word(FMString.of("gallery.tabs"))));
         JTabbedPane tabs = new JTabbedPane();
-        tabs.getAccessibleContext().setAccessibleName("Panes");
-        tabs.addTab("General", new JLabel("  Settings for everything"));
-        tabs.addTab("Labels", new JLabel("  Coloured labels"));
-        tabs.addTab("Sidebar", new JLabel("  What the sidebar shows"));
+        tabs.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.panes")));
+        tabs.addTab(word(FMString.of("gallery.general")), new JLabel("  " + word(FMString.of("gallery.generalPane"))));
+        tabs.addTab(word(FMString.of("gallery.labels")), new JLabel("  " + word(FMString.of("gallery.labelsPane"))));
+        tabs.addTab(word(FMString.of("gallery.sidebar")), new JLabel("  " + word(FMString.of("gallery.sidebarPane"))));
         tabs.setAlignmentX(Component.LEFT_ALIGNMENT);
         tabs.setMaximumSize(new Dimension(400, 90));
         p.add(tabs);
         p.add(gap());
 
-        p.add(heading("Column headings"));
-        String[] columns = {"Name", "Date Modified", "Size", "Kind"};
+        p.add(heading(word(FMString.of("gallery.columnHeadings"))));
+        String[] columns = {word(FMString.of("browser.name")), word(FMString.of("browser.dateModified")),
+                            word(FMString.of("browser.size")), word(FMString.of("browser.kind"))};
         Object[][] rows = {
-            {"Report", "Yesterday, 4:12 PM", "24 KB", "Document"},
-            {"Photos", "12 March 2026", "--", "Folder"},
+            {word(FMString.of("gallery.report")), word(FMString.of("gallery.yesterday")),
+             word(FMString.of("gallery.twentyFourKB")), word(FMString.of("gallery.document"))},
+            {word(FMString.of("gallery.photos")), word(FMString.of("gallery.aDate")),
+             word(FMString.of("gallery.noSize")), word(FMString.of("gallery.folder"))},
         };
         JTable table = new JTable(rows, columns);
         table.setFont(Aqua.viewFont());
         table.setRowHeight(17);
         table.setAutoCreateRowSorter(true);
-        table.getAccessibleContext().setAccessibleName("Files");
+        table.getAccessibleContext().setAccessibleName(word(FMString.of("gallery.files")));
         JScrollPane tableScroll = new JScrollPane(table);
         tableScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
         tableScroll.setMaximumSize(new Dimension(400, 80));
@@ -225,7 +242,7 @@ public class ControlGallery extends JInternalFrame {
         all.getVerticalScrollBar().setUnitIncrement(16);
         all.getViewport().setBackground(Aqua.WINDOW_BG);
         setContentPane(all);
-        getAccessibleContext().setAccessibleName("Controls");
+        getAccessibleContext().setAccessibleName(word(FMString.of("gallery.title")));
 
         // The action button is the default, so its pulse can be seen.
         SwingUtilities.invokeLater(() -> {

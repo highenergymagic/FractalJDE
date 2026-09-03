@@ -65,17 +65,17 @@ public final class LocalizationTest {
      * moved into the tables and may not go up, which is the only thing that makes a long
      * job finish rather than drift.
      */
-    private static final int LITERALS_ALLOWED = 225;
+    private static final int LITERALS_ALLOWED = 163;
 
     /**
-     * A key being made into a constant of this system's own text type.
+     * A key being made into this system's own text type.
      *
-     * Matched on the declaration rather than on the string. A dotted word is also how a
+     * Matched on FMString.of rather than on the string alone. A dotted word is also how a
      * bundle names itself, how the runtime names a property and how a library file is
      * called, and none of those is something a translator should ever be handed.
      */
     private static final Pattern KEY = Pattern.compile(
-        "static\\s+final\\s+FMString\\s+\\w+\\s*=\\s*FMString\\.of\\(\\s*"
+        "FMString\\.of\\(\\s*"
         + "\"([a-z][a-zA-Z0-9]*(?:\\.[a-zA-Z][a-zA-Z0-9]*)+)\"");
 
     /** Text a person would read: has a space in it and a letter, and is not a path. */
@@ -192,7 +192,8 @@ public final class LocalizationTest {
 
     /* ------------------------------------------------------------------ the files */
 
-    /** Every place a framework, a program or the checks keep their source. */
+    /** Every place a framework or a program keeps its source. The checks are not read:
+        nothing a check prints is shown to anybody but whoever ran it. */
     private static List<Path> sourceRoots() {
         List<Path> found = new ArrayList<>();
         for (String from : new String[]{".", ".."}) {

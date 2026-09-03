@@ -64,19 +64,19 @@ public final class Bundles {
         // linked AppKit got the Finder with it, which is not what linking a window library
         // should hand anybody.
         new Spec("Finder", PREFIX + "finder", "org.fractalmicro.app.FinderApp",
-                 Where.CORE_SERVICES, "The file manager", true,
+                 Where.CORE_SERVICES, true,
                  java.util.List.of("org.fractalmicro.ui", "org.fractalmicro.app"),
                  Frameworks.COCOA_AND_SERVICES, false),
         new Spec("System Preferences", PREFIX + "systempreferences", "org.fractalmicro.systempreferences.SystemPreferences",
-                 Where.SYSTEM_APPLICATIONS, "Settings", false,
+                 Where.SYSTEM_APPLICATIONS, false,
                  java.util.List.of("org.fractalmicro.systempreferences"), Frameworks.COCOA,
                  true),
         new Spec("System Profiler", PREFIX + "systemprofiler", "org.fractalmicro.systemprofiler.SystemProfiler",
-                 Where.SYSTEM_UTILITIES, "What this machine is", false,
+                 Where.SYSTEM_UTILITIES, false,
                  java.util.List.of("org.fractalmicro.systemprofiler"), Frameworks.COCOA,
                  true),
         new Spec("Activity Monitor", PREFIX + "activitymonitor", "org.fractalmicro.activitymonitor.ActivityMonitor",
-                 Where.SYSTEM_UTILITIES, "What is running", false,
+                 Where.SYSTEM_UTILITIES, false,
                  java.util.List.of("org.fractalmicro.activitymonitor"), Frameworks.COCOA,
                  true),
         // The one program here that opens documents, so the one that says which. Everything
@@ -84,32 +84,27 @@ public final class Bundles {
         // every kind of source: an editor that can open a .txt can open a .java, and saying
         // so by naming the family is the difference between a type and a list of extensions.
         new Spec("TextEdit", PREFIX + "textedit", "org.fractalmicro.textedit.TextEdit",
-                 Where.SYSTEM_APPLICATIONS, "A text editor", false,
+                 Where.SYSTEM_APPLICATIONS, false,
                  java.util.List.of("org.fractalmicro.textedit"), Frameworks.COCOA,
                  true, java.util.List.of("public.text", "public.rtf")),
         new Spec("Terminal", PREFIX + "terminal", "org.fractalmicro.terminal.Terminal",
-                 Where.SYSTEM_UTILITIES, "A command line", false,
+                 Where.SYSTEM_UTILITIES, false,
                  java.util.List.of("org.fractalmicro.terminal"), Frameworks.COCOA,
                  true),
         new Spec("Calculator", PREFIX + "calculator", "org.fractalmicro.calculator.Calculator",
-                 Where.SYSTEM_APPLICATIONS, "Arithmetic, in a process of its own", false,
+                 Where.SYSTEM_APPLICATIONS, false,
                  java.util.List.of("org.fractalmicro.calculator"), Frameworks.COCOA,
                  true),
         new Spec("Clock", PREFIX + "menuextra.clock",
-                 "org.fractalmicro.menuextras.ClockExtra", Where.MENU_EXTRAS,
-                 "The date and time", true),
+                 "org.fractalmicro.menuextras.ClockExtra", Where.MENU_EXTRAS, true),
         new Spec("User", PREFIX + "menuextra.user",
-                 "org.fractalmicro.menuextras.UserExtra", Where.MENU_EXTRAS,
-                 "The account in use", true),
+                 "org.fractalmicro.menuextras.UserExtra", Where.MENU_EXTRAS, true),
         new Spec("Network", PREFIX + "menuextra.network",
-                 "org.fractalmicro.menuextras.NetworkExtra", Where.MENU_EXTRAS,
-                 "The network, and servers on it", true),
+                 "org.fractalmicro.menuextras.NetworkExtra", Where.MENU_EXTRAS, true),
         new Spec("Volume", PREFIX + "menuextra.volume",
-                 "org.fractalmicro.menuextras.VolumeExtra", Where.MENU_EXTRAS,
-                 "The sound", true),
+                 "org.fractalmicro.menuextras.VolumeExtra", Where.MENU_EXTRAS, true),
         new Spec("Spotlight", PREFIX + "menuextra.spotlight",
-                 "org.fractalmicro.menuextras.SpotlightExtra", Where.MENU_EXTRAS,
-                 "Searching this machine", true),
+                 "org.fractalmicro.menuextras.SpotlightExtra", Where.MENU_EXTRAS, true),
     };
 
     /**
@@ -130,27 +125,27 @@ public final class Bundles {
      * programs say so by naming a package.
      */
     private record Spec(String name, String identifier, String principalClass,
-                        Where where, String description, boolean background,
+                        Where where, boolean background,
                         java.util.List<String> own, java.util.List<String> linked,
                         boolean ownProcess, java.util.List<String> opens) {
         Spec(String name, String identifier, String principalClass,
-             Where where, String description, boolean background) {
-            this(name, identifier, principalClass, where, description, background,
+             Where where, boolean background) {
+            this(name, identifier, principalClass, where, background,
                  java.util.List.of(), Frameworks.COCOA, false, java.util.List.of());
         }
 
         Spec(String name, String identifier, String principalClass,
-             Where where, String description, boolean background,
+             Where where, boolean background,
              java.util.List<String> own) {
-            this(name, identifier, principalClass, where, description, background,
+            this(name, identifier, principalClass, where, background,
                  own, Frameworks.COCOA, false, java.util.List.of());
         }
 
         Spec(String name, String identifier, String principalClass,
-             Where where, String description, boolean background,
+             Where where, boolean background,
              java.util.List<String> own, java.util.List<String> linked,
              boolean ownProcess) {
-            this(name, identifier, principalClass, where, description, background,
+            this(name, identifier, principalClass, where, background,
                  own, linked, ownProcess, java.util.List.of());
         }
     }

@@ -20,6 +20,7 @@
 package org.fractalmicro.ui;
 
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 
 import org.fractalmicro.appkit.FMAlert;
 
@@ -48,12 +49,17 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class InfoWindow extends JInternalFrame {
 
-    private static final char LEFT_QUOTE = '“';
-    private static final char RIGHT_QUOTE = '”';
-    private static final char APOSTROPHE = '’';
+    /** What the window is called: the item's name and the word Finder puts after it. */
+    private static String titleFor(Node node) {
+        return FMLocalized.filled(FMString.of("info.title"), FMString.of(node.name)).toString();
+    }
+
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
 
     public InfoWindow(Node node) {
-        super(node.name + " Info", true, true, false, true);
+        super(titleFor(node), true, true, false, true);
         setFrameIcon(new ImageIcon(Icons.forNode(node, 16)));
         setSize(310, 470);
 
@@ -66,48 +72,49 @@ public class InfoWindow extends JInternalFrame {
         form.add(header(node));
         form.add(Box.createVerticalStrut(Aqua.GROUP_SPACING));
 
-        form.add(group("Spotlight Comments:"));
+        form.add(group(FMString.of("info.spotlightComments")));
         FMTextArea comments = new FMTextArea(2, 20);
         comments.setFont(Aqua.viewFont());
         comments.setLineWrap(true);
-        comments.getAccessibleContext().setAccessibleName("Spotlight Comments");
+        comments.getAccessibleContext().setAccessibleName(word(FMString.of("info.spotlightCommentsField")));
         JScrollPane commentsScroll = new JScrollPane(comments);
         commentsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
         commentsScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         form.add(commentsScroll);
         form.add(Box.createVerticalStrut(Aqua.GROUP_SPACING));
 
-        form.add(group("General:"));
+        form.add(group(FMString.of("info.general")));
         File f = node.file;
-        row(form, "Kind", Kinds.display(node));
+        row(form, FMString.of("info.kind"), Kinds.display(node));
         // A volume is measured, not sized: it has a capacity, an amount left and an amount
         // used, and each of those is its own line. Everything else has one size.
         if (!node.isVolume()) {
-            row(form, "Size", sizeText(node));
-            row(form, "Where", where(node));
+            row(form, FMString.of("info.size"), sizeText(node));
+            row(form, FMString.of("info.where"), where(node));
         }
-        row(form, "Created", FS.formatDate(created(f)));
-        row(form, "Modified", FS.formatDate(node.modified));
-        if (node.label > 0) row(form, "Label", org.fractalmicro.fs.Labels.nameOf(node.label));
+        row(form, FMString.of("info.created"), FS.formatDate(created(f)));
+        row(form, FMString.of("info.modified"), FS.formatDate(node.modified));
+        if (node.label > 0) row(form, FMString.of("info.label"), org.fractalmicro.fs.Labels.nameOf(node.label));
         if (node.kind == org.fractalmicro.fs.Node.Kind.ALIAS && f != null) {
-            row(form, "Original", Kinds.aliasDetail(node));
+            row(form, FMString.of("info.original"), Kinds.aliasDetail(node));
             long fork = org.fractalmicro.fs.ResourceFork.sizeOn(f);
-            if (fork > 0) row(form, "Resource fork", FS.formatBytes(fork));
+            if (fork > 0) row(form, FMString.of("info.resourceFork"), FS.formatBytes(fork));
         }
         if (node.isVolume()) {
-            row(form, "Format", node.fileSystem.isEmpty() ? "Unknown" : node.fileSystem);
+            row(form, FMString.of("info.format"),
+                node.fileSystem.isEmpty() ? word(FMString.of("info.unknownFormat")) : node.fileSystem);
             if (node.size > 0) {
                 // A volume is written plainly, with no byte counts: a disk is measured in
                 // the units it was sold in, and the exact figure belongs to files.
-                row(form, "Capacity", FS.formatBytes(node.size));
-                row(form, "Available", FS.formatBytes(node.free));
-                row(form, "Used", FS.formatBytes(node.size - node.free));
+                row(form, FMString.of("info.capacity"), FS.formatBytes(node.size));
+                row(form, FMString.of("info.available"), FS.formatBytes(node.free));
+                row(form, FMString.of("info.used"), FS.formatBytes(node.size - node.free));
             } else {
-                row(form, "Capacity", "No disc inserted");
+                row(form, FMString.of("info.capacity"), word(FMString.of("info.noDisc")));
             }
         }
 
-        JCheckBox locked = new JCheckBox("Locked", node.locked);
+        JCheckBox locked = new JCheckBox(word(FMString.of("info.locked")), node.locked);
         locked.setBackground(Aqua.WINDOW_BG);
         locked.setFont(Aqua.systemFont());
         locked.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -116,9 +123,9 @@ public class InfoWindow extends JInternalFrame {
             if (f == null) return;
             boolean ok = locked.isSelected() ? f.setReadOnly() : f.setWritable(true);
             if (!ok) {
-                FMAlert.tell(FMString.of("The lock on " + LEFT_QUOTE + node.name + RIGHT_QUOTE
-                                   + " can" + APOSTROPHE + "t be changed."),
-                           FMString.of("You may not have permission to change this item."));
+                FMAlert.tell(
+                    FMLocalized.filled(FMString.of("info.lockFailed"), FMString.of(node.name)),
+                    FMLocalized.of(FMString.of("info.lockFailedWhy")));
             }
         });
         form.add(Box.createVerticalStrut(Aqua.CONTROL_SPACING));
@@ -126,23 +133,23 @@ public class InfoWindow extends JInternalFrame {
 
         if (f != null && !f.isDirectory()) {
             form.add(Box.createVerticalStrut(Aqua.GROUP_SPACING));
-            form.add(group("Name & Extension:"));
+            form.add(group(FMString.of("info.nameAndExtension")));
             FMTextField fullName = new FMTextField(FMString.of(f.getName()));
             fullName.setFont(Aqua.viewFont());
             fullName.setEditable(false);
             fullName.setAlignmentX(Component.LEFT_ALIGNMENT);
             fullName.setMaximumSize(new Dimension(Integer.MAX_VALUE,
                                                   fullName.getPreferredSize().height));
-            fullName.getAccessibleContext().setAccessibleName("Name & Extension");
+            fullName.getAccessibleContext().setAccessibleName(word(FMString.of("info.nameAndExtensionField")));
             form.add(fullName);
         }
 
         form.add(Box.createVerticalStrut(Aqua.GROUP_SPACING));
-        form.add(group("Sharing & Permissions:"));
-        row(form, "You can", permissions(f));
+        form.add(group(FMString.of("info.sharingAndPermissions")));
+        row(form, FMString.of("info.youCan"), permissions(f));
 
         form.add(Box.createVerticalGlue());
-        JButton reveal = new JButton("Show in Windows Explorer");
+        JButton reveal = new JButton(word(FMString.of("finder.showInExplorer")));
         reveal.setFont(Aqua.systemFont());
         reveal.setAlignmentX(Component.LEFT_ALIGNMENT);
         reveal.setEnabled(f != null);
@@ -151,7 +158,7 @@ public class InfoWindow extends JInternalFrame {
         form.add(reveal);
 
         setContentPane(new JScrollPane(form));
-        getAccessibleContext().setAccessibleName(node.name + " Info");
+        getAccessibleContext().setAccessibleName(titleFor(node));
     }
 
     /* -------------------------------------------------------------- pieces */
@@ -163,7 +170,7 @@ public class InfoWindow extends JInternalFrame {
         top.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
 
         JLabel icon = new JLabel(new ImageIcon(Icons.forNode(node, 64)));
-        icon.getAccessibleContext().setAccessibleName("Icon");
+        icon.getAccessibleContext().setAccessibleName(word(FMString.of("info.icon")));
         top.add(icon, BorderLayout.WEST);
 
         JPanel names = new JPanel();
@@ -184,22 +191,27 @@ public class InfoWindow extends JInternalFrame {
     }
 
     /** A group heading, in the emphasized small system font Finder uses for these. */
-    private JLabel group(String text) {
-        JLabel l = new JLabel(text);
+    private JLabel group(FMString key) {
+        JLabel l = new JLabel(word(key));
         l.setFont(Aqua.emphasizedSmallFont());
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         l.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
         return l;
     }
 
-    /** One "Label: value" line, the label right against its value as in Finder. */
-    private void row(JPanel parent, String label, String value) {
+    /**
+     * One "Label: value" line, the label right against its value as in Finder.
+     *
+     * The colon is in the table rather than added here, because it is not a colon in
+     * every language: French puts a space before it and Japanese uses a different mark.
+     */
+    private void row(JPanel parent, FMString key, String value) {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         row.setOpaque(false);
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
 
-        JLabel l = new JLabel(label + ":");
+        JLabel l = new JLabel(word(key));
         l.setFont(Aqua.smallFont());
         JLabel v = new JLabel(value);
         v.setFont(Aqua.smallFont());
@@ -216,7 +228,7 @@ public class InfoWindow extends JInternalFrame {
      */
     private String sizeText(Node node) {
         if (node.file != null && node.file.isDirectory()) return node.summary();
-        if (node.size <= 0) return "Zero bytes";
+        if (node.size <= 0) return word(FMString.of("info.zeroBytes"));
         return FS.formatSize(node.size, org.fractalmicro.win.Files32.allocatedSizeOrLength(node.file));
     }
 
@@ -237,9 +249,9 @@ public class InfoWindow extends JInternalFrame {
     }
 
     private String permissions(File f) {
-        if (f == null) return "Read only";
-        if (f.canWrite() && f.canRead()) return "Read & Write";
-        if (f.canRead()) return "Read only";
-        return "No access";
+        if (f == null) return word(FMString.of("info.readOnly"));
+        if (f.canWrite() && f.canRead()) return word(FMString.of("info.readWrite"));
+        if (f.canRead()) return word(FMString.of("info.readOnly"));
+        return word(FMString.of("info.noAccess"));
     }
 }

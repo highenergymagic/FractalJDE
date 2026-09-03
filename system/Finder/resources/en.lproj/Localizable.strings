@@ -141,3 +141,129 @@
 "finder.showPackageContents" = "Show Package Contents";
 "finder.pasteItem" = "Paste Item";
 "finder.showInExplorer" = "Show in Windows Explorer";
+
+/* The rest of the gallery. These are specimens rather than the real thing: a checkbox
+   here says what a checkbox in System Preferences says, but it is not that checkbox and
+   its words are not read from that program's bundle. */
+"gallery.title" = "Controls";
+"gallery.pushButtons" = "Push buttons";
+"gallery.disabled" = "Disabled";
+"gallery.checkboxes" = "Checkboxes and radio buttons";
+"gallery.showExtensions" = "Show all filename extensions";
+"gallery.warnOnTrash" = "Show warning before emptying the Trash";
+"gallery.together" = "Together";
+"gallery.atTopAndBottom" = "At top and bottom";
+"gallery.textField" = "Text field";
+"gallery.localDisk" = "Local Disk";
+"gallery.volumeName" = "Volume name";
+"gallery.scrollBars" = "Scroll bars";
+"gallery.item" = "Item %1$@";
+"gallery.items" = "Items";
+"gallery.sliders" = "Sliders";
+"gallery.plainSlider" = "Plain slider";
+"gallery.tickedSlider" = "Slider with tick marks";
+"gallery.popUpButton" = "Pop-up button";
+"gallery.arrangeBy" = "Arrange by";
+"gallery.progress" = "Progress";
+"gallery.copying" = "Copying";
+"gallery.working" = "Working";
+"gallery.toolbar" = "Toolbar";
+"gallery.startup" = "Startup";
+"gallery.desktop" = "Desktop";
+"gallery.documents" = "Documents";
+"gallery.places" = "Places";
+"gallery.sidebarAndFolder" = "Sidebar and folder";
+"gallery.tabs" = "Tabs";
+"gallery.panes" = "Panes";
+"gallery.general" = "General";
+"gallery.generalPane" = "Settings for everything";
+"gallery.labels" = "Labels";
+"gallery.labelsPane" = "Coloured labels";
+"gallery.sidebar" = "Sidebar";
+"gallery.sidebarPane" = "What the sidebar shows";
+"gallery.columnHeadings" = "Column headings";
+"gallery.files" = "Files";
+"gallery.report" = "Report";
+"gallery.yesterday" = "Yesterday, 4:12 PM";
+"gallery.twentyFourKB" = "24 KB";
+"gallery.document" = "Document";
+"gallery.photos" = "Photos";
+"gallery.aDate" = "12 March 2026";
+"gallery.noSize" = "--";
+"gallery.folder" = "Folder";
+
+/* Get Info. The labels down the left are written with their colon in them, because it is
+   not a colon in every language: French puts a space before it and Japanese uses a
+   different mark, and a translator who cannot move it has to write a worse line. */
+"info.title" = "%1$@ Info";
+"info.icon" = "Icon";
+"info.spotlightComments" = "Spotlight Comments:";
+"info.spotlightCommentsField" = "Spotlight Comments";
+"info.general" = "General:";
+"info.kind" = "Kind:";
+"info.size" = "Size:";
+"info.where" = "Where:";
+"info.created" = "Created:";
+"info.modified" = "Modified:";
+"info.label" = "Label:";
+"info.original" = "Original:";
+"info.resourceFork" = "Resource fork:";
+"info.format" = "Format:";
+"info.unknownFormat" = "Unknown";
+"info.capacity" = "Capacity:";
+"info.available" = "Available:";
+"info.used" = "Used:";
+"info.noDisc" = "No disc inserted";
+"info.locked" = "Locked";
+"info.lockFailed" = "The lock on “%1$@” can’t be changed.";
+"info.lockFailedWhy" = "You may not have permission to change this item.";
+"info.nameAndExtension" = "Name & Extension:";
+"info.nameAndExtensionField" = "Name & Extension";
+"info.sharingAndPermissions" = "Sharing & Permissions:";
+"info.youCan" = "You can:";
+"info.zeroBytes" = "Zero bytes";
+"info.readOnly" = "Read only";
+"info.readWrite" = "Read & Write";
+"info.noAccess" = "No access";
+
+/* The Finder window: its toolbar, its status bar and what it says about a search. The
+   status lines are whole sentences rather than pieces joined with a comma, because what
+   separates the halves is not a comma everywhere and in some languages they swap. */
+"finder.toolbar" = "Toolbar";
+"finder.contents" = "Contents";
+"finder.status" = "Status";
+"finder.path" = "Path";
+"finder.view" = "View";
+"finder.action" = "Action";
+"finder.actionMenu" = "Action menu";
+"finder.searchLabel" = "Search:";
+"finder.searchThisFolder" = "Search this folder";
+"finder.searchingFor" = "Searching “%1$@”";
+"finder.folderNotOpened" = "The folder could not be opened.";
+"finder.asCoverFlow" = "as Cover Flow";
+"finder.oneItem" = "1 item";
+"finder.someItems" = "%1$@ items";
+"finder.oneSelected" = "%1$@, %2$@";
+"finder.someSelected" = "%1$@ of %2$@ selected";
+"finder.andAvailable" = "%1$@, %2$@ available";
+
+/* What the status bar says when the view or the sort order changes. The mode itself is an
+   identifier: it names a card in the layout and a setting on disk, so it is not the word
+   shown, and lowercasing it was a sentence that only worked in English. */
+"finder.viewStatus" = "View: %1$@";
+"finder.viewIcon" = "icon";
+"finder.viewList" = "list";
+"finder.viewColumn" = "column";
+"finder.viewCoverFlow" = "cover flow";
+"finder.arrangedBy" = "Arranged by %1$@";
+"finder.byName" = "name";
+"finder.byDateModified" = "date modified";
+"finder.bySize" = "size";
+"finder.byKind" = "kind";
+
+/* Show View Options. */
+"finder.viewOptions" = "View Options";
+"finder.iconSize" = "Icon size";
+"finder.arrangeBy" = "Arrange by";
+"finder.defaultView" = "Default view for new windows";
+"finder.defaultViewName" = "Default view";

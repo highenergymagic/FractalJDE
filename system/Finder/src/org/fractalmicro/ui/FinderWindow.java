@@ -19,6 +19,7 @@
  */
 package org.fractalmicro.ui;
 
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.appkit.FocusGroup;
@@ -131,7 +132,7 @@ public class FinderWindow extends JInternalFrame
         split.setDividerLocation(FinderSettings.showSidebar() ? FinderSettings.sidebarWidth() : 0);
         split.setDividerSize(1);
         split.setBorder(BorderFactory.createEmptyBorder());
-        split.getAccessibleContext().setAccessibleName("Contents");
+        split.getAccessibleContext().setAccessibleName(word(FMString.of("finder.contents")));
 
         statusBar.setFont(Aqua.smallFont());
         statusBar.setHorizontalAlignment(SwingConstants.CENTER);
@@ -140,7 +141,7 @@ public class FinderWindow extends JInternalFrame
                 BorderFactory.createEmptyBorder(2, 6, 2, 6)));
         statusBar.setOpaque(true);
         statusBar.setBackground(Aqua.STATUSBAR_BG);
-        statusBar.getAccessibleContext().setAccessibleName("Status");
+        statusBar.getAccessibleContext().setAccessibleName(word(FMString.of("finder.status")));
 
         JPanel body = new JPanel(new BorderLayout());
         body.add(toolbar, BorderLayout.NORTH);
@@ -179,15 +180,15 @@ public class FinderWindow extends JInternalFrame
         };
         bar.setOpaque(false);
         bar.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-        bar.getAccessibleContext().setAccessibleName("Toolbar");
+        bar.getAccessibleContext().setAccessibleName(word(FMString.of("finder.toolbar")));
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         left.setOpaque(false);
-        back.setToolTipText("Back");
-        back.getAccessibleContext().setAccessibleName("Back");
+        back.setToolTipText(word(FMString.of("panel.back")));
+        back.getAccessibleContext().setAccessibleName(word(FMString.of("panel.back")));
         back.addActionListener(e -> goBack());
-        forward.setToolTipText("Forward");
-        forward.getAccessibleContext().setAccessibleName("Forward");
+        forward.setToolTipText(word(FMString.of("panel.forward")));
+        forward.getAccessibleContext().setAccessibleName(word(FMString.of("panel.forward")));
         forward.addActionListener(e -> goForward());
         left.add(back);
         left.add(forward);
@@ -199,10 +200,10 @@ public class FinderWindow extends JInternalFrame
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         right.setOpaque(false);
         searchField.putClientProperty("FMTextField.variant", "search");
-        searchField.setToolTipText("Search this folder");
-        searchField.getAccessibleContext().setAccessibleName("Search");
+        searchField.setToolTipText(word(FMString.of("finder.searchThisFolder")));
+        searchField.getAccessibleContext().setAccessibleName(word(FMString.of("panel.search")));
         searchField.addActionListener(e -> runSearch(searchField.getText()));
-        JLabel searchLabel = new JLabel("Search:");
+        JLabel searchLabel = new JLabel(word(FMString.of("finder.searchLabel")));
         searchLabel.setFont(Aqua.smallFont());
         searchLabel.setLabelFor(searchField);
         right.add(searchLabel);
@@ -229,10 +230,11 @@ public class FinderWindow extends JInternalFrame
     private JComponent viewSwitcher() {
         JPanel group = new JPanel(new GridLayout(1, 4, 0, 0));
         group.setOpaque(false);
-        group.getAccessibleContext().setAccessibleName("View");
+        group.getAccessibleContext().setAccessibleName(word(FMString.of("finder.view")));
         ButtonGroup bg = new ButtonGroup();
         String[] modes = {"Icon", "List", "Column", "Cover Flow"};
-        String[] labels = {"as Icons", "as List", "as Columns", "as Cover Flow"};
+        String[] labels = {word(FMString.of("panel.asIcons")), word(FMString.of("panel.asList")),
+                           word(FMString.of("panel.asColumns")), word(FMString.of("finder.asCoverFlow"))};
         for (int i = 0; i < modes.length; i++) {
             String m = modes[i];
             JToggleButton b = new JToggleButton(new ViewIcon(m));
@@ -309,8 +311,8 @@ public class FinderWindow extends JInternalFrame
     private JComponent actionMenuButton() {
         JButton gear = new JButton(new GearIcon());
         actionButton = gear;
-        gear.setToolTipText("Action");
-        gear.getAccessibleContext().setAccessibleName("Action menu");
+        gear.setToolTipText(word(FMString.of("finder.action")));
+        gear.getAccessibleContext().setAccessibleName(word(FMString.of("finder.actionMenu")));
         gear.addActionListener(e -> {
             JPopupMenu m = Finder.contextMenu(this::selection, this::currentFolder);
             m.show(gear, 0, gear.getHeight());
@@ -322,7 +324,7 @@ public class FinderWindow extends JInternalFrame
 
     public void navigateTo(File dir) {
         if (dir == null || !dir.isDirectory()) {
-            Finder.tell(FMString.of("The folder could not be opened."), FMString.EMPTY);
+            Finder.tell(FMLocalized.of(FMString.of("finder.folderNotOpened")), FMString.EMPTY);
             return;
         }
         push(new Location(Mode.FOLDER, dir, titleFor(dir)));
@@ -483,14 +485,44 @@ public class FinderWindow extends JInternalFrame
         setStatusText(viewStatus());
     }
 
+    /**
+     * What the status bar says about the view.
+     *
+     * The mode is an identifier rather than a word: it names a card in the layout and a
+     * setting on disk, and lowercasing it was a sentence that only worked in English.
+     */
+    private static String word(FMString key) {
+        return FMLocalized.of(key).toString();
+    }
+
     private String viewStatus() {
-        return "View: " + viewMode.toLowerCase(Locale.ROOT);
+        return FMLocalized.filled(FMString.of("finder.viewStatus"),
+                                  FMLocalized.of(nameOfMode(viewMode))).toString();
+    }
+
+    private static FMString nameOfMode(String mode) {
+        return switch (mode) {
+            case "List" -> FMString.of("finder.viewList");
+            case "Column" -> FMString.of("finder.viewColumn");
+            case "Cover Flow" -> FMString.of("finder.viewCoverFlow");
+            default -> FMString.of("finder.viewIcon");
+        };
+    }
+
+    private static FMString nameOfArrangement(String key) {
+        return switch (key) {
+            case "Date Modified" -> FMString.of("finder.byDateModified");
+            case "Size" -> FMString.of("finder.bySize");
+            case "Kind" -> FMString.of("finder.byKind");
+            default -> FMString.of("finder.byName");
+        };
     }
 
     public void arrangeBy(String key) {
         arrangeKey = key;
         reload();
-        setStatusText("Arranged by " + key.toLowerCase(Locale.ROOT));
+        setStatusText(FMLocalized.filled(FMString.of("finder.arrangedBy"),
+                                         FMLocalized.of(nameOfArrangement(key))).toString());
     }
 
     /** Show and hide, writing the choice back to the Finder settings, as Finder does. */
@@ -586,21 +618,33 @@ public class FinderWindow extends JInternalFrame
 
     private void updateStatus() {
         List<Node> sel = selection();
-        StringBuilder sb = new StringBuilder();
+        FMString said;
         if (sel.isEmpty()) {
-            sb.append(contents.size()).append(contents.size() == 1 ? " item" : " items");
+            said = contents.size() == 1
+                ? FMLocalized.of(FMString.of("finder.oneItem"))
+                : FMLocalized.filled(FMString.of("finder.someItems"),
+                                     FMString.of(String.valueOf(contents.size())));
         } else if (sel.size() == 1) {
-            sb.append(sel.get(0).name).append(", ").append(sel.get(0).summary());
+            said = FMLocalized.filled(FMString.of("finder.oneSelected"),
+                                      FMString.of(sel.get(0).name),
+                                      FMString.of(sel.get(0).summary()));
         } else {
-            sb.append(sel.size()).append(" of ").append(contents.size()).append(" selected");
+            said = FMLocalized.filled(FMString.of("finder.someSelected"),
+                                      FMString.of(String.valueOf(sel.size())),
+                                      FMString.of(String.valueOf(contents.size())));
         }
         if (folder != null) {
             File root = folder;
             while (root.getParentFile() != null) root = root.getParentFile();
             long free = root.getFreeSpace();
-            if (free > 0) sb.append(", ").append(FS.formatBytes(free)).append(" available");
+            // One sentence rather than two joined by a comma written here: what separates
+            // the halves is not a comma everywhere, and in some languages they swap.
+            if (free > 0) {
+                said = FMLocalized.filled(FMString.of("finder.andAvailable"), said,
+                                          FMString.of(FS.formatBytes(free)));
+            }
         }
-        setStatusText(sb.toString());
+        setStatusText(said.toString());
     }
 
     /* ------------------------------------------------------------- search */
@@ -609,19 +653,13 @@ public class FinderWindow extends JInternalFrame
         if (query == null || query.isBlank()) { Finder.beep(); return; }
         File where = currentFolder();
         List<Node> hits = Search.inFolder(where, query, 500);
-        showSearchResults("Searching “" + query + "”", hits);
+        showSearchResults(FMLocalized.filled(FMString.of("finder.searchingFor"),
+                                             FMString.of(query)).toString(), hits);
     }
 
     private void runSavedSearch(String which) {
         List<Node> hits = Search.saved(which, 500);
-        String title;
-        switch (which) {
-            case "today": title = "Today"; break;
-            case "week": title = "Past Week"; break;
-            case "images": title = "All Images"; break;
-            default: title = "All Documents";
-        }
-        showSearchResults(title, hits);
+        showSearchResults(word(org.fractalmicro.fs.Places.savedSearchName(which)), hits);
     }
 
     /* --------------------------------------------------------------- keys */
@@ -649,7 +687,7 @@ public class FinderWindow extends JInternalFrame
             setLayout(new FlowLayout(FlowLayout.LEFT, 2, 2));
             setBackground(new Color(0xE8E8E8));
             setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xC8C8C8)));
-            getAccessibleContext().setAccessibleName("Path");
+            getAccessibleContext().setAccessibleName(word(FMString.of("finder.path")));
         }
 
         void setPath(File dir, String fallback) {

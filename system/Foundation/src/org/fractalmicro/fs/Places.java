@@ -20,6 +20,7 @@
 package org.fractalmicro.fs;
 
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.foundation.FMLocalized;
 import org.fractalmicro.os.FMUserDefaults;
 import org.fractalmicro.os.FinderSettings;
 
@@ -68,6 +69,17 @@ public final class Places {
             return new Place(FMString.of(name), where, FMString.EMPTY, Node.Kind.FOLDER);
         }
 
+        /**
+         * One of the folders every account has, under the name this account reads.
+         *
+         * A home folder's name is on the disk and stays as it is. The seven inside it are
+         * the system's own and are named in the language, which is what a Mac does with a
+         * .localized file sitting in each of them.
+         */
+        public static Place systemFolder(FMString key, File where) {
+            return new Place(FMLocalized.of(key), where, FMString.EMPTY, Node.Kind.FOLDER);
+        }
+
         public static Place named(String name, FMString token, Node.Kind kind) {
             return new Place(FMString.of(name), null, token, kind);
         }
@@ -113,11 +125,10 @@ public final class Places {
 
         if (FinderSettings.sidebarShowSearch()) {
             List<Place> searches = new ArrayList<>();
-            searches.add(Place.named("Today", FMString.of("search:today"), Node.Kind.SEARCH));
-            searches.add(Place.named("Past Week", FMString.of("search:week"), Node.Kind.SEARCH));
-            searches.add(Place.named("All Images", FMString.of("search:images"), Node.Kind.SEARCH));
-            searches.add(Place.named("All Documents", FMString.of("search:documents"),
-                                     Node.Kind.SEARCH));
+            for (String which : new String[]{"today", "week", "images", "documents"}) {
+                searches.add(Place.named(FMLocalized.of(savedSearchName(which)).toString(),
+                                         FMString.of("search:" + which), Node.Kind.SEARCH));
+            }
             add(out, SEARCH_FOR, searches);
         }
         return out;
@@ -132,15 +143,25 @@ public final class Places {
      */
     public static List<Place> folders() {
         List<Place> out = new ArrayList<>();
-        out.add(Place.folder("Desktop", FS.desktopFolder()));
+        out.add(Place.systemFolder(FMString.of("place.desktop"), FS.desktopFolder()));
         out.add(Place.folder(System.getProperty("user.name"), FS.home()));
-        out.add(Place.folder("Documents", FS.documents()));
-        out.add(Place.folder("Downloads", FS.downloads()));
-        out.add(Place.folder("Music", FS.music()));
-        out.add(Place.folder("Pictures", FS.pictures()));
-        out.add(Place.folder("Movies", FS.movies()));
+        out.add(Place.systemFolder(FMString.of("place.documents"), FS.documents()));
+        out.add(Place.systemFolder(FMString.of("place.downloads"), FS.downloads()));
+        out.add(Place.systemFolder(FMString.of("place.music"), FS.music()));
+        out.add(Place.systemFolder(FMString.of("place.pictures"), FS.pictures()));
+        out.add(Place.systemFolder(FMString.of("place.movies"), FS.movies()));
         for (File one : favourites()) out.add(Place.folder(one.getName(), one));
         return out;
+    }
+
+    /** What a saved search is called. Named here because two places show the same list. */
+    public static FMString savedSearchName(String which) {
+        return switch (which) {
+            case "today" -> FMString.of("search.today");
+            case "week" -> FMString.of("search.pastWeek");
+            case "images" -> FMString.of("search.allImages");
+            default -> FMString.of("search.allDocuments");
+        };
     }
 
     /** The folders somebody put in the sidebar themselves. */

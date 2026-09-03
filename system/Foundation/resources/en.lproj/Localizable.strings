@@ -225,3 +225,19 @@
 "kind.sourceCode" = "source file";
 "kind.script" = "script";
 "kind.styleSheet" = "style sheet";
+
+/* The folders every account has. A Mac names these in the language rather than on the
+   disk, with a .localized file sitting in each one; the home folder itself keeps the name
+   it was created with, because that is the account's name and not the system's word. */
+"place.desktop" = "Desktop";
+"place.documents" = "Documents";
+"place.downloads" = "Downloads";
+"place.music" = "Music";
+"place.pictures" = "Pictures";
+"place.movies" = "Movies";
+
+/* The saved searches under SEARCH FOR. */
+"search.today" = "Today";
+"search.pastWeek" = "Past Week";
+"search.allImages" = "All Images";
+"search.allDocuments" = "All Documents";
