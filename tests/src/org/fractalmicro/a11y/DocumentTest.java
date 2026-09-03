@@ -38,19 +38,15 @@ import java.nio.file.Path;
 /**
  * A document, and the dot that says it has changes.
  *
- * Two facts make a document: where it came from, and whether it has changed since. Five
- * things follow, and every program that keeps the two facts for itself gets four of the
- * five slightly wrong. The title. The dot in the close button. The question when it is
- * closed, and whether that question is asked at all. The entry in the recent items.
+ * Two facts: where it came from, and whether it has changed. The title, the dot in the
+ * close button, the question on closing and whether it is asked at all, and the recent
+ * items entry all follow from them.
  *
- * Whether it has changed is worked out rather than remembered, and that is the part worth
- * checking: a flag set by whatever changes the text is a flag something forgets to set, and
- * it fails in the direction that loses work, because a document that believes it is
- * unchanged closes without asking.
+ * Changed is worked out rather than remembered. A flag set by whatever edits the text is a
+ * flag something forgets to set, and it fails towards closing without asking.
  *
- * The mark on the window is checked from the outside, through the window server, because
- * that is the only way a program has: it is in another process and cannot reach its own
- * close button.
+ * The mark is checked through the window server: the program is in another process and
+ * cannot reach its own close button.
  */
 public final class DocumentTest {
     private DocumentTest() {}

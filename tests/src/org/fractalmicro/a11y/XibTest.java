@@ -33,16 +33,12 @@ import java.io.PrintStream;
 /**
  * Interfaces in files, and words in another file beside them.
  *
- * Two things have to hold for this to be worth having. What is read back has to be what
- * was written, or the file is a lossy copy of something that has to be kept elsewhere. And
- * a translation has to reach the window without the program knowing, or every program
- * grows a switch on the language and the point is lost.
+ * What is read back has to be what was written, and a translation has to reach the window
+ * without the program knowing.
  *
- * The third check is the one that catches the mistake nobody notices: a key with no
- * translation has to keep the words it was written with. A program that showed the key
- * instead would be readable in English and full of "digit 7.accessibilityLabel" in every
- * other language, and it is the languages nobody on the project reads where that would go
- * unseen longest.
+ * The third check is the one nobody notices failing: a key with no translation keeps the
+ * words it was written with. Showing the key instead reads as English in English and as
+ * "digit 7.accessibilityLabel" everywhere else.
  */
 public final class XibTest {
     private XibTest() {}

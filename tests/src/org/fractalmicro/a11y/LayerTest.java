@@ -32,20 +32,14 @@ import java.util.regex.Pattern;
 /**
  * Which library may use which.
  *
- * The system is a stack, and a stack only means something if the layers only ever call
- * downwards. LibSystem is the boundary to the host and knows nothing about a window;
- * Foundation knows about files and property lists and not about a program; CoreServices
- * knows about bundles and the loader; AppKit draws; the Finder is an application that sits
- * on all of it.
+ * LibSystem is the boundary to the host and knows nothing about a window; Foundation knows
+ * files and property lists and not a program; CoreServices knows bundles and the loader;
+ * AppKit draws; the Finder sits on all of it. Calls go downwards only.
  *
- * A layer that reaches upward is not a layer. It compiles perfectly well, so nothing but a
- * check like this one notices, and the shape stays true only for as long as somebody keeps
- * looking. This looks.
+ * Reaching upward compiles perfectly well, so nothing but a check notices.
  *
- * The source is read rather than the classes, because what matters is what the code says,
- * and it is read with the comments and the string literals taken out first: a package name
- * inside a sentence is a mention, and a class name inside a string is a name, and neither
- * is a dependency.
+ * The source is read, not the classes, with comments and string literals taken out first:
+ * a package name in a sentence is a mention, a class name in a string is a name.
  */
 public final class LayerTest {
     private LayerTest() {}

@@ -32,20 +32,12 @@ import java.util.List;
 /**
  * What gets read out, and what should not.
  *
- * This exists because the same mistake was made three times. A control was given a
- * description explaining how to use it: "Arrow keys move, Command O opens the selection",
- * "Up and down move between them", "Return keeps it, Escape leaves it as it was". Each
- * one is read out in full every single time somebody lands on that control. Instructions
- * are worth hearing once. A description is heard every time.
+ * A description is read in full every time somebody lands on the control. So it may say
+ * what something is or what state it is in, "selected", "Red label", "54 items", and may
+ * not name a key or tell anybody to press one.
  *
- * So a description may say what something is or what state it is in ("selected", "Red
- * label", "This document is locked", "54 items") and may not name a key or tell anybody to
- * press one. The rule is checked here rather than remembered, because remembering it did
- * not work.
- *
- * What a person reaching a control needs to know about its keys belongs in Help, in the
- * keyboard shortcuts window, and in the menus where the shortcuts are written next to the
- * commands they run.
+ * Keys belong in Help, in the shortcuts window, and beside the commands in the menus. The
+ * rule is checked rather than remembered: it was broken three times.
  */
 public final class VerbosityTest {
     private VerbosityTest() {}

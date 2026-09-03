@@ -39,16 +39,13 @@ import java.util.List;
 /**
  * A control joined to a setting, with no program in between.
  *
- * The interface file says which setting a control shows. From then on the control reads it,
- * writes it and hears it change, and the program that described the window is not told about
- * any of it and has no code that could get it wrong. That is a binding, and it is what took
- * fourteen pairs of a getter and a setter out of the settings program.
+ * The interface file says which setting a control shows; from then on the control reads
+ * it, writes it and hears it change.
  *
- * The last check is the one that catches the mistake this makes easy. A control bound to a
- * setting nobody registered a default for comes up showing nothing, because an unset key
- * reads as nothing, while the rest of the system goes on using the fallback written in its
- * code. The switch then says one thing and the machine does another, and there is no error
- * anywhere. It happened to Show Labels the first time this was tried.
+ * The last check catches what that makes easy. A control bound to a setting with no
+ * registered default comes up empty, since an unset key reads as nothing, while the rest
+ * of the system uses the fallback in its code. No error anywhere. It happened to Show
+ * Labels the first time this was tried.
  */
 public final class BindingTest {
     private BindingTest() {}

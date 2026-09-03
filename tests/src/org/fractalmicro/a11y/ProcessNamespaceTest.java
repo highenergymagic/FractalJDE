@@ -28,20 +28,14 @@ import java.util.List;
 /**
  * That the numbers mean something.
  *
- * A process table is not a list of what is running. A list would do for a listing, and
- * would be wrong for everything else a system does with one: a number identifies a task,
- * a parent knows to come and ask what became of its children, a group takes a signal
- * together, and a number that has been handed back can be handed out again.
+ * A number identifies a task, a parent asks what became of its children, a group takes a
+ * signal together, and a number handed back can be handed out again.
  *
- * The one that is easy to get wrong is the zombie. A task that ended and was immediately
- * forgotten leaves its parent with no way to tell success from failure, and the parent
- * would have to have been watching at the moment it happened. So a task that ends keeps
- * its number and its status until asked, and only then goes.
+ * A task that ends keeps its number and its status until it is asked for: forgetting it at
+ * once leaves the parent no way to tell success from failure unless it was watching.
  *
- * The other is the orphan. When a parent ends first, its children have to be handed to
- * something that will still be there, or they stay zombies forever holding numbers that
- * can never be handed out again. That something is task 1, and it is most of the reason
- * task 1 exists.
+ * A parent that ends first hands its children to task 1, or they stay zombies holding
+ * numbers nothing can reuse.
  */
 public final class ProcessNamespaceTest {
     private ProcessNamespaceTest() {}

@@ -34,17 +34,12 @@ import java.util.List;
 /**
  * Coming up: what the system says while it does it, and how long it takes to say it.
  *
- * Two things read the narration. A terminal, where anything readable will do, and the boot
- * screen, which is a Windows program in another language that picks the lines out of
- * everything else the runtime prints. That second reader is the reason the shape is checked
- * here: a change to it would not break anything, it would leave a boot screen blank, and a
- * boot screen that says nothing looks exactly like a boot screen for a system that is not
- * doing anything.
+ * Two readers: a terminal, and the boot screen, a Windows program in another language that
+ * picks these lines out of everything else the runtime prints. Changing the shape breaks
+ * nothing and leaves the boot screen blank.
  *
- * The waiting is checked too. Registering a task asks the table for a number and tells it
- * what started, and when there was no table both of those used to wait two seconds to find
- * that out. Two tasks are registered before the desktop is drawn, so that was eight seconds
- * of every start, spent on nothing.
+ * The waiting is checked too. Registering a task asks the table for a number and says what
+ * started; with no table both used to wait two seconds, twice, before the desktop.
  */
 public final class BootTest {
     private BootTest() {}

@@ -36,15 +36,11 @@ import java.util.List;
 /**
  * The way back, and the menu that says so.
  *
- * Undo was a menu item that beeped. It said there was nothing to undo, always, whatever had
- * just been done, which is worse than not offering it: an item that is there and does
- * nothing teaches a person that the menu is decoration.
+ * Two ends of one thing: that an operation registers the way back from itself, and that
+ * the menu knows whether the item can be used and what it is about to undo.
  *
- * Two things are checked here and they are the same thing from two ends. That an operation
- * registers the way back from itself, and that the menu knows: whether the item can be used
- * at all, and what it is about to undo. A manager that could not name its actions would make
- * "Undo Rename" impossible for every program at once, which is why the name goes in with
- * the action rather than being worked out by whoever draws the menu.
+ * The name goes in with the action rather than being worked out by whoever draws the
+ * menu, or "Undo Rename" is impossible for every program at once.
  */
 public final class UndoTest {
     private UndoTest() {}

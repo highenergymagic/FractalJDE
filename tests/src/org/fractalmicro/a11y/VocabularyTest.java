@@ -31,19 +31,13 @@ import java.util.regex.Pattern;
 /**
  * What an application is allowed to know about the system it runs on.
  *
- * A platform is what its programs can see. Everything published for them to use carries
- * the FM prefix, the way everything in Cocoa carries NS: FMString, FMArray, FMURL,
- * FMApplication, FMSavePanel, FMWorkspace. Anything without it is the plumbing underneath,
- * and a program naming one of those has reached past the platform into the inside of it.
+ * Everything published for a program to use carries the FM prefix, as everything in Cocoa
+ * carries NS. Anything without it is the plumbing underneath.
  *
- * That is not a style rule. It is the difference between an interface and an
- * implementation: every class an application names is a class that cannot then change
- * without breaking it, so the set of them is the promise this system is making. When the
- * applications shipped with it name seventeen classes and only five of them are published,
- * the promise is twelve classes wider than anybody meant.
+ * Every class an application names is a class that cannot then change without breaking it,
+ * so the set of them is what this system has promised.
  *
- * Checked against the applications, because they are the only honest witness. Anything can
- * claim to have an interface; a program either used it or went round it.
+ * Checked against the applications: a program either used the interface or went round it.
  */
 public final class VocabularyTest {
     private VocabularyTest() {}
