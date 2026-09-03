@@ -70,6 +70,7 @@ public final class Main {
         "commands:",
         "  --selftest              open everything once and report what broke",
         "  --dump-accessibility    print the tree a screen reader sees",
+        "  --osascript <script>    run a script against the session that is up",
         "  --screenshot <file>     draw the desktop into a picture without showing it",
         "  --open <path>           open a window on a folder at start",
         "  --open-app <id>         open a program by its bundle identifier",
@@ -91,6 +92,43 @@ public final class Main {
             if (found != null) return found;
         }
         return null;
+    }
+
+    /**
+     * Runs a script against the session that is already up, and says what came back.
+     *
+     * The argument is the script, or the name of a file holding one. Nothing is drawn and
+     * no session is started: a tool that started a desktop in order to ask it a question
+     * would be answering about a desktop nobody is looking at.
+     */
+    private static int runScript(String what) {
+        String text = what;
+        java.io.File file = new java.io.File(what);
+        if (file.isFile()) {
+            try {
+                text = java.nio.file.Files.readString(file.toPath());
+            } catch (java.io.IOException unreadable) {
+                System.err.println("could not read " + what);
+                return 1;
+            }
+        }
+        if (!org.fractalmicro.appkit.FMApplication.serverAvailable()) {
+            System.err.println("no session is running");
+            return 1;
+        }
+        org.fractalmicro.bundle.Bundles.scan();
+        org.fractalmicro.scripting.FMAppleEventManager.sharedManager().setCourier(
+            org.fractalmicro.windowserver.WindowServer.courier());
+        try {
+            org.fractalmicro.foundation.FMString answer =
+                org.fractalmicro.scripting.FMScript.run(
+                    org.fractalmicro.foundation.FMString.of(text));
+            if (!answer.isEmpty()) System.out.println(answer);
+            return 0;
+        } catch (org.fractalmicro.scripting.FMScriptError refused) {
+            System.err.println(refused.said());
+            return 1;
+        }
     }
 
     public static void main(String[] args) {
@@ -115,6 +153,8 @@ public final class Main {
                 controls = true;
             } else if ("--visible-probe".equals(args[i])) {
                 probe = true;
+            } else if ("--osascript".equals(args[i]) && i + 1 < args.length) {
+                System.exit(runScript(args[++i]));
             } else if ("--native-report".equals(args[i])) {
                 org.fractalmicro.win.Probe.report(System.out);
                 return;

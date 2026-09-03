@@ -155,6 +155,7 @@ keyboard or the mouse.
 
 | Flag | What it does |
 |---|---|
+| `--osascript <script>` | Runs a script against the session that is already up |
 | `--selftest` | Opens every window and view, then runs the keyboard and accessibility checks |
 | `--dump-accessibility` | Prints the accessibility tree: role, name, states |
 | `--native-report` | Prints what the native layer reads from Windows |

@@ -113,6 +113,40 @@ public final class FMScriptTerminology {
 
     public FMString propertyNamed(FMString word) { return properties.get(word); }
 
+    /**
+     * The word for one of the four characters, or nothing when it names no word here.
+     *
+     * The other direction, which is what a refusal needs: what comes back from a program
+     * says cwin, and what a person wrote was window.
+     */
+    public FMString wordFor(FMString code) {
+        for (Map.Entry<FMString, FMString> one : classes.entrySet()) {
+            if (one.getValue().sameAs(code)) return one.getKey();
+        }
+        for (Map.Entry<FMString, FMString> one : properties.entrySet()) {
+            if (one.getValue().sameAs(code)) return one.getKey();
+        }
+        return null;
+    }
+
+    /**
+     * The same sentence with any code in it put into words.
+     *
+     * A program answers in the codes it works in, and a script was written in words. What
+     * a person reads should be the words they wrote.
+     */
+    public FMString inWords(FMString said) {
+        if (said == null || said.isEmpty()) return FMString.EMPTY;
+        String out = said.toString();
+        for (Map.Entry<FMString, FMString> one : classes.entrySet()) {
+            out = out.replace(one.getValue().toString(), one.getKey().toString());
+        }
+        for (Map.Entry<FMString, FMString> one : properties.entrySet()) {
+            out = out.replace(one.getValue().toString(), one.getKey().toString());
+        }
+        return FMString.of(out);
+    }
+
     /** Every command in it, by the eight characters rather than by the word. */
     public java.util.List<FMString> commandCodes() {
         return new java.util.ArrayList<>(commands.values());

@@ -823,6 +823,34 @@ public final class WindowServer {
 
     /* ------------------------------------------------------------- Apple events */
 
+    /**
+     * A courier for a process with no windows of its own.
+     *
+     * A program with a window has a connection open already and sends events down it.
+     * Something that only wants to say one thing and stop opens one when it has to, which
+     * is what a tool running a script is.
+     */
+    public static FMAppleEventManager.Courier courier() {
+        return (event, waitMillis) -> {
+            try (org.fractalmicro.xpc.Connection connection =
+                     org.fractalmicro.xpc.Connection.to(SERVICE)) {
+                Message reply = connection.send(Message.of(APPLE_EVENT)
+                    .put("target", event.target().toString())
+                    .put("class", event.eventClass().toString())
+                    .put("id", event.eventID().toString())
+                    .put("timeout", waitMillis)
+                    .put("parameters", event.parameters().asMap()));
+                Object came = reply.get("reply");
+                return came instanceof java.util.Map<?, ?> map
+                    ? org.fractalmicro.foundation.FMDictionary.fromMap(asStringKeys(map))
+                    : org.fractalmicro.foundation.FMDictionary.EMPTY;
+            } catch (java.io.IOException noSession) {
+                return FMAppleEventManager.failure(FMAppleEventManager.EVENT_FAILED,
+                    FMString.of("no session answered"));
+            }
+        };
+    }
+
     /** Programs answered in this process rather than over a connection. */
     private final java.util.Set<String> local =
         java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -957,25 +985,15 @@ public final class WindowServer {
     private static String applicationNamed(String target) {
         if (target == null || target.isEmpty()) return "";
         org.fractalmicro.bundle.Bundle bundle =
-            org.fractalmicro.bundle.Bundles.byIdentifier(target);
-        if (bundle != null) return bundle.displayName().toString();
-        for (org.fractalmicro.bundle.Bundle one : org.fractalmicro.bundle.Bundles.all()) {
-            if (one.displayName().toString().equals(target)) {
-                return one.displayName().toString();
-            }
-        }
-        return target;
+            org.fractalmicro.bundle.Bundles.byIdentifierOrName(target);
+        return bundle == null ? target : bundle.displayName().toString();
     }
 
     /** The identifier of the program called that, or nothing when none is. */
     private static String identifierOf(String target) {
-        if (org.fractalmicro.bundle.Bundles.byIdentifier(target) != null) return target;
-        for (org.fractalmicro.bundle.Bundle one : org.fractalmicro.bundle.Bundles.all()) {
-            if (one.displayName().toString().equals(target)) {
-                return one.identifier().toString();
-            }
-        }
-        return "";
+        org.fractalmicro.bundle.Bundle bundle =
+            org.fractalmicro.bundle.Bundles.byIdentifierOrName(target);
+        return bundle == null ? "" : bundle.identifier().toString();
     }
 
     /** Opens a program and waits for it to be somewhere an event can reach. */

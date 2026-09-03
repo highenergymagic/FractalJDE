@@ -276,6 +276,40 @@ public final class Bundles {
      * of a checkout they are still in the tree. The staged copy is tried first, so a volume
      * being built cannot pick up whatever is in the directory the build started from.
      */
+    /**
+     * Says how a program's terminology is found, which is this layer's to know.
+     *
+     * Read once each and kept. A terminology is a file that ships with a program and does
+     * not change while it runs, and a script asking for it a hundred times is a script
+     * asking the same question a hundred times.
+     */
+    private static void installTerminology() {
+        Map<String, org.fractalmicro.scripting.FMScriptTerminology> read =
+            new java.util.concurrent.ConcurrentHashMap<>();
+        org.fractalmicro.scripting.FMScript.setDictionaries(name -> {
+            Bundle bundle = byIdentifierOrName(name.toString());
+            if (bundle == null) return null;
+            String key = bundle.identifier().toString();
+            org.fractalmicro.scripting.FMScriptTerminology already = read.get(key);
+            if (already != null) return already;
+            File file = bundle.resource(
+                org.fractalmicro.foundation.FMString.of(
+                    bundle.displayName().toString().replace(" ", "")),
+                org.fractalmicro.scripting.FMScriptTerminology.EXTENSION);
+            if (file == null) return null;
+            try {
+                org.fractalmicro.scripting.FMScriptTerminology words =
+                    org.fractalmicro.scripting.FMScriptTerminology.read(file);
+                read.put(key, words);
+                return words;
+            } catch (IOException unreadable) {
+                Log.info("the terminology of " + bundle.displayName()
+                         + " could not be read: " + unreadable.getMessage());
+                return null;
+            }
+        });
+    }
+
     /** The program's terminology, when it ships one. */
     private static File terminologyOf(Spec spec) {
         File resources = resourcesOf(spec);
@@ -362,6 +396,7 @@ public final class Bundles {
 
     /** Reads every bundle in the usual places. */
     public static synchronized void scan() {
+        installTerminology();
         for (File folder : new File[]{
                 OSPaths.systemApplications().toFile(),
                 OSPaths.systemApplications().resolve("Utilities").toFile(),
@@ -382,6 +417,26 @@ public final class Bundles {
 
     public static synchronized List<Bundle> all() {
         return new ArrayList<>(BY_IDENTIFIER.values());
+    }
+
+    /**
+     * The program called that, by the name on the screen rather than by its identifier.
+     *
+     * Both names are used. One program has another's identifier and somebody writing a
+     * script has the name, and either has to find the same program.
+     */
+    public static synchronized Bundle byName(String name) {
+        if (name == null || name.isEmpty()) return null;
+        for (Bundle one : BY_IDENTIFIER.values()) {
+            if (one.displayName().toString().equals(name)) return one;
+        }
+        return null;
+    }
+
+    /** Either name, whichever the caller happens to have. */
+    public static synchronized Bundle byIdentifierOrName(String name) {
+        Bundle found = byIdentifier(name);
+        return found != null ? found : byName(name);
     }
 
     public static synchronized Bundle byIdentifier(String identifier) {

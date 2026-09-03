@@ -178,6 +178,49 @@ than a different program.
 A program with no terminology is still scriptable. What it has not got is anybody able to
 say what it can do, which is the difference between the two.
 
+## Writing one
+
+```
+tell application "Finder" to get the name of item 1 of window 1
+```
+
+```
+tell application "Finder"
+    run
+    set the path of window 1 to "C:/Windows"
+    count every item of window 1
+end tell
+```
+
+Run it against a session that is up:
+
+```
+FractalJDE --osascript 'tell application "Finder" to count every window'
+```
+
+Nothing is drawn and no session is started. A tool that started a desktop in order to ask
+it a question would be answering about a desktop nobody is looking at.
+
+## Whose words those are
+
+Not the parser's. Every word in a script is looked up in the terminology of the program
+being spoken to: `count` and `get` and `set`, `window` and `item`, `name` and `path`. The
+parser knows `tell`, `application`, `to`, `of`, `every`, `the`, `end`, and nothing else
+about anything.
+
+So a program that ships a word for something can be told to do it, and one that does not,
+cannot. Adding a command to the Finder is a handler and a line of terminology; the parser
+is not rebuilt and does not know it happened.
+
+The grammar is small on purpose. One line is one command, a command is a verb and what it
+is about, and `to` puts a value after it. There are no variables, no conditions and no
+loops, because telling something to do something is the whole of what this is for.
+
+A refusal comes back in the words the script was written in. What a program answers says
+`cwin`, and what a person wrote was `window`, so the terminology is read backwards on the
+way out. Yes and no come back as true and false for the same reason: `YES` is what an
+object writes and `true` is what a script says.
+
 ## What is checked
 
 `ScriptingTest` sends real events through the real server. A command nothing answers
@@ -194,6 +237,15 @@ And it lays the terminology against the handlers, both ways round, because eithe
 going stale is the same defect: a command nobody can name, or a name for a command
 nothing answers.
 
+`ScriptingTest` runs real scripts. It opens a window with one, counts it with another,
+reads a chain right through, runs one written over several lines, and checks that a word
+the program has no name for is refused rather than guessed at.
+
 ## Not yet
 
-A language to write it in.
+Making things: `make new folder at ...`. The Finder can be asked about what it holds and
+told to get rid of something, and cannot yet be told to create one.
+
+A place to type a script that is not a command line. On a Mac that is Script Editor, and
+it is a program like any other here: a window described in a file, a text view, and a
+button that calls the same parser.

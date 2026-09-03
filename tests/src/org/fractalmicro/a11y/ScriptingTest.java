@@ -50,7 +50,7 @@ import java.io.PrintStream;
 public final class ScriptingTest {
     private ScriptingTest() {}
 
-    public static int count() { return 25; }
+    public static int count() { return 32; }
 
     /** A suite of this system's own, for checks and nothing else. */
     private static final FMString CHECKING = FMString.of("fmck");
@@ -291,10 +291,70 @@ public final class ScriptingTest {
             failures += 3;
         }
 
+        /* ------------------------------------------------------------ in words */
+
+        // The words are the program's, not the parser's: every one of them was looked up
+        // in the terminology that shipped with the Finder.
+        failures += check(out, "a script opens a window",
+            ran(out, "tell application " + Q + "Finder" + Q + " to run") != null
+            && countFinderWindows(desktop) == 1);
+
+        FMString howMany = ran(out,
+            "tell application " + Q + "Finder" + Q + " to count every window");
+        failures += check(out, "and counts what it opened",
+            howMany != null && howMany.sameAs(FMString.of("1")));
+
+        FMString said = ran(out,
+            "tell application " + Q + "Finder" + Q + " to get the name of window 1");
+        failures += check(out, "and asks what a window is called",
+            said != null && !said.isEmpty());
+
+        FMString deep = ran(out, "tell application " + Q + "Finder" + Q
+            + " to get the name of item 1 of window 1");
+        failures += check(out, "and reads a chain right through",
+            deep != null && !deep.isEmpty());
+
+        FMString several = ran(out, "tell application " + Q + "Finder" + Q + "\n"
+            + "  count every window\n"
+            + "end tell");
+        failures += check(out, "a script written over several lines runs to the end",
+            several != null && several.sameAs(FMString.of("1")));
+
+        failures += check(out, "a word the program has no name for is refused",
+            refused("tell application " + Q + "Finder" + Q + " to fold every window"));
+
+        failures += check(out, "and so is a script that tells nothing anything",
+            refused("count every window"));
+
+        ran(out, "tell application " + Q + "Finder" + Q + " to quit");
+
         out.println("      " + (failures == 0
             ? "a program can be told what to do without anybody reading its words"
             : failures + " failed"));
         return failures;
+    }
+
+    /** A quotation mark, which a script has a great many of and Java spells awkwardly. */
+    private static final String Q = "" + '"';
+
+    /** Runs a script, answering what it answered, or nothing when it would not run. */
+    private static FMString ran(java.io.PrintStream out, String text) {
+        try {
+            return org.fractalmicro.scripting.FMScript.run(FMString.of(text));
+        } catch (org.fractalmicro.scripting.FMScriptError refused) {
+            out.println("      " + refused.said());
+            return null;
+        }
+    }
+
+    /** Whether a script was refused, which for some of them is the right answer. */
+    private static boolean refused(String text) {
+        try {
+            org.fractalmicro.scripting.FMScript.run(FMString.of(text));
+            return false;
+        } catch (org.fractalmicro.scripting.FMScriptError expected) {
+            return true;
+        }
     }
 
     /** A number back off the wire, however it was spelled on the way. */
