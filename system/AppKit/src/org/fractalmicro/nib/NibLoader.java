@@ -177,6 +177,8 @@ public final class NibLoader {
      * tick is asked for at the same moment.
      */
     private void validateAsItOpens(JMenu menu, Commands commands) {
+        BUILT.put(menu, commands);
+        watchForKeyEquivalents();
         menu.addMenuListener(new javax.swing.event.MenuListener() {
             @Override public void menuSelected(javax.swing.event.MenuEvent e) {
                 validate(menu, commands);
@@ -186,10 +188,64 @@ public final class NibLoader {
         });
     }
 
+    /**
+     * Every menu built here, so a shortcut can be validated without opening one.
+     *
+     * Weakly held: a menu belongs to whoever built it, and a bar that has been replaced
+     * should go rather than be kept alive by a list of things that were once menus.
+     */
+    private static final java.util.Map<JMenu, Commands> BUILT =
+        java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    private static volatile boolean watching;
+
+    /**
+     * Asks every menu what it can do before a key equivalent is dispatched.
+     *
+     * A menu is validated as it opens, and a shortcut opens nothing, so a command that
+     * went grey while nothing was chosen stayed grey and its key did nothing ever again.
+     * Cocoa validates before performKeyEquivalent for the same reason.
+     */
+    private static void watchForKeyEquivalents() {
+        if (watching) return;
+        watching = true;
+        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventDispatcher(event -> {
+                if (event.getID() == KeyEvent.KEY_PRESSED && carriesAModifier(event)) {
+                    validateEverything();
+                }
+                // Nothing is swallowed here. This is a question being asked in time for
+                // the answer to matter, not a second way of dispatching a key.
+                return false;
+            });
+    }
+
+    private static boolean carriesAModifier(KeyEvent event) {
+        int held = event.getModifiersEx();
+        return (held & (org.fractalmicro.windowserver.MainMenu.CMD
+                        | InputEvent.CTRL_DOWN_MASK
+                        | InputEvent.META_DOWN_MASK)) != 0;
+    }
+
+    /** Validates every menu there is, which is what a shortcut needs. */
+    public static void validateEverything() {
+        java.util.Map<JMenu, Commands> now;
+        synchronized (BUILT) {
+            now = new java.util.LinkedHashMap<>(BUILT);
+        }
+        for (java.util.Map.Entry<JMenu, Commands> one : now.entrySet()) {
+            validateUnder(one.getKey(), one.getValue());
+        }
+    }
+
     private void validate(javax.swing.MenuElement holder, Commands commands) {
+        validateUnder(holder, commands);
+    }
+
+    private static void validateUnder(javax.swing.MenuElement holder, Commands commands) {
         for (java.awt.Component child : componentsOf(holder)) {
             if (child instanceof JMenu under) {
-                validate(under, commands);
+                validateUnder(under, commands);
                 // A submenu with nothing in it that can be done is one nobody should be
                 // sent into. It is the only case where a menu itself is greyed out.
                 under.setEnabled(anyEnabled(under));

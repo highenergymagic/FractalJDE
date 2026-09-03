@@ -87,8 +87,11 @@ public final class Bundles {
                  Where.SYSTEM_APPLICATIONS, false,
                  java.util.List.of("org.fractalmicro.textedit"), Frameworks.COCOA,
                  true, java.util.List.of("public.text", "public.rtf")),
+        // In Applications rather than in Utilities, where a Mac keeps it. A terminal on
+        // this system is how its own programs are run at all, which makes it one of the
+        // things a person came here to use rather than one they go looking for.
         new Spec("Terminal", PREFIX + "terminal", "org.fractalmicro.terminal.Terminal",
-                 Where.SYSTEM_UTILITIES, false,
+                 Where.SYSTEM_APPLICATIONS, false,
                  java.util.List.of("org.fractalmicro.terminal"), Frameworks.COCOA,
                  true),
         new Spec("Calculator", PREFIX + "calculator", "org.fractalmicro.calculator.Calculator",
@@ -220,18 +223,7 @@ public final class Bundles {
         }
         for (Spec spec : BUILT_IN) {
             try {
-                File parent = switch (spec.where()) {
-                    case SYSTEM_APPLICATIONS -> OSPaths.systemApplications().toFile();
-                    case SYSTEM_UTILITIES ->
-                        OSPaths.systemApplications().resolve("Utilities").toFile();
-                    case CORE_SERVICES -> OSPaths.coreServices().toFile();
-                    case MENU_EXTRAS ->
-                        OSPaths.coreServices().resolve("Menu Extras").toFile();
-                    case QUICK_LOOK ->
-                        OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile();
-                    case SPOTLIGHT ->
-                        OSPaths.systemLibrary().resolve(SPOTLIGHT_FOLDER).toFile();
-                };
+                File parent = folderFor(spec.where());
                 if (!parent.isDirectory() && !parent.mkdirs()) continue;
 
                 FMMutableDictionary info = FMMutableDictionary.empty();
@@ -416,24 +408,45 @@ public final class Bundles {
         }
     }
 
+    /** Where a program of each kind installs. */
+    private static File folderFor(Where where) {
+        return switch (where) {
+            case SYSTEM_APPLICATIONS -> OSPaths.systemApplications().toFile();
+            case SYSTEM_UTILITIES ->
+                OSPaths.systemApplications().resolve("Utilities").toFile();
+            case CORE_SERVICES -> OSPaths.coreServices().toFile();
+            case MENU_EXTRAS -> OSPaths.coreServices().resolve("Menu Extras").toFile();
+            case QUICK_LOOK -> OSPaths.systemLibrary().resolve(QUICK_LOOK_FOLDER).toFile();
+            case SPOTLIGHT -> OSPaths.systemLibrary().resolve(SPOTLIGHT_FOLDER).toFile();
+        };
+    }
+
     /**
-     * Removes a program that ships with the system from the folder a person's own live in.
+     * Removes a copy of a built-in program from anywhere it no longer belongs.
      *
-     * These ship in the system's own folder now. A copy left in Applications is not a
-     * second program but the same one at an older version, and because a person's copy
-     * hides the system's it is the stale one that would open.
+     * A copy in a person's own Applications hides the system's, so it is the stale one
+     * that opens. A copy left where a program used to ship is the same problem: it would
+     * be in the list twice, and one of the two would be last year's.
      */
     private static void retireMovedBuiltIns() {
         for (Spec spec : BUILT_IN) {
+            File belongs = folderFor(spec.where());
             for (File folder : new File[]{OSPaths.applications().toFile(),
-                                          OSPaths.applicationsUtilities().toFile()}) {
+                                          OSPaths.applicationsUtilities().toFile(),
+                                          OSPaths.systemApplications().toFile(),
+                                          OSPaths.systemApplications()
+                                                 .resolve("Utilities").toFile()}) {
+                if (folder.equals(belongs)) continue;
                 File left = new File(folder, spec.name() + Bundle.EXTENSION);
                 if (!left.isDirectory()) continue;
                 Bundle found = Bundle.read(left);
-                if (found == null || !found.identifier().sameAs(FMString.of(spec.identifier()))) continue;
+                if (found == null
+                        || !found.identifier().sameAs(FMString.of(spec.identifier()))) {
+                    continue;
+                }
                 if (delete(left)) {
                     Log.info("retired " + spec.name() + " from " + folder.getName()
-                             + "; it ships with the system now");
+                             + "; it is not where that program lives");
                 }
             }
         }

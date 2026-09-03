@@ -254,6 +254,31 @@ public final class OSPaths {
     public static Path userPreferences()   { return userLibrary().resolve("Preferences"); }
     public static Path userCaches()        { return userLibrary().resolve("Caches"); }
 
+    /**
+     * What a path somebody typed means, or nothing when it names no folder.
+     *
+     * A path beginning with a slash is this volume's: somebody who types /System/Library
+     * means the one they are looking at. A drive letter is the machine's own, since this
+     * system sits on one. Anything else is where they already are, and ~ is home.
+     */
+    public static Path folderNamed(String said, Path from) {
+        if (said == null || said.isBlank()) return null;
+        String text = said.trim();
+        if (text.startsWith("~")) return under(USER_HOME, text.substring(1));
+        // A drive letter, which is the one form that is not about this volume at all.
+        if (text.length() >= 2 && text.charAt(1) == ':') return Paths.get(text);
+        if (text.startsWith("/") || text.startsWith("\\")) {
+            return under(ROOT, text.substring(1));
+        }
+        return under(from == null ? ROOT : from, text);
+    }
+
+    private static Path under(Path root, String rest) {
+        String tail = rest.replace('\\', '/');
+        while (tail.startsWith("/")) tail = tail.substring(1);
+        return tail.isEmpty() ? root : root.resolve(tail);
+    }
+
     /** The folder whose contents are shown on the desktop. */
     public static File desktopFolder() {
         File f = USER_HOME.resolve("Desktop-Folder").toFile();

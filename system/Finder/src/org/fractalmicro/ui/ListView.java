@@ -66,6 +66,14 @@ public class ListView extends JScrollPane implements FileView {
                 }
             }
         });
+        // Typing a name gets to it here as it does in the icon view. A list has this from
+        // the runtime and a table has not, which made the same window behave two ways
+        // depending on which button at the top of it was pressed.
+        TypeSelect.install(table, row -> {
+            int at = table.convertRowIndexToModel(row);
+            return at >= 0 && at < model.rows.size() ? model.rows.get(at).name : null;
+        });
+
         table.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "rename");
         table.getActionMap().put("rename", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) { renameSelection(); }

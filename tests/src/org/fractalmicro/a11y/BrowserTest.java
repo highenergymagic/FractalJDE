@@ -22,6 +22,8 @@ package org.fractalmicro.a11y;
 import org.fractalmicro.appkit.FMApplication;
 import org.fractalmicro.appkit.FMBrowser;
 import org.fractalmicro.foundation.FMString;
+import org.fractalmicro.fs.Node;
+import org.fractalmicro.os.OSPaths;
 import org.fractalmicro.nib.Nib;
 import org.fractalmicro.nib.Nib.ControlClass;
 import org.fractalmicro.nib.Xib;
@@ -56,7 +58,7 @@ import java.nio.file.Path;
 public final class BrowserTest {
     private BrowserTest() {}
 
-    public static int count() { return 14; }
+    public static int count() { return 20; }
 
     /** The control this is all about, named once. */
     private static final FMString FILES = FMString.of("files");
@@ -82,6 +84,15 @@ public final class BrowserTest {
             failures += checkWindow(desktop, out, folder);
         } finally {
             deleteTree(folder.toFile());
+        }
+
+        // Windows opened here are closed again: a later check asks what a menu offers
+        // with nothing chosen, and a window left open with a selection in it answers yes.
+        try {
+            failures += checkWhereThingsAre(out);
+            failures += checkTypedNames(out);
+        } finally {
+            closeFinderWindows();
         }
 
         out.println("      " + (failures == 0
@@ -324,6 +335,119 @@ public final class BrowserTest {
     }
 
     /** Lets the event thread finish what it was asked to do. */
+    /**
+     * Where a path typed by a person leads, and what the Applications view holds.
+     *
+     * A path beginning with a slash used to be handed to the machine underneath, so
+     * /System/Library was C:\\System\\Library and there is no such folder. /Users was worse:
+     * the machine has one, so it went somewhere plausible and wrong.
+     */
+    private static int checkWhereThingsAre(PrintStream out) {
+        int failures = 0;
+
+        java.nio.file.Path system = OSPaths.folderNamed("/System/Library", null);
+        out.println("      /System/Library is " + system);
+        failures += check(out, "a path beginning with a slash is on this volume",
+            system != null && system.equals(OSPaths.systemLibrary())
+            && system.toFile().isDirectory());
+
+        failures += check(out, "and a drive letter still reaches the machine underneath",
+            String.valueOf(OSPaths.folderNamed("C:" + java.io.File.separator + "Windows",
+                                               null)).startsWith("C:"));
+
+        failures += check(out, "and a name with nothing in front of it is where you are",
+            OSPaths.folderNamed("Library", OSPaths.system())
+                   .equals(OSPaths.system().resolve("Library")));
+
+        // The Applications view is a folder, and this system's own programs are not in
+        // it: they live where an installer can replace them. Both belong in one list.
+        java.util.List<Node> shown = listingOf(OSPaths.applications().toFile());
+        Node terminal = null;
+        for (Node n : shown) if ("Terminal".equals(n.name)) terminal = n;
+        out.println("      Applications holds " + shown.size() + " things, Terminal "
+                    + (terminal == null ? "not among them" : "among them"));
+        failures += check(out, "the Applications view holds this system's own programs",
+            terminal != null && terminal.kind == Node.Kind.APPLICATION);
+        failures += check(out, "and they are the bundles, not a copy of one",
+            terminal != null && terminal.file != null
+            && terminal.file.toPath().startsWith(OSPaths.systemApplications()));
+        return failures;
+    }
+
+    /** Puts the desktop back: no windows of the file browser's, nothing chosen. */
+    private static void closeFinderWindows() {
+        for (int guard = 0; guard < 20; guard++) {
+            org.fractalmicro.ui.FinderWindow w = org.fractalmicro.ui.Finder.frontWindow();
+            if (w == null) break;
+            w.dispose();
+            drain();
+        }
+    }
+
+    /** What a Finder window shows for a folder, which is the window's own answer. */
+    private static java.util.List<Node> listingOf(java.io.File folder) {
+        org.fractalmicro.ui.Finder.newWindow(folder);
+        drain();
+        org.fractalmicro.ui.FinderWindow w = org.fractalmicro.ui.Finder.frontWindow();
+        w.selectAll();
+        drain();
+        return w.selection();
+    }
+
+    /**
+     * Typing a name to get to it, in every view rather than one of them.
+     *
+     * A list gets this from the runtime and a table does not, so it worked in the icon
+     * view and not in the list view: the same window behaving two ways depending on which
+     * button at the top of it was pressed.
+     */
+    private static int checkTypedNames(PrintStream out) {
+        int failures = 0;
+        org.fractalmicro.ui.Finder.newWindow(OSPaths.systemApplications().toFile());
+        drain();
+        org.fractalmicro.ui.FinderWindow w = org.fractalmicro.ui.Finder.frontWindow();
+        for (String mode : new String[]{"Icon", "List", "Column"}) {
+            w.setViewMode(mode);
+            drain();
+            String hit = typed(w, 't');
+            out.println("      typing t in the " + mode + " view finds " + hit);
+            failures += check(out, "typing a name gets to it in the " + mode + " view",
+                "Terminal".equals(hit));
+        }
+        return failures;
+    }
+
+    /** Types one letter at the view and says what ended up chosen. */
+    private static String typed(org.fractalmicro.ui.FinderWindow w, char c) {
+        java.awt.Component rows = rowsOf(w.currentView().component());
+        if (rows == null) return "no list or table";
+        java.awt.event.KeyEvent event = new java.awt.event.KeyEvent(
+            rows, java.awt.event.KeyEvent.KEY_TYPED, System.currentTimeMillis(),
+            0, java.awt.event.KeyEvent.VK_UNDEFINED, c);
+        // Handed to whoever is listening. Nothing is showing on a desktop drawn into a
+        // picture, and the runtime drops a key aimed at a component that is not.
+        for (java.awt.event.KeyListener listening : rows.getKeyListeners()) {
+            listening.keyTyped(event);
+        }
+        drain();
+        java.util.List<Node> now = w.selection();
+        return now.isEmpty() ? "nothing" : now.get(0).name;
+    }
+
+    /** The thing inside a view that holds the rows. */
+    private static java.awt.Component rowsOf(java.awt.Component where) {
+        if (where instanceof javax.swing.JTable || where instanceof javax.swing.JList) {
+            return where;
+        }
+        if (where instanceof java.awt.Container box) {
+            for (java.awt.Component kid : box.getComponents()) {
+                java.awt.Component found = rowsOf(kid);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
     private static void drain() {
         try {
             SwingUtilities.invokeAndWait(() -> { });

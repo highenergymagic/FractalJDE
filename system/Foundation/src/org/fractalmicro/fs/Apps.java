@@ -30,10 +30,12 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * The Applications folder. Windows keeps its list of installed programs as shortcuts
- * in the Start menu, so those are read and mirrored into ~/.fractaldt/Applications,
- * with the ones Windows files under Accessories and Administrative Tools going to
- * Applications/Utilities.
+ * The Applications folder: what this system has, and what the machine underneath has.
+ *
+ * This system's own are the bundles in System/Library/Applications, and they come first,
+ * because a person looking for the Terminal means this one. Windows keeps its list as
+ * shortcuts in the Start menu, so those are read after and mirrored into Applications,
+ * with the ones it files under Accessories and Administrative Tools going to Utilities.
  *
  * The default browser and mail client come from the UserChoice keys in the registry.
  */
@@ -116,7 +118,9 @@ public final class Apps {
 
     private static void link(Path folder, List<Node> nodes) {
         for (Node n : nodes) {
-            if (n.file == null) continue;
+            // Only the shortcuts. A program of this system is a bundle, and copying a
+            // directory here makes an empty one of the same name that opens nothing.
+            if (n.file == null || !n.file.isFile()) continue;
             Path target = folder.resolve(n.file.getName());
             if (Files.exists(target)) continue;
             try {

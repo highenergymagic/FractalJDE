@@ -129,6 +129,34 @@ One thing is not validated yet: the Label submenu is built at run time from the 
 somebody has used, so its items carry no action name and nothing asks about them. It stays
 black with nothing selected.
 
+Validation as the menu opens is not enough on its own, and the way it fails is quiet. A
+switched-off item does not answer its keyboard shortcut. So opening the File menu once with
+nothing selected greyed Open, and it stayed grey: selecting a file afterwards did not bring
+it back, because nothing had opened the menu again to ask. Command O did nothing from then
+on, and neither did any other command with a rule about when it applies. Everything is
+asked again before a key equivalent is dispatched now, which is where Cocoa asks.
+
+## Typing a name
+
+Typing in a window goes to the thing whose name starts that way, and the same letter typed
+again steps through the ones that share it. A list gets this from the runtime and a table
+does not, so it worked in the icon view and not in the list view: the same window behaving
+two ways depending on which button at the top of it was pressed.
+
+## Where things are
+
+Applications is a folder, and this system's own programs are not in it. They ship in
+`/System/Library/Applications`, where an installer can replace them without touching
+anything a person put in their own. The view shows both, so somebody looking for the
+Terminal has one list to look in rather than two.
+
+Go to Folder reads what was typed against this volume. A path beginning with a slash is
+this one: somebody who types `/System/Library` means the one they are looking at, not a
+folder on the drive underneath. That path used to go to the machine, which has no such
+folder, and `/Users` was worse, because the machine has one of those and the window went
+somewhere plausible and wrong. A drive letter still reaches the machine, since this system
+sits on one and getting there is more use than refusing to.
+
 ## Three answers, and none of them a sentence in the status bar
 
 `Desktop.beep` used to take a message, sound the beep, and write the message along the

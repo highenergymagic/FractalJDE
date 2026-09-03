@@ -48,7 +48,7 @@ import java.util.List;
 public final class MenuValidationTest {
     private MenuValidationTest() {}
 
-    public static int count() { return 8; }
+    public static int count() { return 10; }
 
     public static int run(Desktop desktop, PrintStream out) {
         int failures = 0;
@@ -139,10 +139,77 @@ public final class MenuValidationTest {
         }
 
         failures += checkAShippedProgram(desktop, out);
+        failures += checkAShortcutStillWorks(desktop, out);
 
         out.println("      " + (failures == 0 ? "a menu says what the program says"
                                               : failures + " failed"));
         return failures;
+    }
+
+    /**
+     * Whether a shortcut still works after its menu was opened at a bad moment.
+     *
+     * A switched-off item does not answer one, so opening the File menu once with nothing
+     * chosen left Open grey and it stayed grey: choosing a file afterwards did not bring
+     * it back. Cocoa validates before performKeyEquivalent, and so does this.
+     */
+    private static int checkAShortcutStillWorks(Desktop desktop, PrintStream out) {
+        int failures = 0;
+        javax.swing.KeyStroke cmdO = javax.swing.KeyStroke.getKeyStroke(
+            java.awt.event.KeyEvent.VK_O, org.fractalmicro.windowserver.MainMenu.CMD);
+        javax.swing.JMenuItem open = itemFor(desktop, cmdO);
+        if (open == null) {
+            out.println("FAIL  there is an item on the Open shortcut");
+            return 2;
+        }
+
+        // Grey it the way opening the menu with nothing chosen would.
+        open.setEnabled(false);
+        org.fractalmicro.nib.NibLoader.validateEverything();
+        failures += check(out, "a command with nothing to work on is switched off",
+            !open.isEnabled());
+
+        // Now something is chosen, and the shortcut is pressed without the menu ever
+        // being opened. Validation has to happen here or the key does nothing.
+        org.fractalmicro.ui.Finder.newWindow(
+            org.fractalmicro.os.OSPaths.systemApplications().toFile());
+        drain();
+        org.fractalmicro.ui.Finder.frontWindow().selectAll();
+        drain();
+        java.awt.event.KeyEvent pressed = new java.awt.event.KeyEvent(
+            desktop.mainMenu(), java.awt.event.KeyEvent.KEY_PRESSED,
+            System.currentTimeMillis(), org.fractalmicro.windowserver.MainMenu.CMD,
+            java.awt.event.KeyEvent.VK_O, 'o');
+        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().dispatchEvent(pressed);
+        drain();
+        failures += check(out, "and comes back for the shortcut once there is",
+            open.isEnabled());
+        return failures;
+    }
+
+    /** The item a shortcut is on, wherever it is in the bar. */
+    private static javax.swing.JMenuItem itemFor(Desktop desktop,
+                                                 javax.swing.KeyStroke stroke) {
+        javax.swing.JMenuBar bar = desktop.mainMenu();
+        for (int i = 0; i < bar.getMenuCount(); i++) {
+            javax.swing.JMenuItem found = carrying(bar.getMenu(i), stroke);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private static javax.swing.JMenuItem carrying(javax.swing.MenuElement where,
+                                                  javax.swing.KeyStroke stroke) {
+        if (where == null) return null;
+        for (javax.swing.MenuElement child : where.getSubElements()) {
+            if (child instanceof javax.swing.JMenuItem item
+                    && stroke.equals(item.getAccelerator())) {
+                return item;
+            }
+            javax.swing.JMenuItem deeper = carrying(child, stroke);
+            if (deeper != null) return deeper;
+        }
+        return null;
     }
 
     /**

@@ -565,8 +565,14 @@ public final class FinderMenus implements NibLoader.Commands {
                                     FMLocalized.of(GO_TO_TITLE), FMString.EMPTY,
                                     FMLocalized.of(GO_TO_BUTTON));
         if (path == null || path.isBlank()) return;
-        File dir = new File(path.replace("~", System.getProperty("user.home")));
-        if (!dir.isDirectory()) {
+        // What was typed is read against this volume, so /System/Library is the one on the
+        // screen rather than a folder the machine underneath does not have.
+        FinderWindow where = Finder.frontWindow();
+        java.nio.file.Path from = where != null && where.currentFolder() != null
+            ? where.currentFolder().toPath() : null;
+        java.nio.file.Path asked = OSPaths.folderNamed(path, from);
+        File dir = asked == null ? null : asked.toFile();
+        if (dir == null || !dir.isDirectory()) {
             FMAlert.tell(FMLocalized.filled(NO_SUCH_FOLDER, FMString.of(path)),
                        FMLocalized.of(CHECK_SPELLING));
             return;

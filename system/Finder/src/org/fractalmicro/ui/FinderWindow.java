@@ -39,6 +39,8 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.*;
+import org.fractalmicro.os.OSPaths;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -448,7 +450,8 @@ public class FinderWindow extends JInternalFrame
             case NETWORK:      contents = Volumes.ofKind(Node.Kind.SERVER); break;
             case TRASH:        contents = Trash.list(); break;
             case SEARCH:       contents = searchResults; break;
-            default:           contents = folder == null ? new ArrayList<>() : FS.list(folder);
+            default:           contents = folder == null ? new ArrayList<>()
+                                                            : listing(folder);
         }
         List<Node> copy = new ArrayList<>(contents);
         FS.sort(copy, arrangeKey);
@@ -467,7 +470,37 @@ public class FinderWindow extends JInternalFrame
         return out;
     }
 
-    private FileView currentView() {
+    /**
+     * What a folder holds, and for Applications what the system holds as well.
+     *
+     * A person's programs are shortcuts in Applications; this system's are bundles in
+     * System/Library/Applications, where an installer can replace them without touching
+     * anybody's folder. Somebody looking for the Terminal means one list, not two.
+     */
+    private static List<Node> listing(File folder) {
+        List<Node> found = FS.list(folder);
+        boolean applications = folder.equals(OSPaths.applications().toFile());
+        boolean utilities = folder.equals(OSPaths.applicationsUtilities().toFile());
+        if (!applications && !utilities) return found;
+
+        File system = utilities
+            ? OSPaths.systemApplications().resolve("Utilities").toFile()
+            : OSPaths.systemApplications().toFile();
+        java.util.Set<String> already = new java.util.HashSet<>();
+        for (Node n : found) already.add(n.name.toLowerCase(java.util.Locale.ROOT));
+        File[] kids = system.listFiles();
+        if (kids != null) {
+            for (File f : kids) {
+                if (!f.isDirectory() || !f.getName().endsWith(".app")) continue;
+                Node n = FS.node(f);
+                if (already.add(n.name.toLowerCase(java.util.Locale.ROOT))) found.add(n);
+            }
+        }
+        FS.sort(found, "name");
+        return found;
+    }
+
+    public FileView currentView() {
         switch (viewMode) {
             case "List": return listView;
             case "Column": return columnView;
