@@ -147,6 +147,37 @@ gets the names of the windows, which is what the question meant.
 Asking for something that is not there is a refusal rather than an empty answer, with one
 exception: `doex` is the command whose whole purpose is asking, and it answers no.
 
+## What the commands are called
+
+The events carry codes and a person writes words. The table between them is a file in the
+bundle, the way an interface is a file in the bundle, so something that has never been
+compiled against a program can still put that program's commands into English.
+
+```xml
+<suite name="Standard Suite" code="core" description="Common commands.">
+    <command name="count" code="corecnte" description="How many there are.">
+        <direct-parameter type="specifier"/>
+        <result type="integer"/>
+    </command>
+    <class name="window" code="cwin" plural="windows">
+        <property name="name" code="pnam" type="text" access="r"/>
+        <element type="item"/>
+    </class>
+</suite>
+```
+
+That is Apple's sdef, cut to the part that is the terminology. A command's code is eight
+characters, being its suite and then the command. A class carries the word for one of
+them and the word for many, because a script says "window 1" and "every window" and means
+the same class either way.
+
+`Info.plist` names the file under `OSAScriptingDefinition`, and it is looked for in the
+language directories first, so a translated terminology is a file beside the words rather
+than a different program.
+
+A program with no terminology is still scriptable. What it has not got is anybody able to
+say what it can do, which is the difference between the two.
+
 ## What is checked
 
 `ScriptingTest` sends real events through the real server. A command nothing answers
@@ -159,8 +190,10 @@ reply saying so, and no window.
 called, what it is looking at, and what is in it, all through the same chain a script
 would use. Then it tells the window to look somewhere else and asks again.
 
+And it lays the terminology against the handlers, both ways round, because either half
+going stale is the same defect: a command nobody can name, or a name for a command
+nothing answers.
+
 ## Not yet
 
-The terminology, which is the file that says what the commands are called and which
-objects they work on, so that something reading it could offer a person the words. And a
-language to write scripts in.
+A language to write it in.

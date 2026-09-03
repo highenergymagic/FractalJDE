@@ -208,6 +208,13 @@ public final class Bundles {
                 if (!spec.opens().isEmpty()) {
                     info.set(Bundle.DOCUMENT_TYPES, documentTypes(spec));
                 }
+                // A program with terminology says which file it is in, the way a Mac
+                // does. Without one it is still scriptable; nothing can put the commands
+                // into words, which is the difference between the two.
+                if (terminologyOf(spec) != null) {
+                    info.set(org.fractalmicro.scripting.FMScriptTerminology.DEFINITION_KEY,
+                             spec.name().replace(" ", "") + ".sdef");
+                }
 
                 Bundle bundle = spec.where() == Where.MENU_EXTRAS
                     ? Bundle.create(parent, spec.name(), info, "", spec.own(), ".menu",
@@ -269,6 +276,14 @@ public final class Bundles {
      * of a checkout they are still in the tree. The staged copy is tried first, so a volume
      * being built cannot pick up whatever is in the directory the build started from.
      */
+    /** The program's terminology, when it ships one. */
+    private static File terminologyOf(Spec spec) {
+        File resources = resourcesOf(spec);
+        if (resources == null) return null;
+        File found = new File(resources, spec.name().replace(" ", "") + ".sdef");
+        return found.isFile() ? found : null;
+    }
+
     private static File resourcesOf(Spec spec) {
         String plain = spec.name().replace(" ", "");
         String staged = System.getProperty("org.fractalmicro.appcode", "");

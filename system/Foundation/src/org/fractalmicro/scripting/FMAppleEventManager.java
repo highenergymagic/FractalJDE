@@ -102,9 +102,21 @@ public final class FMAppleEventManager {
         return handlers.containsKey(nameOf(FMString.EMPTY, eventClass, eventID));
     }
 
-    /** Every command this program answers, for anything that wants to say so. */
-    public java.util.List<FMString> handled() {
-        java.util.List<FMString> out = new java.util.ArrayList<>(handlers.keySet());
+    /**
+     * Every command written down against one program, as eight characters each.
+     *
+     * The suite and the command joined, which is how a terminology writes one, so what a
+     * program answers and what its terminology says can be laid side by side.
+     */
+    public java.util.List<FMString> commandsFor(FMString target) {
+        String prefix = (target == null ? FMString.EMPTY : target) + " ";
+        java.util.List<FMString> out = new java.util.ArrayList<>();
+        for (FMString key : handlers.keySet()) {
+            String written = key.toString();
+            if (written.startsWith(prefix)) {
+                out.add(FMString.of(written.substring(prefix.length())));
+            }
+        }
         out.sort(java.util.Comparator.comparing(FMString::toString));
         return out;
     }

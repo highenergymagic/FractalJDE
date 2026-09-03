@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary title="Finder Terminology">
+
+    <!-- What every program answers, whether it has anything else to say or not. -->
+    <suite name="Required Suite" code="aevt" description="Opening and closing.">
+        <command name="open" code="aevtodoc" description="Open the things named.">
+            <direct-parameter type="file" description="The things to open."/>
+        </command>
+        <command name="run" code="aevtoapp" description="Start it with nothing open."/>
+        <command name="reopen" code="aevtrapp" description="Bring it forward again."/>
+        <command name="quit" code="aevtquit"
+                 description="Close the Finder's windows and draw the desktop again."/>
+    </suite>
+
+    <!-- The commands nobody invents: asking, changing, counting, removing. -->
+    <suite name="Standard Suite" code="core" description="Common commands.">
+        <command name="get" code="coregetd" description="What this names.">
+            <direct-parameter type="specifier"/>
+        </command>
+        <command name="set" code="coresetd" description="Put a value in a property.">
+            <direct-parameter type="specifier"/>
+            <parameter name="to" code="data" type="any"/>
+        </command>
+        <command name="count" code="corecnte" description="How many there are.">
+            <direct-parameter type="specifier"/>
+            <result type="integer"/>
+        </command>
+        <command name="exists" code="coredoex" description="Whether there is one.">
+            <direct-parameter type="specifier"/>
+            <result type="boolean"/>
+        </command>
+        <command name="delete" code="coredelo" description="Move it to the Trash.">
+            <direct-parameter type="specifier"/>
+        </command>
+
+        <class name="application" code="capp" plural="applications"
+               description="The Finder itself.">
+            <property name="name" code="pnam" type="text" access="r"/>
+            <property name="version" code="vers" type="text" access="r"/>
+            <element type="window"/>
+            <element type="disk"/>
+        </class>
+
+        <class name="window" code="cwin" plural="windows"
+               description="A window on a folder.">
+            <property name="name" code="pnam" type="text" access="r"/>
+            <property name="index" code="pidx" type="integer" access="r"/>
+            <property name="path" code="psxp" type="text"
+                      description="The folder it is looking at."/>
+            <element type="item"/>
+        </class>
+
+        <class name="item" code="cobj" plural="items"
+               description="Anything on a disk, which is a file or a folder.">
+            <property name="name" code="pnam" type="text" access="r"/>
+            <property name="class" code="pcls" type="text" access="r"/>
+            <property name="path" code="psxp" type="text" access="r"/>
+            <property name="size" code="ptsz" type="integer" access="r"/>
+        </class>
+
+        <class name="file" code="file" plural="files" inherits="item"
+               description="An item that is not a folder."/>
+
+        <class name="folder" code="cfol" plural="folders" inherits="item"
+               description="An item holding other items."/>
+
+        <class name="disk" code="cdis" plural="disks" inherits="item"
+               description="A volume, mounted or waiting for something to be put in it."/>
+    </suite>
+</dictionary>

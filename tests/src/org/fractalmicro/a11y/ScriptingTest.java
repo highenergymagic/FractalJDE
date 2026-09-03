@@ -27,6 +27,7 @@ import org.fractalmicro.scripting.FMAppleEvent;
 import org.fractalmicro.scripting.FMAppleEventManager;
 import org.fractalmicro.scripting.FMScriptError;
 import org.fractalmicro.scripting.FMScriptObjectSpecifier;
+import org.fractalmicro.scripting.FMScriptTerminology;
 import org.fractalmicro.windowserver.Desktop;
 import org.fractalmicro.windowserver.WindowServer;
 
@@ -49,7 +50,7 @@ import java.io.PrintStream;
 public final class ScriptingTest {
     private ScriptingTest() {}
 
-    public static int count() { return 20; }
+    public static int count() { return 25; }
 
     /** A suite of this system's own, for checks and nothing else. */
     private static final FMString CHECKING = FMString.of("fmck");
@@ -235,6 +236,60 @@ public final class ScriptingTest {
         failures += check(out, "and telling the Finder to quit relaunches it, windows and all",
             !FMAppleEventManager.failed(relaunched)
             && countFinderWindows(desktop) == 0);
+
+        /* ----------------------------------------------------- what it is called */
+
+        // The words are in a file in the bundle, the way the words in a window are, so
+        // something that has never been compiled against this program can still put its
+        // commands into English.
+        org.fractalmicro.bundle.Bundle finder =
+            org.fractalmicro.bundle.Bundles.byIdentifier("org.fractalmicro.finder");
+        java.io.File written = finder == null ? null
+            : finder.resource(FMString.of("Finder"), FMScriptTerminology.EXTENSION);
+        failures += check(out, "the Finder ships a terminology, and says which file it is in",
+            written != null
+            && finder.info().string(FMScriptTerminology.DEFINITION_KEY, FMString.EMPTY)
+                     .sameAs(FMString.of("Finder.sdef")));
+
+        FMScriptTerminology words = null;
+        if (written != null) {
+            try {
+                words = FMScriptTerminology.read(written);
+            } catch (java.io.IOException unreadable) {
+                out.println("      " + unreadable.getMessage());
+            }
+        }
+        failures += check(out, "and it reads", words != null && !words.commandWords().isEmpty());
+
+        if (words != null) {
+            failures += check(out, "a word stands for the four characters it stands for",
+                words.commandNamed(FMString.of("count")).sameAs(FMString.of("corecnte"))
+                && words.propertyNamed(FMString.of("name")).sameAs(FMScriptObjectSpecifier.NAME)
+                && words.classNamed(FMString.of("window")).sameAs(FMScriptObjectSpecifier.WINDOW));
+
+            failures += check(out, "and the plural is the same thing said of many",
+                words.classNamed(FMString.of("windows")).sameAs(FMScriptObjectSpecifier.WINDOW)
+                && words.isPlural(FMString.of("windows"))
+                && !words.isPlural(FMString.of("window")));
+
+            // Both ways round, because either half going stale is the same defect: a
+            // command nobody can name, or a name for a command nothing answers.
+            java.util.List<String> missing = new java.util.ArrayList<>();
+            java.util.List<FMString> answers = manager.commandsFor(
+                FMString.of("org.fractalmicro.finder"));
+            for (FMString code : answers) {
+                if (!words.commandCodes().contains(code)) missing.add(code + " has no name");
+            }
+            for (FMString code : words.commandCodes()) {
+                if (!answers.contains(code)) missing.add(code + " is named and not answered");
+            }
+            for (String one : missing) out.println("      " + one);
+            failures += check(out,
+                "and every command the Finder answers is one the terminology names",
+                missing.isEmpty());
+        } else {
+            failures += 3;
+        }
 
         out.println("      " + (failures == 0
             ? "a program can be told what to do without anybody reading its words"
