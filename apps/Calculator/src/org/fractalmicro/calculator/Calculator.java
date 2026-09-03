@@ -28,21 +28,10 @@ import org.fractalmicro.foundation.FMString;
 /**
  * Calculator: arithmetic, and nothing else.
  *
- * This is the first program here written entirely against the system. Everything it uses
- * is an FM something: the numbers are {@link FMDecimal}, the text is {@link FMString}, the
- * clipboard is {@link FMPasteboard}, and the window is a description handed to
- * {@link FMApplication}. Nothing in this file names the runtime it happens to be compiled
- * for, which is the difference between a program written for a platform and a program that
- * merely runs on one.
+ * Decimal, not binary. A calculator that answers 0.30000000000000004 to a tenth plus two
+ * tenths is wrong where a person notices first.
  *
- * That includes the small things. A control is named by an FMString, not by a literal that
- * happens to be a runtime string; an operation is a value of this program's own kind, not
- * a one character string compared with a switch. Reaching for the runtime's text inside a
- * program written for a platform is the same mistake as calling open in a Cocoa
- * application: it works, and it means the layer above was not finished.
- *
- * The arithmetic is decimal on purpose. A calculator that answers 0.30000000000000004 to a
- * tenth plus two tenths is wrong in the way a person notices first.
+ * Names no runtime type; VocabularyTest holds every program here to that.
  */
 public final class Calculator implements org.fractalmicro.appkit.FMApplicationDelegate {
 
@@ -57,13 +46,7 @@ public final class Calculator implements org.fractalmicro.appkit.FMApplicationDe
     private static final FMString ZERO_TEXT = FMString.of("0");
     private static final FMString POINT = FMString.of(".");
 
-    /**
-     * What is waiting to be done to the number on the display.
-     *
-     * A pending operation is one of four things, so it is one of four things. Keeping it
-     * as text and comparing that text later would work, and would also mean the compiler
-     * had nothing to say about a typo in one of the four places it is written.
-     */
+    /** What is waiting to be done to the number on the display. */
     private enum Operation {
         NONE, ADD, SUBTRACT, MULTIPLY, DIVIDE;
 
@@ -89,10 +72,8 @@ public final class Calculator implements org.fractalmicro.appkit.FMApplicationDe
     /**
      * Opened, which is the whole of this program's start-up.
      *
-     * There is no main. The bundle names this class and the loader calls the framework's
-     * application main, which reads that name, makes one, and sends it this. That is what
-     * NSApplicationMain does and what every Cocoa program's main hands straight over to,
-     * and none of it is anything this program knows better than its own bundle does.
+     * There is no main: the bundle names this class, and FMApplicationMain makes one and
+     * sends it this. NSApplicationMain, the same way round.
      */
     @Override public void open() {
         if (!app.showWindow(INTERFACE)) {
