@@ -211,7 +211,40 @@ public final class FMUserDefaults {
         return current;
     }
 
+    /**
+     * Everything this domain holds, which is dictionaryRepresentation.
+     *
+     * A copy. What a caller does with it is not a change to the preference, and a domain
+     * that handed out its own map would be settable by anyone who once read it.
+     */
+    public FMDictionary dictionaryRepresentation() {
+        return FMDictionary.fromMap(new LinkedHashMap<>(values));
+    }
+
+    /** Every domain there is a file for, in the order a listing gives them. */
+    public static FMArray<FMString> domains() {
+        FMMutableArray<FMString> found = FMMutableArray.empty();
+        java.io.File[] files = OSPaths.userPreferences().toFile().listFiles();
+        if (files == null) return found.asArray();
+        java.util.Arrays.sort(files, java.util.Comparator.comparing(java.io.File::getName));
+        for (java.io.File one : files) {
+            String name = one.getName();
+            if (name.endsWith(".plist")) {
+                found.add(FMString.of(name.substring(0, name.length() - ".plist".length())));
+            }
+        }
+        return found.asArray();
+    }
+
     /* -------------------------------------------------------------- writing */
+
+    /** Forgets a key, which NSUserDefaults calls removeObjectForKey. */
+    public void remove(FMString key) {
+        String name = key.toString();
+        if (values.remove(name) == null) return;
+        save();
+        fire(name);
+    }
 
     public void set(FMString key, Object value) {
         String name = key.toString();

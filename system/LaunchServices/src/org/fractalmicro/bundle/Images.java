@@ -24,6 +24,7 @@ import org.fractalmicro.foundation.FMMutableDictionary;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.core.Log;
+import org.fractalmicro.dyld.Start;
 import org.fractalmicro.macho.MachO;
 import org.fractalmicro.macho.Symbols;
 import org.fractalmicro.macho.Linker;
@@ -83,6 +84,28 @@ public final class Images {
     public static final String MDS_PATH =
         "System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/"
         + "Metadata.framework/Versions/A/Support/mds";
+
+    /**
+     * One program in usr/bin: what it is called and where it starts.
+     *
+     * A Mac keeps these in /usr/bin, one small program each over a framework that already
+     * does the work. None of them puts anything on a screen, so none of them links AppKit.
+     */
+    private record Tool(String name, String entry) {}
+
+    private static final List<Tool> TOOLS = List.of(
+        new Tool("sw_vers", "org.fractalmicro.tools.SwVers"),
+        new Tool("defaults", "org.fractalmicro.tools.Defaults"),
+        new Tool("mdfind", "org.fractalmicro.tools.MdFind"),
+        new Tool("mdls", "org.fractalmicro.tools.MdLs"),
+        new Tool("open", "org.fractalmicro.tools.Open"));
+
+    /** What is in usr/bin, for anything that wants to say so. */
+    public static List<String> toolNames() {
+        List<String> names = new java.util.ArrayList<>();
+        for (Tool one : TOOLS) names.add(one.name());
+        return names;
+    }
 
     /** Where the per-image code is, when a build has said. */
     public static Path builtImages() {
@@ -166,6 +189,8 @@ public final class Images {
         try {
             umbrella();
             metadataSupport(built, linker);
+            systemVersion();
+            commandLineTools(built, linker);
         } catch (IOException e) {
             Log.error("the CoreServices umbrella could not be finished", e);
         }
@@ -306,6 +331,12 @@ public final class Images {
             case "mds" -> List.of(installPathOf("Metadata"), installPathOf("Foundation"),
                                   installPathOf("LaunchServices"),
                                   installPathOf("LibSystem"));
+            // A tool in usr/bin links Foundation and the umbrella, and that is all: it
+            // reaches Launch Services and the index through CoreServices the way any
+            // program does, and it has no window to want AppKit for.
+            case "tool" -> List.of(installPathOf("Foundation"),
+                                   installPathOf("CoreServices"),
+                                   installPathOf("LibSystem"));
             // AppKit reaches LaunchServices to open a program and Metadata to search,
             // and links the umbrella rather than the frameworks inside it.
             case "AppKit" -> List.of(installPathOf("Foundation"), installPathOf("CoreServices"),
@@ -425,6 +456,86 @@ public final class Images {
         Path mds = support.resolve("mds");
         Files.write(mds, program);
         mds.toFile().setExecutable(true);
+    }
+
+    /**
+     * What the volume is, written where sw_vers looks for it.
+     *
+     * A Mac keeps this at System/Library/CoreServices/SystemVersion.plist, and everything
+     * that wants to know what system it is on reads that file rather than asking a program.
+     */
+    private static void systemVersion() throws IOException {
+        FMMutableDictionary said = FMMutableDictionary.empty();
+        said.set(FMString.of("ProductName"), "FractalJDE");
+        said.set(FMString.of("ProductVersion"), Version.number());
+        said.set(FMString.of("ProductBuildVersion"), Version.build());
+        // The same number again, as a Mac writes it: the two differ only on a system
+        // that shows something other than its own version, which this is not.
+        said.set(FMString.of("ProductUserVisibleVersion"), Version.number());
+        Files.createDirectories(OSPaths.coreServices());
+        Plist.write(OSPaths.coreServices().resolve("SystemVersion.plist"),
+                    said.asDictionary());
+    }
+
+    /**
+     * The programs in usr/bin, each carrying the tools' code and its own entry point.
+     *
+     * Written the same way the metadata server is, because they are the same kind of
+     * thing: a plain executable that says where it starts, run by whoever types its name.
+     */
+    private static void commandLineTools(Path built, Linker linker) throws IOException {
+        Path code = built.resolve("Tools.jar");
+        if (!Files.isReadable(code)) return;
+        Path bin = OSPaths.usrBin();
+        Files.createDirectories(bin);
+        byte[] jar = Files.readAllBytes(code);
+        List<String> linked = linkedBy("tool");
+        for (Tool tool : TOOLS) {
+            byte[] resources = withEntry(jar, tool.entry());
+            Symbols.Set2 symbols = Symbols.of(resources);
+            byte[] program = MachO.build(tool.name(), linked, resources, MachO.MH_EXECUTE,
+                                         List.of(), RUNPATHS,
+                                         List.copyOf(symbols.defined()),
+                                         linker.resolve(symbols.referenced(), linked));
+            Path at = bin.resolve(tool.name());
+            Files.write(at, program);
+            at.toFile().setExecutable(true);
+            writeToolLaunchers(bin, tool.name());
+        }
+        Log.info("usr/bin holds " + TOOLS.size() + " tools");
+    }
+
+    /**
+     * The two scripts that let a shell run one of these.
+     *
+     * A console program, so java rather than javaw and no start: what it prints belongs in
+     * the window it was typed in, and whoever typed it is waiting for the exit code.
+     */
+    private static void writeToolLaunchers(Path bin, String name) throws IOException {
+        String shell = "#!/bin/sh\n"
+            + "# " + name + ", on a FractalJDE volume.\n"
+            + "here=$(cd \"$(dirname \"$0\")\" && pwd)\n"
+            + "root=$(cd \"$here/../..\" && pwd)\n"
+            + "java=\"${JAVA_HOME:+$JAVA_HOME/bin/}java\"\n"
+            + "exec \"$java\" --enable-preview --enable-native-access=ALL-UNNAMED \\\n"
+            + "     \"-D" + Start.ROOT_PROPERTY + "=$root\" -cp \"$root/usr/lib/dyld\" \\\n"
+            + "     " + Start.class.getName() + " \"$here/" + name + "\" \"$@\"\n";
+        Path script = bin.resolve(name + ".sh");
+        Files.write(script, shell.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        script.toFile().setExecutable(true);
+
+        String batch = "@echo off\r\n"
+            + "rem " + name + ", on a FractalJDE volume.\r\n"
+            + "setlocal\r\n"
+            + "for %%d in (\"%~dp0..\\..\") do set ROOT=%%~fd\r\n"
+            + "set JAVA=java\r\n"
+            + "if exist \"%JAVA_HOME%\\bin\\java.exe\" set JAVA=%JAVA_HOME%\\bin\\java.exe\r\n"
+            + "\"%JAVA%\" --enable-preview --enable-native-access=ALL-UNNAMED "
+            + "\"-D" + Start.ROOT_PROPERTY + "=%ROOT%\" -cp \"%ROOT%\\usr\\lib\\dyld\" "
+            + Start.class.getName() + " \"%~dp0" + name + "\" %*\r\n"
+            + "endlocal & exit /b %ERRORLEVEL%\r\n";
+        Files.write(bin.resolve(name + ".cmd"),
+                    batch.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     /** A framework's Info.plist. FMWK is the package type a framework carries. */

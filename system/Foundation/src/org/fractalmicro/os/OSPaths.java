@@ -183,6 +183,9 @@ public final class OSPaths {
     /** /usr/lib, where the loader and the system library live. */
     public static Path usrLib() { return ROOT.resolve("usr/lib"); }
 
+    /** /usr/bin, where the command line tools live. */
+    public static Path usrBin() { return ROOT.resolve("usr/bin"); }
+
     /** The loader itself. Every program written here names this path. */
     public static Path dyld() { return usrLib().resolve("dyld"); }
 

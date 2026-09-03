@@ -243,6 +243,10 @@ public final class SelfTest {
             failures.add(importerFailures + " Spotlight checks failed");
         }
 
+        steps += ToolsTest.count();
+        int toolFailures = ToolsTest.run(System.out);
+        if (toolFailures > 0) failures.add(toolFailures + " command line checks failed");
+
         steps += LayoutTest.count();
         int layoutFailures = LayoutTest.run(System.out);
         if (layoutFailures > 0) failures.add(layoutFailures + " layout checks failed");

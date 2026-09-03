@@ -77,12 +77,24 @@ public final class Shell {
         launch("explorer.exe", "/select," + target.getAbsolutePath());
     }
 
-    public static void openTerminal(File directory) {
+    /**
+     * A command line where you are, with the volume's own tools on the path.
+     *
+     * Which directory holds them is not this layer's to know, so it arrives. Nothing is
+     * put in front of it either way: a shell that could not find sw_vers is a shell, and a
+     * shell that could not find cmd.exe is not.
+     */
+    public static void openTerminal(File directory, File alsoOnPath) {
         File dir = directory != null && directory.isDirectory() ? directory : new File(System.getProperty("user.home"));
         try {
-            new ProcessBuilder("cmd.exe", "/c", "start", "cmd.exe")
-                .directory(dir)
-                .start();
+            ProcessBuilder starting =
+                new ProcessBuilder("cmd.exe", "/c", "start", "cmd.exe").directory(dir);
+            if (alsoOnPath != null && alsoOnPath.isDirectory()) {
+                java.util.Map<String, String> environment = starting.environment();
+                environment.put("PATH", alsoOnPath.getAbsolutePath()
+                                + File.pathSeparator + environment.getOrDefault("PATH", ""));
+            }
+            starting.start();
         } catch (Exception e) {
             System.err.println("could not open a terminal: " + e.getMessage());
         }

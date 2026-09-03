@@ -118,7 +118,7 @@ mkdir -p build/frameworks build/apps
 # AppKit class that called it back, and every double-click asked it what a file was. They
 # are separate now, and this line is the check. A stage that still needs the one after it
 # fails here rather than in a list of known exceptions.
-FRAMEWORKS="LibSystem Foundation dyld launchd LaunchServices Metadata AppKit Finder"
+FRAMEWORKS="LibSystem Foundation dyld launchd LaunchServices Metadata Tools AppKit Finder"
 
 # ----------------------------------------------------------------- the frameworks
 beneath=""

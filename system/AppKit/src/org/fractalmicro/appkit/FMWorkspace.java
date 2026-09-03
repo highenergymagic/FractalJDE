@@ -89,7 +89,8 @@ public final class FMWorkspace {
      */
     public boolean openTerminal(FMURL folder) {
         if (folder == null) return false;
-        org.fractalmicro.core.Shell.openTerminal(folder.asFile());
+        org.fractalmicro.core.Shell.openTerminal(
+            folder.asFile(), org.fractalmicro.os.OSPaths.usrBin().toFile());
         return true;
     }
 

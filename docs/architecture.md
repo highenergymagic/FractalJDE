@@ -277,6 +277,31 @@ importers, which are bundles in `System/Library/Spotlight` declaring the types t
 That is why a search finds a word inside a document: the server has never heard of a
 document. See [types](types.md) for how an importer says what it can read.
 
+## The command line tools
+
+`usr/bin` held nothing. The volume had a loader and a system library and not one thing a
+person could type, and the Terminal handed you to `cmd.exe` with none of this system on
+the path, which is a command line for the machine underneath rather than for this one.
+
+| | |
+|---|---|
+| `sw_vers` | what the volume says it is, read out of `SystemVersion.plist` |
+| `defaults` | read and write the preference files the programs read |
+| `mdfind` | ask the index, one path a line |
+| `mdls` | everything the index knows about one file |
+| `open` | hand something to whatever should open it, or to a named program with `-a` |
+
+Each is a Mach-O executable written the same way the metadata server is: it carries the
+tools' code and says where it starts. None of them links AppKit. They are small because
+the work is already done by a framework, and the tool is the part that turns arguments
+into a call and a result into lines.
+
+A shell cannot run a Mach-O, so a `.cmd` and a `.sh` sit beside each one and start the
+loader on it, the same as the launchers in a bundle. Neither holds an absolute path: the
+volume is found by climbing, so a volume that is copied somewhere else still works. The
+Terminal now opens with `usr/bin` in front of the path, which is what makes typing
+`sw_vers` do anything at all.
+
 ## How it talks to Windows
 
 Nothing shells out. Everything the system is asked for goes through
