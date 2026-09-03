@@ -26,19 +26,16 @@ import org.fractalmicro.foundation.FMString;
 /**
  * A strings file: what the words are, in one language.
  *
- * The format is older than the systems that use it. It is a property list in the original
- * ASCII form, where a dictionary at the top level needs no braces, so a file of
+ * A property list in the original ASCII form, where a top level dictionary needs no
+ * braces, so
  *
  *     "Empty Trash" = "Papierkorb entleeren";
  *
- * is a dictionary with one entry in it. Comments are C comments, and the convention that a
- * comment before an entry describes what the words are for is what makes a strings file
- * something a translator can work from without seeing the program.
+ * is a dictionary of one entry. Comments are C comments; by convention the one before an
+ * entry says what the words are for, which is what a translator works from.
  *
- * A key that is missing answers with itself. That is deliberate and it is what every
- * system doing this does: a program with no translation for a language shows English
- * rather than showing nothing, and a missing entry is visible as English text in a
- * translated window rather than as a blank.
+ * A missing key answers with itself, so an untranslated entry shows as English rather
+ * than as a blank.
  */
 public final class Strings {
     private Strings() {}

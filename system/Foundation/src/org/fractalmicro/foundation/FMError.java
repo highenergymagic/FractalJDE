@@ -22,17 +22,13 @@ package org.fractalmicro.foundation;
 /**
  * Something that went wrong, as a value rather than as a throw.
  *
- * A great deal of what a program asks for can fail in ways that are not exceptional: a
- * file is not there, a name is taken, a server is not answering. Foundation has always
- * returned those rather than thrown them, and the reason shows in what a caller does with
- * one, which is usually to put it in front of a person. An error that can be held, passed
- * on and shown is easier to do that with than one that has unwound the stack.
+ * A file that is not there, a name that is taken, a server not answering. Foundation
+ * returns these, because what a caller does with one is usually put it in front of a
+ * person.
  *
- * A domain says whose error it is, so that a number means one thing within it and there is
- * no register of numbers that everything has to agree on. What a person should be told is
- * kept apart from what a programmer should be told, because they are different sentences
- * and writing one and hoping it does for both is how a system ends up showing somebody a
- * file path and an errno.
+ * A domain scopes the number, so there is no register everything must agree on. What a
+ * person is told and what a programmer is told are separate fields: they are different
+ * sentences.
  */
 public final class FMError {
 

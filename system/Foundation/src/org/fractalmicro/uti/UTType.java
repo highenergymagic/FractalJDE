@@ -27,15 +27,13 @@ import org.fractalmicro.foundation.FMString;
 /**
  * One declared type: what it is called, what it is, and what says so.
  *
- * A type is a name in a tree rather than a filename extension. public.png conforms to
- * public.image, which conforms to public.data, which conforms to public.item, and asking
- * whether something is an image is asking about that tree. The answer is then right for a
- * kind of image nobody had heard of when the question was written, which is the whole
- * reason for having types at all rather than a list of extensions.
+ * A type is a name in a tree, not an extension. public.png conforms to public.image, to
+ * public.data, to public.item; asking whether something is an image asks about that tree,
+ * and the answer holds for a kind of image nobody had heard of when the question was
+ * written.
  *
- * The tags are how a type reaches the world outside: which filename extensions mean it,
- * and which MIME type. A type may have several extensions, and one extension names exactly
- * one type, because the other way round is what an extension is for.
+ * The tags reach the world outside: the extensions that mean this type, and the MIME type.
+ * A type may have several extensions; an extension names one type.
  */
 public record UTType(FMString identifier, FMString description,
                      FMArray<FMString> conformsTo, FMArray<FMString> extensions,

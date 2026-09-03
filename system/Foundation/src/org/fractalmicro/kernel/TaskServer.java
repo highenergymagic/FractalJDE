@@ -29,18 +29,11 @@ import java.util.List;
 /**
  * The process table, from outside the process that holds it.
  *
- * A table kept in one process is a table of that process's own tasks, and a listing built
- * from it shows a fraction of what is running with no way to tell which fraction. That is
- * not a process table; it is a local note. What makes the numbers mean anything across a
- * system is that there is one table, in one place, and everything else asks.
- *
- * The place is whatever holds it, which is task 1: everything is descended from it, so it
- * is the only thing certain to be there for as long as any of the rest. A process that
- * starts a task announces it here, and a process that wants to know what is running asks
+ * One table, held by task 1, since everything is descended from it and it outlives the
+ * rest. A process starting a task announces it here; a process wanting the listing asks
  * here.
  *
- * Nothing depends on the server being up. A process that cannot reach it keeps its own
- * table and answers from that, which is what it would have done anyway.
+ * A process that cannot reach the server keeps its own table and answers from that.
  */
 public final class TaskServer {
 

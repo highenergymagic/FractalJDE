@@ -44,24 +44,15 @@ import java.util.List;
 /**
  * The Finder's own menus.
  *
- * These used to be built by the menu bar, which meant the bar knew what a folder was, what
- * Empty Trash meant, and how to arrange icons by kind. A bar that knows those things is not
- * a bar, it is the Finder with some other programs allowed to visit.
+ * What is in the bar is in FinderMenus.xib, beside the Finder in its own bundle: the
+ * menus, their order, what each command is called and the keys that do it. This file says
+ * what each command does.
  *
- * They are no longer built here either. What is in the bar is in FinderMenus.xib, beside
- * the Finder in its own bundle: the menus, their order, what each command is called, and
- * the keys that do it without opening a menu at all. This file says what each command
- * does, and nothing else.
+ * A command is matched by the name it sends, not by where it sits, so the file can be
+ * rearranged or translated without touching anything below.
  *
- * That division is the point of an interface file. A command is matched by the name it
- * sends, so the file can be rearranged, translated into a language nobody here reads, or
- * have an item moved from one menu to another, and none of the code below changes. The
- * reverse holds too: nothing here can quietly grow a menu item that no translator was
- * ever shown.
- *
- * Two menus are still built rather than described, because their contents are not known
- * until the machine is running: the labels a person has used, and the folders they were
- * last in. A file cannot say what those are.
+ * Two menus are built rather than described, their contents not being known until the
+ * machine runs: the labels a person has used, and the folders they were last in.
  */
 public final class FinderMenus implements NibLoader.Commands {
 

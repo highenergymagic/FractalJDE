@@ -29,19 +29,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Telling other processes that something happened.
  *
- * A notification centre inside one process reaches everything in that process, which was
- * enough while everything was in one. It is not enough now. System Preferences writes a
- * setting and the desktop has to repaint; the desktop is not going to notice, because the
- * two are different programs and the only thing they share is a file neither is watching.
+ * A process that wants to hear registers; a process with something to say posts. What
+ * arrives is a name and a little text.
  *
- * So there is a second one that crosses. A process that wants to hear registers, a process
- * with something to say posts, and what arrives is a name and a little text. Deliberately
- * little: this carries the fact that something happened, not the thing itself. Anything
- * that hears is expected to go and look, which is what it would have had to do anyway
- * since the value it cares about is on a volume both can read.
- *
- * Foundation has had one of these for as long as it has had processes to distribute
- * between, and it works the same way for the same reason.
+ * Deliberately little: it carries that something happened, not the thing itself. Whoever
+ * hears goes and looks, the value being on a volume both can read.
  */
 public final class FMDistributedNotificationCenter {
 

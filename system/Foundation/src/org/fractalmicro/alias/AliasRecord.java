@@ -51,10 +51,8 @@ import java.util.Map;
  *   138  volume file system id         2
  *   140  reserved                      10
  *
- * The point of all this is that an alias is not a path. The path is only one of the
- * entries; the file number and the parent are others, and the Alias Manager was
- * documented to fall back through them when the first one fails. That is why an alias
- * follows a file that has been renamed or moved, and a symbolic link does not.
+ * The path is one entry among several; the file number and the parent are others. See
+ * {@link Alias} for the order they are tried in.
  */
 public final class AliasRecord {
 

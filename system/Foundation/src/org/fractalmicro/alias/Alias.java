@@ -37,8 +37,7 @@ import java.nio.file.Files;
  * fork and the Finder information going into the two streams a Mac would use on a volume
  * like this one.
  *
- * Resolving works the way the Alias Manager was documented to work, and this is the
- * whole reason for preferring an alias to a symbolic link:
+ * Resolving works the way the Alias Manager was documented to work:
  *
  *   1. the path in the record, if something is still there and it is the same file
  *   2. the file reference number, which finds the file wherever it has been moved to

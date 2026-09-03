@@ -43,20 +43,13 @@ import java.util.Map;
 /**
  * Interface files, opened where the program that shows them is running.
  *
- * A program in a process of its own asks the window server to open a window and the server
- * reads the description. The desktop's own parts are not in a process of their own: the
- * Finder, the menu bar and the panels AppKit puts up are all inside the window server
- * already, and asking it over a connection to draw something it is holding in a field
- * would be a message to itself.
+ * A program in its own process asks the window server to open a window. The Finder, the
+ * menu bar and AppKit's panels are inside the window server already, so asking it over a
+ * connection would be a message to itself.
  *
- * So this is the other half of the same idea. The description is read from the same file,
- * in the same language, from the same place in the same bundle, and turned into the real
- * controls directly. What differs is only where a command goes when it is chosen: a
- * program in its own process is sent an event, and something in this one is called.
- *
- * A command is matched by the name it sends, not by where it sits. That is what lets the
- * file be rearranged, translated, or have an item added to it without any of the code that
- * answers those commands being touched.
+ * Same file, same language, same place in the bundle, turned into controls directly. What
+ * differs is where a chosen command goes: a program in its own process is sent an event,
+ * something in this one is called.
  */
 public final class NibLoader {
 

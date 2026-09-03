@@ -25,14 +25,8 @@ import java.io.File;
 /**
  * What letting go of a drag would do.
  *
- * There is one rule about this that everybody who has used a Mac knows without being able
- * to say it: dragging a file to another folder on the same disk moves it, and dragging it
- * to a different disk copies it. It is the right default because it is what the words mean.
- * Moving something between two drawers of one desk is moving it; there is no copy of a
- * letter left behind. Between two desks there is no moving it without somebody carrying
- * it, so it is copied and the person decides whether to throw the first one away.
- *
- * The keys held down say otherwise, and they are the same three everywhere in the system:
+ * Within one disk a drag moves; across two it copies. The keys held down say otherwise,
+ * and they are the same three everywhere in the system:
  *
  *   nothing      move on one disk, copy across two
  *   Option       copy, wherever it is going

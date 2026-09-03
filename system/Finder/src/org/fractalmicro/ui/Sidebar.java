@@ -45,16 +45,11 @@ import java.util.function.Consumer;
 /**
  * The sidebar: a source list of devices, places and searches.
  *
- * It is a table with one column, not a tree. That is what it is in the system this
- * imitates, where a source list is a table with group rows in it, and it is what it should be
- * here for the same reason: a tree announces itself as a tree,
- * with expanding and collapsing and levels, and none of that is true of this. There is
- * nothing to expand. There are headings and there are places, in one flat column, and a
- * table says exactly that.
+ * A table of one column with group rows, not a tree. Nothing in it expands, and a tree
+ * announces to a screen reader that things do.
  *
- * A heading is a row that cannot be selected and is skipped by the arrow keys, so moving
- * through the list goes from one place to the next without stopping on words that do not
- * lead anywhere.
+ * A heading cannot be selected and is skipped by the arrow keys, so moving through goes
+ * from one place to the next.
  */
 public class Sidebar extends JScrollPane {
 

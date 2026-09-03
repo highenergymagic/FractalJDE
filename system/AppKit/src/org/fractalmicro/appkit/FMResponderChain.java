@@ -29,16 +29,12 @@ import java.util.List;
 /**
  * Where a command goes, and in what order.
  *
- * Whatever has the keyboard first, then out through the things it sits inside, then the
- * window, then the program. Each is offered the command and the first that can do it does.
- * That is the responder chain, and it is why a menu item in Cocoa is connected to First
- * Responder rather than to anything in particular: the item does not know who will do the
- * work and does not need to.
+ * Whatever has the keyboard, then out through what it sits inside, then the window, then
+ * the program. Each is offered the command and the first that can do it does. It is why a
+ * menu item in Cocoa connects to First Responder rather than to anything in particular.
  *
- * Before this there was one object per window that answered every command, so Copy in the
- * file manager copied files whatever had the keyboard. With the cursor in the search field
- * and some text selected in it, Copy still copied the files behind, which is not what
- * anybody meant and is exactly the case the chain exists for.
+ * With one object per window answering everything, Copy with the cursor in the search
+ * field copied the files behind it.
  */
 public final class FMResponderChain {
     private FMResponderChain() {}

@@ -52,7 +52,7 @@ public final class CommentTest {
     private static final int LONG = 8;
 
     /** How many long ones there still are. It goes down. */
-    private static final int LONG_ONES_ALLOWED = 302;
+    private static final int LONG_ONES_ALLOWED = 298;
 
     public static int run(PrintStream out) {
         out.println();

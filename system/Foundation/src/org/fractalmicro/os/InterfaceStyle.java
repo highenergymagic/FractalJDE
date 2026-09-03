@@ -26,22 +26,13 @@ import org.fractalmicro.foundation.FMString;
 /**
  * What a screen is.
  *
- * Two systems disagree here, and the disagreement is older than either of them. On one,
- * the menu bar belongs to the screen: there is one of it, at the top, and it shows the
- * menus of whichever program is in front. On the other, the menu bar belongs to the
- * window: every window carries its own, and the screen has no opinion.
+ * Whether the menu bar belongs to the screen or to each window. GNUstep, which runs
+ * OpenStep programs on both, settles it with a user default: NSMenuInterfaceStyle, either
+ * NSMacintoshInterfaceStyle or NSWindows95InterfaceStyle. The same key and values here.
  *
- * GNUstep, which has had to run OpenStep programs on both, names this rather than picking
- * a side: NSMenuInterfaceStyle is a user default, and NSMacintoshInterfaceStyle means the
- * menu goes at the top of the screen while NSWindows95InterfaceStyle means it goes in the
- * window. The same key with the same values decides it here.
- *
- * There is a second question underneath, which GNUstep does not have to ask because X11
- * answers it: whether a program's windows are windows of the host system, with their own
- * places in its window list, or drawings inside one big window of this program's own.
- * That is WindowStyle below. Separate windows are what a desktop environment means; the
- * contained kind is what a checking run uses, because it can be built and painted without
- * ever being put on a screen.
+ * WindowStyle below is the second question, which X11 answers for GNUstep: whether this
+ * program's windows are the host's windows or drawings inside one window of its own. The
+ * contained kind is what a checking run uses, being paintable without a screen.
  */
 public final class InterfaceStyle {
     private InterfaceStyle() {}
