@@ -210,20 +210,40 @@ public final class Dyld {
      * because there is one right answer to it, and it was being written out twice.
      */
     public static List<String> commandFor(Bundle bundle, List<File> files) {
-        File binary = bundle == null ? null : bundle.machOExecutable();
-        if (binary == null) return List.of();
+        List<String> words = new ArrayList<>();
+        if (files != null) for (File one : files) words.add(one.getAbsolutePath());
+        // A program with a window of its own, so the runtime with no console: a console
+        // opening behind every program would be a window nobody asked for.
+        return commandFor(OSPaths.javaCommand(),
+                          bundle == null ? null : bundle.machOExecutable(), words);
+    }
+
+    /**
+     * The same for a program that is not in a bundle.
+     *
+     * Everything in usr/bin is one: an image with an entry point and no wrapper around it,
+     * which is what a command line tool is anywhere else. It keeps the console it was
+     * started in, because everything one of these has to say it says in lines.
+     */
+    public static List<String> commandFor(File image, List<String> arguments) {
+        return commandFor(OSPaths.consoleJavaCommand(), image, arguments);
+    }
+
+    private static List<String> commandFor(String runtime, File image,
+                                           List<String> arguments) {
+        if (image == null || !image.isFile()) return List.of();
         List<String> command = new ArrayList<>();
-        command.add(javaCommand());
+        command.add(runtime);
         command.add("--enable-preview");
         command.add("--enable-native-access=ALL-UNNAMED");
         command.add("-D" + org.fractalmicro.dyld.Start.ROOT_PROPERTY + "=" + OSPaths.ROOT);
         command.add("-cp");
         command.add(bootstrapClassPath());
         command.add(bootstrapClass());
-        command.add(binary.getAbsolutePath());
+        command.add(image.getAbsolutePath());
         // What it was opened on arrives as arguments, which is all a program in a process
         // of its own can be given: it cannot be handed an object.
-        if (files != null) for (File one : files) command.add(one.getAbsolutePath());
+        if (arguments != null) command.addAll(arguments);
         return command;
     }
 

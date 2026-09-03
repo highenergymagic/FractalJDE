@@ -37,9 +37,9 @@ import java.util.Map;
 /**
  * What is in usr/bin, and whether it is a program.
  *
- * The volume had a loader and a system library there and nothing a person could type. A
- * Terminal that hands you to cmd.exe with none of this system on the path is a Terminal
- * for the machine underneath, not for this one.
+ * They had a batch file in front of each, because CreateProcess wants a PE and every
+ * program here is a Mach-O, so a foreign shell could never run one. This volume has a
+ * shell of its own now, and nothing stands in front of anything.
  */
 public final class ToolsTest {
     private ToolsTest() {}
@@ -84,18 +84,30 @@ public final class ToolsTest {
             && image.linkedLibraries().stream().anyMatch(l -> l.contains("CoreServices"))
             && image.linkedLibraries().stream().noneMatch(l -> l.contains("AppKit")));
 
-        // A shell runs the launcher, and the launcher runs the loader on the image. Both
-        // are written, because Git Bash and cmd.exe are both real ways in here.
-        boolean launchers = true;
-        for (String one : wanted) {
-            launchers &= OSPaths.usrBin().resolve(one + ".cmd").toFile().isFile()
-                      && OSPaths.usrBin().resolve(one + ".sh").toFile().isFile();
+        // Nothing stands in front of a program. There were two scripts beside each of
+        // these that started the loader on it, because the machine's own shell can start
+        // nothing but a PE. This volume has a shell of its own now.
+        List<String> scripts = new ArrayList<>();
+        for (File f : listed(OSPaths.usrBin())) {
+            if (f.getName().endsWith(".cmd") || f.getName().endsWith(".sh")) {
+                scripts.add(f.getName());
+            }
         }
-        failures += check(out, "with a launcher a shell can run beside each", launchers);
+        failures += check(out, "and no script stands in front of any of them",
+            scripts.isEmpty());
 
-        failures += check(out, "and none of them names an absolute path",
-            !mentionsThisVolume(OSPaths.usrBin().resolve("sw_vers.cmd"))
-            && !mentionsThisVolume(OSPaths.usrBin().resolve("sw_vers.sh")));
+        // The shell is a program on the volume like the rest, in the folder a Mac keeps
+        // it in, and it is started the same way: by handing the loader its image.
+        File shell = Images.shell().toFile();
+        MachO asImage = null;
+        try {
+            asImage = MachO.read(shell.toPath());
+        } catch (Exception notAnImage) {
+            out.println("      the shell could not be read: " + notAnImage);
+        }
+        failures += check(out, "the shell is /bin/sh, and is a program like any other",
+            shell.isFile() && shell.getParentFile().getName().equals("bin")
+            && asImage != null && asImage.fileType() == MachO.MH_EXECUTE);
 
         /* -------------------------------------------- what the volume says it is */
 
@@ -147,19 +159,10 @@ public final class ToolsTest {
         return said;
     }
 
-    /**
-     * Whether a launcher names where it happens to be sitting today.
-     *
-     * A volume is a directory that can be moved or copied. A script inside one holding the
-     * path it was written at works until somebody moves it, and then works nowhere.
-     */
-    private static boolean mentionsThisVolume(Path script) {
-        try {
-            return Files.isReadable(script)
-                && Files.readString(script).contains(OSPaths.ROOT.toString());
-        } catch (java.io.IOException e) {
-            return true;
-        }
+    /** What is in a folder, or nothing when there is no folder. */
+    private static File[] listed(Path folder) {
+        File[] kids = folder.toFile().listFiles();
+        return kids == null ? new File[0] : kids;
     }
 
     private static String readBack(Path file) {

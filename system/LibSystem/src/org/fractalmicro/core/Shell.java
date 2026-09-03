@@ -78,25 +78,22 @@ public final class Shell {
     }
 
     /**
-     * A command line where you are, with the volume's own tools on the path.
+     * A command line where you are, running the shell this system has.
      *
-     * Which directory holds them is not this layer's to know, so it arrives. Nothing is
-     * put in front of it either way: a shell that could not find sw_vers is a shell, and a
-     * shell that could not find cmd.exe is not.
+     * Which program that is arrives, since it is a fact about the volume and this layer
+     * knows nothing about volumes. The console of its own is the part the runtime cannot
+     * ask for, and a console is what a terminal is made of.
      */
-    public static void openTerminal(File directory, File alsoOnPath) {
-        File dir = directory != null && directory.isDirectory() ? directory : new File(System.getProperty("user.home"));
-        try {
-            ProcessBuilder starting =
-                new ProcessBuilder("cmd.exe", "/c", "start", "cmd.exe").directory(dir);
-            if (alsoOnPath != null && alsoOnPath.isDirectory()) {
-                java.util.Map<String, String> environment = starting.environment();
-                environment.put("PATH", alsoOnPath.getAbsolutePath()
-                                + File.pathSeparator + environment.getOrDefault("PATH", ""));
-            }
-            starting.start();
-        } catch (Exception e) {
-            System.err.println("could not open a terminal: " + e.getMessage());
+    public static long openTerminal(File directory, java.util.List<String> command,
+                                    boolean visible) {
+        File dir = directory != null && directory.isDirectory()
+            ? directory : new File(System.getProperty("user.home"));
+        if (command == null || command.isEmpty()) {
+            System.err.println("no shell to open a terminal with");
+            return 0;
         }
+        long pid = org.fractalmicro.win.Console32.startWithConsole(command, dir, visible);
+        if (pid == 0) System.err.println("could not open a terminal");
+        return pid;
     }
 }

@@ -24,7 +24,6 @@ import org.fractalmicro.foundation.FMMutableDictionary;
 import org.fractalmicro.foundation.FMString;
 
 import org.fractalmicro.core.Log;
-import org.fractalmicro.dyld.Start;
 import org.fractalmicro.macho.MachO;
 import org.fractalmicro.macho.Symbols;
 import org.fractalmicro.macho.Linker;
@@ -86,26 +85,35 @@ public final class Images {
         + "Metadata.framework/Versions/A/Support/mds";
 
     /**
-     * One program in usr/bin: what it is called and where it starts.
+     * One command line program: what it is called, where it starts, and which folder.
      *
-     * A Mac keeps these in /usr/bin, one small program each over a framework that already
-     * does the work. None of them puts anything on a screen, so none of them links AppKit.
+     * A Mac keeps the tools in /usr/bin and the shell in /bin, and so does this. Each is
+     * one small program over a framework that already does the work, and none of them puts
+     * anything on a screen, so none of them links AppKit.
      */
-    private record Tool(String name, String entry) {}
+    private record Tool(String name, String entry, boolean shell) {
+        Tool(String name, String entry) { this(name, entry, false); }
+
+        Path folder() { return shell ? OSPaths.bin() : OSPaths.usrBin(); }
+    }
 
     private static final List<Tool> TOOLS = List.of(
         new Tool("sw_vers", "org.fractalmicro.tools.SwVers"),
         new Tool("defaults", "org.fractalmicro.tools.Defaults"),
         new Tool("mdfind", "org.fractalmicro.tools.MdFind"),
         new Tool("mdls", "org.fractalmicro.tools.MdLs"),
-        new Tool("open", "org.fractalmicro.tools.Open"));
+        new Tool("open", "org.fractalmicro.tools.Open"),
+        new Tool("sh", "org.fractalmicro.tools.Sh", true));
 
     /** What is in usr/bin, for anything that wants to say so. */
     public static List<String> toolNames() {
         List<String> names = new java.util.ArrayList<>();
-        for (Tool one : TOOLS) names.add(one.name());
+        for (Tool one : TOOLS) if (!one.shell()) names.add(one.name());
         return names;
     }
+
+    /** The shell, which is what the Terminal runs. */
+    public static Path shell() { return OSPaths.bin().resolve("sh"); }
 
     /** Where the per-image code is, when a build has said. */
     public static Path builtImages() {
@@ -486,56 +494,28 @@ public final class Images {
     private static void commandLineTools(Path built, Linker linker) throws IOException {
         Path code = built.resolve("Tools.jar");
         if (!Files.isReadable(code)) return;
-        Path bin = OSPaths.usrBin();
-        Files.createDirectories(bin);
         byte[] jar = Files.readAllBytes(code);
         List<String> linked = linkedBy("tool");
         for (Tool tool : TOOLS) {
+            Files.createDirectories(tool.folder());
             byte[] resources = withEntry(jar, tool.entry());
             Symbols.Set2 symbols = Symbols.of(resources);
             byte[] program = MachO.build(tool.name(), linked, resources, MachO.MH_EXECUTE,
                                          List.of(), RUNPATHS,
                                          List.copyOf(symbols.defined()),
                                          linker.resolve(symbols.referenced(), linked));
-            Path at = bin.resolve(tool.name());
+            Path at = tool.folder().resolve(tool.name());
             Files.write(at, program);
             at.toFile().setExecutable(true);
-            writeToolLaunchers(bin, tool.name());
+            // Earlier volumes had a .cmd and a .sh beside each of these, because the only
+            // terminal was the machine's own and it can start nothing but a PE. The shell
+            // on this volume starts them itself, so they are one more way in that nobody
+            // needs and that could be wrong on its own.
+            for (String script : new String[]{".cmd", ".sh"}) {
+                Files.deleteIfExists(tool.folder().resolve(tool.name() + script));
+            }
         }
-        Log.info("usr/bin holds " + TOOLS.size() + " tools");
-    }
-
-    /**
-     * The two scripts that let a shell run one of these.
-     *
-     * A console program, so java rather than javaw and no start: what it prints belongs in
-     * the window it was typed in, and whoever typed it is waiting for the exit code.
-     */
-    private static void writeToolLaunchers(Path bin, String name) throws IOException {
-        String shell = "#!/bin/sh\n"
-            + "# " + name + ", on a FractalJDE volume.\n"
-            + "here=$(cd \"$(dirname \"$0\")\" && pwd)\n"
-            + "root=$(cd \"$here/../..\" && pwd)\n"
-            + "java=\"${JAVA_HOME:+$JAVA_HOME/bin/}java\"\n"
-            + "exec \"$java\" --enable-preview --enable-native-access=ALL-UNNAMED \\\n"
-            + "     \"-D" + Start.ROOT_PROPERTY + "=$root\" -cp \"$root/usr/lib/dyld\" \\\n"
-            + "     " + Start.class.getName() + " \"$here/" + name + "\" \"$@\"\n";
-        Path script = bin.resolve(name + ".sh");
-        Files.write(script, shell.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        script.toFile().setExecutable(true);
-
-        String batch = "@echo off\r\n"
-            + "rem " + name + ", on a FractalJDE volume.\r\n"
-            + "setlocal\r\n"
-            + "for %%d in (\"%~dp0..\\..\") do set ROOT=%%~fd\r\n"
-            + "set JAVA=java\r\n"
-            + "if exist \"%JAVA_HOME%\\bin\\java.exe\" set JAVA=%JAVA_HOME%\\bin\\java.exe\r\n"
-            + "\"%JAVA%\" --enable-preview --enable-native-access=ALL-UNNAMED "
-            + "\"-D" + Start.ROOT_PROPERTY + "=%ROOT%\" -cp \"%ROOT%\\usr\\lib\\dyld\" "
-            + Start.class.getName() + " \"%~dp0" + name + "\" %*\r\n"
-            + "endlocal & exit /b %ERRORLEVEL%\r\n";
-        Files.write(bin.resolve(name + ".cmd"),
-                    batch.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Log.info("the volume holds " + TOOLS.size() + " command line programs");
     }
 
     /** A framework's Info.plist. FMWK is the package type a framework carries. */

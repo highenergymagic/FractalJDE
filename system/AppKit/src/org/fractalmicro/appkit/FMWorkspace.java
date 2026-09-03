@@ -89,9 +89,12 @@ public final class FMWorkspace {
      */
     public boolean openTerminal(FMURL folder) {
         if (folder == null) return false;
-        org.fractalmicro.core.Shell.openTerminal(
-            folder.asFile(), org.fractalmicro.os.OSPaths.usrBin().toFile());
-        return true;
+        // The shell is a program on the volume like any other, so it is started the way
+        // any other is: by handing the loader its image. Nothing here runs a script.
+        return org.fractalmicro.core.Shell.openTerminal(folder.asFile(),
+            org.fractalmicro.bundle.Dyld.commandFor(
+                org.fractalmicro.bundle.Images.shell().toFile(), java.util.List.of()),
+            true) != 0;
     }
 
     /** Starts an installed program by its bundle identifier, whether or not it is running. */

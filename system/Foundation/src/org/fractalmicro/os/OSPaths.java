@@ -141,6 +141,23 @@ public final class OSPaths {
         return java.isFile() ? java.getAbsolutePath() : "java";
     }
 
+    /**
+     * The same runtime, in the form that keeps a console.
+     *
+     * javaw has no window, which is right for a program that puts up its own and wrong for
+     * one whose whole output is lines: a tool printing into nothing looks like a tool that
+     * did nothing.
+     */
+    public static String consoleJavaCommand() {
+        String home = System.getProperty("java.home", "");
+        if (home.isEmpty()) return "java";
+        for (String named : new String[]{"bin/java.exe", "bin/java"}) {
+            java.io.File found = new java.io.File(home, named);
+            if (found.isFile()) return found.getAbsolutePath();
+        }
+        return "java";
+    }
+
     public static String shortName() {
         String name = System.getProperty("user.name", "user");
         return name.toLowerCase(java.util.Locale.ROOT).replace(' ', '_');
@@ -185,6 +202,9 @@ public final class OSPaths {
 
     /** /usr/bin, where the command line tools live. */
     public static Path usrBin() { return ROOT.resolve("usr/bin"); }
+
+    /** /bin, which on a Mac holds the shell and little else. */
+    public static Path bin() { return ROOT.resolve("bin"); }
 
     /** The loader itself. Every program written here names this path. */
     public static Path dyld() { return usrLib().resolve("dyld"); }

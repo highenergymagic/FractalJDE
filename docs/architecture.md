@@ -296,14 +296,23 @@ tools' code and says where it starts. None of them links AppKit. They are small 
 the work is already done by a framework, and the tool is the part that turns arguments
 into a call and a result into lines.
 
-A shell cannot run a Mach-O, so a `.cmd` and a `.sh` sit beside each one and start the
-loader on it. Neither holds an absolute path: the volume is found by climbing, so a volume
-that is copied somewhere else still works. The Terminal opens with `usr/bin` in front of
-the path, which is what makes typing `sw_vers` do anything at all.
+There was a `.cmd` and a `.sh` beside each of these for a while, and they were the wrong
+answer. `CreateProcess` wants a PE image and every program here is a Mach-O, so the only
+thing `cmd.exe` could ever run was a batch file standing in front of a program. Putting
+`usr/bin` on its path made typing `sw_vers` work by running a script that ran the loader,
+which is not what typing the name of a program means.
 
-A bundle has no such scripts and never needed them, because nothing here starts a program
-by asking a shell. These are the one case where the caller is a foreign shell that has no
-other way in.
+So there is a shell. `bin/sh` is a program on this volume like the others, and what it
+does with a name is look in `usr/bin` and `bin` and hand what it finds to the loader. It
+falls through to the machine underneath for anything the volume does not have, so `ver`
+and `git` still work, and the volume comes first: somebody standing in this system who
+types `mdfind` means this one.
+
+The Terminal starts it in a console of its own. That part cannot be asked for through the
+runtime, which will start a process and say nothing about its console, so it goes through
+`CreateProcessW` directly with `CREATE_NEW_CONSOLE`. The console is a real one, hosted by
+`conhost`, which is what keeps a screen reader reading it as a terminal rather than as
+some text somebody drew.
 
 ## How it talks to Windows
 
