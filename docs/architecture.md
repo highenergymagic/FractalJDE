@@ -36,13 +36,18 @@ what is actually in the one that ships:
              LC_RPATH                   /System/Library/Frameworks
              LC_RPATH                   @loader_path/../Frameworks
              LC_UUID                    a digest of the contents, so builds repeat
-             LC_MAIN                    where the entry code starts
+             LC_UNIXTHREAD              the register state the entry starts in
              LC_SYMTAB                  what it defines and what it expects
              LC_DYSYMTAB                which of those are which
 aligned      the entry code             twelve bytes of x86_64
              the symbol table           nlist_64 entries, sixteen bytes each
 page aligned the code resources
 ```
+
+`LC_UNIXTHREAD` rather than `LC_MAIN`, because 10.6 had no `LC_MAIN`: an executable of
+that era named its entry point by handing the kernel a whole register state to start in,
+of which one register matters, and the shorter command arrived two releases later. The
+reader takes either, since a file made somewhere else may carry the newer.
 
 `__LINKEDIT` is before `__FRACTAL` rather than after it, which is the one place this
 departs from the layout Apple uses. The code resources are an archive appended to the
