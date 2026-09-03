@@ -297,10 +297,13 @@ the work is already done by a framework, and the tool is the part that turns arg
 into a call and a result into lines.
 
 A shell cannot run a Mach-O, so a `.cmd` and a `.sh` sit beside each one and start the
-loader on it, the same as the launchers in a bundle. Neither holds an absolute path: the
-volume is found by climbing, so a volume that is copied somewhere else still works. The
-Terminal now opens with `usr/bin` in front of the path, which is what makes typing
-`sw_vers` do anything at all.
+loader on it. Neither holds an absolute path: the volume is found by climbing, so a volume
+that is copied somewhere else still works. The Terminal opens with `usr/bin` in front of
+the path, which is what makes typing `sw_vers` do anything at all.
+
+A bundle has no such scripts and never needed them, because nothing here starts a program
+by asking a shell. These are the one case where the caller is a foreign shell that has no
+other way in.
 
 ## How it talks to Windows
 

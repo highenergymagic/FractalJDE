@@ -44,7 +44,7 @@ import java.util.zip.ZipFile;
 public final class MachOTest {
     private MachOTest() {}
 
-    public static int count() { return 19; }
+    public static int count() { return 17; }
 
     public static int run(PrintStream out) {
         int failures = 0;
@@ -182,31 +182,17 @@ public final class MachOTest {
         failures += check(out, "a program's process starts with the loader and nothing else",
             bootstrap.endsWith("dyld") && !bootstrap.contains(File.pathSeparator));
 
-        /* -------------------------------------------- and nowhere else is named */
+        /* ------------------------------------ and nothing is standing beside it */
 
-        String launcher = readLauncher(textEdit);
-        String source = new File(System.getProperty("user.dir")).getAbsolutePath();
-        failures += check(out, "no launcher points at the folder this was built in",
-            !launcher.isEmpty() && !launcher.contains(source));
-
-        // A launcher that spells out this account's home folder, or where this machine
-        // keeps its runtime, is one that stops working the moment the program is copied
-        // anywhere. Both are read from the environment instead.
-        String home = OSPaths.USER_HOME.toString();
-        String runtime = System.getProperty("java.home", "");
-        failures += check(out, "no launcher names the machine it was written on",
-            !launcher.contains(home)
-            && (runtime.isEmpty() || !launcher.contains(runtime))
-            && !readShellLauncher(textEdit).contains(home));
-        // They used to name the home directory and work out the rest from there, which is
-        // right until a release is staged somewhere that is not a home directory. Now they
-        // name no location at all: each walks up from itself until it finds usr/lib/dyld,
-        // so a bundle runs against the volume it is actually on. The runtime is still the
-        // environment's to say, since it is not on the volume.
-        failures += check(out, "they find the volume they are on instead",
-            launcher.contains("usr\\lib\\dyld") && launcher.contains("%~dp0")
-            && launcher.contains("%JAVA_HOME%")
-            && readShellLauncher(textEdit).contains("usr/lib/dyld"));
+        // Contents/Fractal holds the executable and nothing else, as Contents/MacOS does.
+        // There were two shell scripts here that started the loader on it, and nothing on
+        // the volume ever ran them: a program is started by handing the loader an image,
+        // and a script doing the same thing was a second way to start one that could go
+        // wrong by itself.
+        java.util.List<String> beside = besideTheExecutable(textEdit);
+        out.println("      Contents/Fractal holds " + String.join(", ", beside));
+        failures += check(out, "the executable stands alone in Contents/Fractal",
+            beside.equals(java.util.List.of("TextEdit")));
 
         out.println("      " + (failures == 0 ? "the programs hold together" : failures + " failed"));
         return failures;
@@ -229,24 +215,14 @@ public final class MachOTest {
         return found;
     }
 
-    private static String readShellLauncher(Bundle bundle) {
-        File sh = new File(bundle.machOExecutable().getParentFile(),
-                           bundle.machOExecutable().getName() + ".sh");
-        try {
-            return sh.isFile() ? Files.readString(sh.toPath()) : "";
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    private static String readLauncher(Bundle bundle) {
-        File cmd = bundle.windowsLauncher();
-        if (cmd == null) return "";
-        try {
-            return Files.readString(cmd.toPath());
-        } catch (Exception e) {
-            return "";
-        }
+    /** What is in a program's executable directory, whatever it turns out to be. */
+    private static java.util.List<String> besideTheExecutable(Bundle bundle) {
+        java.util.List<String> found = new java.util.ArrayList<>();
+        File binary = bundle.machOExecutable();
+        File[] kids = binary == null ? null : binary.getParentFile().listFiles();
+        if (kids != null) for (File one : kids) found.add(one.getName());
+        java.util.Collections.sort(found);
+        return found;
     }
 
     private static byte[] readAt(byte[] bytes, int offset, int length) {

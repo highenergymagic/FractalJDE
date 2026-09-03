@@ -246,21 +246,11 @@ public final class FMApplicationMain implements Bundles.Launcher {
         // hands over on a Mac. Everything else is found by following the load commands.
         // Putting the libraries on the class path instead would let the program reach any
         // of them, linked or not, which is the arrangement this system exists to avoid.
+        //
+        // The loader says what that command is, because it is the same command wherever a
+        // program is started from and there is nothing about it that is AppKit's.
         FMMutableArray<FMString> command = FMMutableArray.empty();
-        command.add(FMString.of(Dyld.javaCommand()));
-        command.add(FMString.of("--enable-preview"));
-        command.add(FMString.of("--enable-native-access=ALL-UNNAMED"));
-        command.add(FMString.of("-D" + org.fractalmicro.dyld.Start.ROOT_PROPERTY
-                                + "=" + OSPaths.ROOT));
-        command.add(FMString.of("-cp"));
-        command.add(FMString.of(Dyld.bootstrapClassPath()));
-        command.add(FMString.of(Dyld.bootstrapClass()));
-        command.add(FMString.of(bundle.machOExecutable().getAbsolutePath()));
-        // What it was opened on goes to the program as its arguments, which is what a
-        // program in a process of its own can be given: it cannot be handed an object.
-        if (files != null) {
-            for (File one : files) command.add(FMString.of(one.getAbsolutePath()));
-        }
+        for (String word : Dyld.commandFor(bundle, files)) command.add(FMString.of(word));
 
         FMURL log = FMURL.of(OSPaths.userLibrary().resolve("Logs").toFile())
                          .appending(bundle.identifier().appending(FMString.of(".log")));

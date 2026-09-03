@@ -74,14 +74,18 @@ TextEdit.app/
     Info.plist              identifier, name, what to run, which icon
     PkgInfo                 the eight bytes APPLFMI_ (FMI, the creator code here)
     Fractal/TextEdit        the program: a Mach-O executable
-    Fractal/TextEdit.sh     the script the format calls for
-    Fractal/TextEdit.cmd    the same thing Windows can actually run
     Resources/TextEdit.png  its icon
 ```
 
 The executable folder is `Contents/Fractal`, not `Contents/MacOS`: there is no Mac in
 this system, so there is none in its bundles either. Bundles written before the rename
 are still read from the old folder.
+
+It holds the executable and nothing else. There were two shell scripts beside it that
+started the loader on the program, and nothing on the volume ever ran them: a program is
+started by handing the loader an image, which is what the desktop does and what anything
+else does. A script doing the same thing by hand was a second way to start a program that
+could go wrong on its own, and it is not what a bundle looks like.
 
 ## Installing
 

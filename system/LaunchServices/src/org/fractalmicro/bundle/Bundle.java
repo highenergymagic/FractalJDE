@@ -25,7 +25,6 @@ import org.fractalmicro.foundation.FMURL;
 
 import org.fractalmicro.os.OSPaths;
 import org.fractalmicro.plist.Plist;
-import org.fractalmicro.dyld.Start;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -227,22 +226,6 @@ public final class Bundle {
     }
 
     /**
-     * The Mach-O executable. Windows cannot start it directly, so
-     * {@link #windowsLauncher()} answers with the .cmd instead.
-     */
-    public File executable() {
-        String name = text("CFBundleExecutable");
-        if (name.isEmpty()) return null;
-        for (String dir : new String[]{EXECUTABLE_DIRECTORY, OLD_EXECUTABLE_DIRECTORY}) {
-            for (String candidate : new String[]{name, name + ".cmd"}) {
-                File f = new File(root, dir + "/" + candidate);
-                if (f.isFile()) return f;
-            }
-        }
-        return null;
-    }
-
-    /**
      * The bundle the running program came out of.
      *
      * Everything that is not code: interface files, the words in each language, the icon.
@@ -324,25 +307,13 @@ public final class Bundle {
         return null;
     }
 
-    /** The launcher Windows runs when the bundle is opened from outside this desktop. */
-    public File windowsLauncher() {
-        String name = text("CFBundleExecutable");
-        if (name.isEmpty()) return null;
-        for (String dir : new String[]{EXECUTABLE_DIRECTORY, OLD_EXECUTABLE_DIRECTORY}) {
-            File f = new File(root, dir + "/" + name + ".cmd");
-            if (f.isFile()) return f;
-        }
-        return null;
-    }
-
-
 
     /* ------------------------------------------------------------ writing */
 
     /** Builds a bundle on disk. Existing bundles are rewritten, not merged. */
-    public static Bundle create(File parent, String name, FMDictionary info,
-                                String launchArguments) throws IOException {
-        return create(parent, name, info, launchArguments, List.of());
+    public static Bundle create(File parent, String name, FMDictionary info)
+            throws IOException {
+        return create(parent, name, info, List.of());
     }
 
     /**
@@ -355,9 +326,9 @@ public final class Bundle {
      *                    class. Anything outside them is framework code and is left there.
      */
     public static Bundle create(File parent, String name, FMDictionary info,
-                                String launchArguments, List<String> ownPackages)
+                                List<String> ownPackages)
             throws IOException {
-        return create(parent, name, info, launchArguments, ownPackages, EXTENSION);
+        return create(parent, name, info, ownPackages, EXTENSION);
     }
 
     /**
@@ -368,13 +339,11 @@ public final class Bundle {
      * in what the directory is called and what opens them.
      */
     public static Bundle create(File parent, String name, FMDictionary info,
-                                String launchArguments, List<String> ownPackages,
-                                String extension)
+                                List<String> ownPackages, String extension)
             throws IOException {
         // Foundation and AppKit unless the caller says otherwise: the pair no program
         // with a window can do without, and the least a program can link.
-        return create(parent, name, info, launchArguments, ownPackages, extension,
-                      Frameworks.COCOA);
+        return create(parent, name, info, ownPackages, extension, Frameworks.COCOA);
     }
 
     /**
@@ -385,7 +354,7 @@ public final class Bundle {
      * so reaching for a class from a library it did not name fails.
      */
     public static Bundle create(File parent, String name, FMDictionary info,
-                                String launchArguments, List<String> ownPackages,
+                                List<String> ownPackages,
                                 String extension, List<String> linked)
             throws IOException {
         File root = new File(parent, name + extension);
@@ -438,8 +407,8 @@ public final class Bundle {
         Files.write(binary, program);
         binary.toFile().setExecutable(true);
 
-        writeLaunchers(executables, name, launchArguments);
         removeOldExecutableFolder(new File(root, OLD_EXECUTABLE_DIRECTORY));
+        retireAnythingBeside(executables, name);
         return read(root);
     }
 
@@ -566,65 +535,18 @@ public final class Bundle {
     }
 
     /**
-     * Writes the two launchers beside the executable: a .sh, which the bundle format calls
-     * for, and a .cmd, which is what Windows actually runs. Both start the loader on the
-     * executable, which is the same thing the system does when it opens a program.
+     * Clears whatever else is in the executable directory.
      *
-     * Neither may contain an absolute path, or unpacking a release finds every program
-     * dead. The volume is found rather than named: the launcher walks up until it sees
-     * usr/lib/dyld, so a bundle copied onto another volume runs against that one.
+     * Earlier versions wrote two shell scripts beside the program that started the loader
+     * on it. Nothing on the volume ever ran them, and a volume that has been upgraded
+     * rather than made fresh would keep them forever otherwise.
      */
-    private static void writeLaunchers(File where, String name, String arguments)
-            throws IOException {
-        String shell = "#!/bin/sh\n"
-            + "# Launcher for " + name + ".app\n"
-            + "here=$(cd \"$(dirname \"$0\")\" && pwd)\n"
-            + "root=\"$here\"\n"
-            + "while [ ! -e \"$root/usr/lib/dyld\" ]; do\n"
-            + "    up=$(dirname \"$root\")\n"
-            + "    [ \"$up\" = \"$root\" ] && { echo \"" + name
-            + ".app is not on a FractalJDE volume\" >&2; exit 70; }\n"
-            + "    root=\"$up\"\n"
-            + "done\n"
-            + "java=\"${JAVA_HOME:+$JAVA_HOME/bin/}java\"\n"
-            + "exec \"$java\" --enable-preview --enable-native-access=ALL-UNNAMED \\\n"
-            + "     \"-D" + Start.ROOT_PROPERTY + "=$root\" -cp \"$root/usr/lib/dyld\" \\\n"
-            + "     " + Start.class.getName() + " \"$here/" + name + "\" \"$@\"\n";
-        Path script = new File(where, name + ".sh").toPath();
-        Files.write(script, shell.getBytes(StandardCharsets.UTF_8));
-        script.toFile().setExecutable(true);
-
-        // A bounded walk rather than the shell's open-ended one, because a batch file
-        // climbing past the drive root goes on finding the drive root forever.
-        StringBuilder up = new StringBuilder();
-        StringBuilder climbing = new StringBuilder("%~dp0..");
-        for (int levels = 1; levels <= 8; levels++) {
-            if (levels > 1) {
-                climbing.append("\\..");
-                up.append(' ');
-            }
-            up.append('"').append(climbing).append('"');
+    private static void retireAnythingBeside(File executables, String name) {
+        File[] kids = executables.listFiles();
+        if (kids == null) return;
+        for (File one : kids) {
+            if (!one.getName().equals(name) && one.isFile()) one.delete();
         }
-
-        String batch = "@echo off\r\n"
-            + "rem Launcher for " + name + ".app\r\n"
-            + "setlocal\r\n"
-            + "set ROOT=\r\n"
-            + "for %%d in (" + up + ") do "
-            + "if not defined ROOT if exist \"%%~fd\\usr\\lib\\dyld\" set ROOT=%%~fd\r\n"
-            + "if not defined ROOT (\r\n"
-            + "  echo " + name + ".app is not on a FractalJDE volume.\r\n"
-            + "  exit /b 70\r\n"
-            + ")\r\n"
-            // JAVA_HOME first, then whatever javaw is on the path.
-            + "set JAVAW=javaw\r\n"
-            + "if exist \"%JAVA_HOME%\\bin\\javaw.exe\" set JAVAW=%JAVA_HOME%\\bin\\javaw.exe\r\n"
-            + "start \"\" \"%JAVAW%\" --enable-preview --enable-native-access=ALL-UNNAMED "
-            + "\"-D" + Start.ROOT_PROPERTY + "=%ROOT%\" -cp \"%ROOT%\\usr\\lib\\dyld\" "
-            + Start.class.getName() + " \"%~dp0" + name + "\" %*\r\n"
-            + "endlocal\r\n";
-        Files.write(new File(where, name + ".cmd").toPath(),
-                    batch.getBytes(StandardCharsets.UTF_8));
     }
 
     /** Clears the executables a previous version wrote under the old folder name. */

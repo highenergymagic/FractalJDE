@@ -202,6 +202,49 @@ public final class Dyld {
     /** The class that runs first in a program's process. */
     public static String bootstrapClass() { return "org.fractalmicro.dyld.Start"; }
 
+    /**
+     * The command that starts a program in a process of its own.
+     *
+     * The loader and the image, which is what the kernel hands over on a Mac; everything
+     * else the program needs is found by following its load commands. Put together here
+     * because there is one right answer to it, and it was being written out twice.
+     */
+    public static List<String> commandFor(Bundle bundle, List<File> files) {
+        File binary = bundle == null ? null : bundle.machOExecutable();
+        if (binary == null) return List.of();
+        List<String> command = new ArrayList<>();
+        command.add(javaCommand());
+        command.add("--enable-preview");
+        command.add("--enable-native-access=ALL-UNNAMED");
+        command.add("-D" + org.fractalmicro.dyld.Start.ROOT_PROPERTY + "=" + OSPaths.ROOT);
+        command.add("-cp");
+        command.add(bootstrapClassPath());
+        command.add(bootstrapClass());
+        command.add(binary.getAbsolutePath());
+        // What it was opened on arrives as arguments, which is all a program in a process
+        // of its own can be given: it cannot be handed an object.
+        if (files != null) for (File one : files) command.add(one.getAbsolutePath());
+        return command;
+    }
+
+    /**
+     * Starts one, for a caller with no task table to register it in.
+     *
+     * The desktop starts a program through AppKit, which notes it as running. A command
+     * line tool has none of that and still has to be able to open something.
+     */
+    public static boolean start(Bundle bundle, List<File> files) {
+        List<String> command = commandFor(bundle, files);
+        if (command.isEmpty()) return false;
+        try {
+            new ProcessBuilder(command).inheritIO().start();
+            return true;
+        } catch (IOException wouldNotStart) {
+            Log.error("could not start " + bundle.displayName(), wouldNotStart);
+            return false;
+        }
+    }
+
     /* ------------------------------------------------------------ starting */
 
     /**

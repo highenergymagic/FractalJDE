@@ -73,14 +73,14 @@ public final class BundleTest {
             failures += check(out, identifier + " has an Info.plist that reads back",
                               new File(bundle.root(), "Contents/Info.plist").isFile()
                               && Bundle.read(bundle.root()) != null);
-            // The executable and the two launchers, all in Contents/Fractal: the
-            // program itself, the script the format calls for, and the one Windows runs.
+            // Contents/Fractal holds the executable, and only that. A Mac keeps the
+            // program there and nothing else, and so does this.
             String name = bundle.displayName().toString();
             File executables = new File(bundle.root(), Bundle.EXECUTABLE_DIRECTORY);
-            failures += check(out, identifier + " has its executable and both launchers",
+            String[] inside = executables.list();
+            failures += check(out, identifier + " has its executable and nothing beside it",
                               new File(executables, name).isFile()
-                              && new File(executables, name + ".sh").isFile()
-                              && new File(executables, name + ".cmd").isFile());
+                              && inside != null && inside.length == 1);
             failures += check(out, identifier + " says APPL in its PkgInfo", pkgInfoIsApp(bundle));
         }
 

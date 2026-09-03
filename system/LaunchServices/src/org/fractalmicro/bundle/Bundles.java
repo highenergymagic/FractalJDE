@@ -264,12 +264,8 @@ public final class Bundles {
                     case SPOTLIGHT -> SPOTLIGHT_EXTENSION;
                     default -> Bundle.EXTENSION;
                 };
-                // A plug-in is loaded by whoever wants it, so there is no command that
-                // starts one and nothing to write in its executable to say so.
-                Bundle bundle = Bundle.create(
-                    parent, spec.name(), info,
-                    Bundle.EXTENSION.equals(extension) ? "--open-app " + spec.identifier() : "",
-                    spec.own(), extension, spec.linked());
+                Bundle bundle = Bundle.create(parent, spec.name(), info, spec.own(),
+                                              extension, spec.linked());
                 if (bundle != null) {
                     writeIcon(bundle, spec.name());
                     copyResources(spec, bundle);
@@ -537,16 +533,21 @@ public final class Bundles {
     /**
      * Opens a bundle.
      *
-     * A bundle naming a principal class is handed to whatever knows how to run one. A
-     * bundle without one, such as a bundle wrapping a program belonging to the host, is
-     * handed to the host.
+     * A program of this system is handed to whatever knows how to run one, and started
+     * through the loader when nothing does, which is a process outside the desktop: a
+     * command line tool has no AppKit in it and still has to be able to open something.
+     * A bundle naming no principal class wraps a program belonging to the host, and the
+     * host is asked to open that.
      */
     public static boolean open(Bundle bundle, List<File> files) {
         if (bundle == null) return false;
         Launcher who = launcher;
         boolean isProgram = !bundle.principalClass().isEmpty();
-        if (who != null && isProgram && who.open(bundle, files)) return true;
-        File executable = bundle.executable();
+        if (isProgram) {
+            if (who != null && who.open(bundle, files)) return true;
+            return Dyld.start(bundle, files);
+        }
+        File executable = bundle.machOExecutable();
         if (executable != null) {
             org.fractalmicro.core.Shell.open(executable);
             return true;
