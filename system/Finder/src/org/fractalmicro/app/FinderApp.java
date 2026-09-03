@@ -123,6 +123,11 @@ public final class FinderApp implements FMApplicationDelegate {
         // its windows go and the desktop is drawn again, and it is still running.
         manager.setEventHandler(me, FMAppleEvent.REQUIRED_SUITE,
             FMAppleEvent.QUIT, event -> onTheScreen(Finder::relaunch));
+
+        // And the standard suite over what the Finder holds, which is not written here:
+        // getting and counting are nobody's own idea, so they are written down once.
+        org.fractalmicro.scripting.FMScriptCommands.install(
+            manager, me, () -> FinderScripting.APPLICATION);
     }
 
     /** What an odoc event named, opened the way dragging it onto the icon would. */

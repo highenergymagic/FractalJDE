@@ -92,6 +92,61 @@ no such thing.
 Telling the Finder to quit relaunches it, which is what quitting the Finder means: the
 windows go, the desktop is drawn again, and it is still running.
 
+## Which thing
+
+A command has to say what it is about, and it cannot say it with a pointer: the thing is
+in another process and may not have existed when the script was written. So it says it as
+a chain.
+
+```java
+FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.NAME,
+    FMScriptObjectSpecifier.at(FMScriptObjectSpecifier.ITEM, 1,
+        FMScriptObjectSpecifier.at(FMScriptObjectSpecifier.WINDOW, 1, null)));
+```
+
+That is "the name of item 1 of window 1", and it is four steps read backwards: the
+application, the window at that index, the item at that index, the property. Each step
+says what kind of thing it wants and how to pick it out, and the ways to pick one are the
+ways there have always been: by name, by index, every one of them, or a property of
+whatever holds it. An index counts from one, and from the end when it is negative.
+
+Nothing is held between one command and the next. The chain is resolved against the
+program's objects as they are now, so a script that asks twice gets two honest answers
+rather than one answer and one stale handle.
+
+## What a program shows
+
+A program says what it holds by answering three questions about each object: what kind of
+thing it is, what one property holds, and what things of a kind are inside it. All three
+are codes. Cocoa reads the same shape out of the terminology and reaches the objects with
+key value coding; written out like this it suits a language that has no key value coding
+to lean on.
+
+The Finder shows its windows and its disks, a window shows what it is looking at and what
+is in it, and an item shows its name, its path and its size. Setting the path of a window
+moves it there, which is what a script means by telling a window to look somewhere else.
+
+## The standard suite
+
+Getting, setting, counting, whether something is there, and getting rid of it. None of
+those is a program's own idea, so none of them is written in a program: a program says
+what it holds, and `FMScriptCommands` answers the five for whatever that is.
+
+| | |
+|---|---|
+| `core/getd` | what this names |
+| `core/setd` | put that in it |
+| `core/cnte` | how many |
+| `core/doex` | is there one |
+| `core/delo` | get rid of it |
+
+An object crossing to another process crosses as its name, because an object is a thing
+in one process and a message is a thing on a wire. Asking for every window of the Finder
+gets the names of the windows, which is what the question meant.
+
+Asking for something that is not there is a refusal rather than an empty answer, with one
+exception: `doex` is the command whose whole purpose is asking, and it answers no.
+
 ## What is checked
 
 `ScriptingTest` sends real events through the real server. A command nothing answers
@@ -100,8 +155,12 @@ with its own number and a sentence, because an exception is a thing in one proce
 reply is a thing on a wire. Telling the Finder to open a folder that is not there is a
 reply saying so, and no window.
 
+`ScriptingTest` also asks the Finder how many windows it has, what the first one is
+called, what it is looking at, and what is in it, all through the same chain a script
+would use. Then it tells the window to look somewhere else and asks again.
+
 ## Not yet
 
 The terminology, which is the file that says what the commands are called and which
-objects they work on. The core suite, which is getting, setting, counting and making. And
-a language to write it in.
+objects they work on, so that something reading it could offer a person the words. And a
+language to write scripts in.

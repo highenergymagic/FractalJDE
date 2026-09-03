@@ -21,10 +21,12 @@ package org.fractalmicro.a11y;
 
 import org.fractalmicro.foundation.FMDictionary;
 import org.fractalmicro.foundation.FMMutableArray;
+import org.fractalmicro.foundation.FMMutableDictionary;
 import org.fractalmicro.foundation.FMString;
 import org.fractalmicro.scripting.FMAppleEvent;
 import org.fractalmicro.scripting.FMAppleEventManager;
 import org.fractalmicro.scripting.FMScriptError;
+import org.fractalmicro.scripting.FMScriptObjectSpecifier;
 import org.fractalmicro.windowserver.Desktop;
 import org.fractalmicro.windowserver.WindowServer;
 
@@ -47,7 +49,7 @@ import java.io.PrintStream;
 public final class ScriptingTest {
     private ScriptingTest() {}
 
-    public static int count() { return 11; }
+    public static int count() { return 20; }
 
     /** A suite of this system's own, for checks and nothing else. */
     private static final FMString CHECKING = FMString.of("fmck");
@@ -151,6 +153,82 @@ public final class ScriptingTest {
             FMAppleEventManager.failed(nowhere)
             && countFinderWindows(desktop) == before + 2);
 
+        FMDictionary emptied = manager.sendEvent(FMAppleEvent.of(
+            FMAppleEvent.REQUIRED_SUITE, FMAppleEvent.QUIT, FMString.of("Finder"), null));
+        drain();
+        failures += check(out, "telling the Finder to quit relaunches it, windows and all",
+            !FMAppleEventManager.failed(emptied)
+            && countFinderWindows(desktop) == 0);
+
+        /* --------------------------------------------------- asking what it holds */
+
+        FMDictionary opened2 = manager.sendEvent(FMAppleEvent.of(FMAppleEvent.REQUIRED_SUITE,
+            FMAppleEvent.OPEN_APPLICATION, FMString.of("Finder"), null));
+        drain();
+        failures += check(out, "a window to ask about", !FMAppleEventManager.failed(opened2));
+
+        FMScriptObjectSpecifier everyWindow = FMScriptObjectSpecifier.every(
+            FMScriptObjectSpecifier.WINDOW, null);
+        failures += check(out, "there is one window, counted by asking",
+            FMString.describing(get(manager, FMAppleEvent.COUNT, everyWindow))
+                    .sameAs(FMString.of("1")));
+
+        FMScriptObjectSpecifier firstWindow = FMScriptObjectSpecifier.at(
+            FMScriptObjectSpecifier.WINDOW, 1, null);
+        Object called = get(manager, FMAppleEvent.GET_DATA,
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.NAME, firstWindow));
+        failures += check(out, "and the name of the first one can be asked for",
+            !FMString.describing(called).isEmpty());
+
+        Object where = get(manager, FMAppleEvent.GET_DATA,
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.PATH, firstWindow));
+        failures += check(out, "and what it is showing",
+            new java.io.File(FMString.describing(where).toString()).isDirectory());
+
+        // Two deep, which is the whole reason a specifier is a chain: the items are in
+        // the window, and nothing had to hand out a window to ask about them.
+        FMScriptObjectSpecifier everyItem = FMScriptObjectSpecifier.every(
+            FMScriptObjectSpecifier.ITEM, firstWindow);
+        long many = whole(get(manager, FMAppleEvent.COUNT, everyItem));
+        failures += check(out, "what is in that window can be counted through it", many > 0);
+
+        Object firstNamed = get(manager, FMAppleEvent.GET_DATA,
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.NAME,
+                FMScriptObjectSpecifier.at(FMScriptObjectSpecifier.ITEM, 1, firstWindow)));
+        failures += check(out, "and the first of them named",
+            firstNamed != null && !FMString.describing(firstNamed).isEmpty());
+
+        // Set the property, which is the same specifier the other way round: this is what
+        // a script means by setting the target of a window.
+        FMMutableDictionary going = FMMutableDictionary.empty();
+        going.set(FMAppleEvent.DIRECT_OBJECT, FMScriptObjectSpecifier
+            .property(FMScriptObjectSpecifier.PATH, firstWindow).asDictionary());
+        going.set(FMAppleEvent.DATA,
+            FMString.describing(org.fractalmicro.fs.FS.desktopFolder().getAbsolutePath()));
+        FMDictionary went = manager.sendEvent(new FMAppleEvent(FMAppleEvent.CORE_SUITE,
+            FMAppleEvent.SET_DATA, FMString.of("Finder"), going.asDictionary()));
+        drain();
+        Object now = get(manager, FMAppleEvent.GET_DATA,
+            FMScriptObjectSpecifier.property(FMScriptObjectSpecifier.PATH, firstWindow));
+        failures += check(out, "setting what it is showing moves it there",
+            !FMAppleEventManager.failed(went)
+            && FMString.describing(now).sameAs(FMString.describing(
+                   org.fractalmicro.fs.FS.desktopFolder().getAbsolutePath())));
+
+        failures += check(out, "a window that is there is said to be there",
+            isYes(get(manager, FMAppleEvent.EXISTS, firstWindow)));
+
+        failures += check(out, "and one that is not, is not",
+            !isYes(get(manager, FMAppleEvent.EXISTS,
+                FMScriptObjectSpecifier.at(FMScriptObjectSpecifier.WINDOW, 9, null))));
+
+        FMDictionary tooFar = manager.sendEvent(FMAppleEvent.of(FMAppleEvent.CORE_SUITE,
+            FMAppleEvent.GET_DATA, FMString.of("Finder"),
+            FMScriptObjectSpecifier.at(FMScriptObjectSpecifier.WINDOW, 9, null)
+                .asDictionary()));
+        failures += check(out, "but asking about it is a refusal, not an empty answer",
+            FMAppleEventManager.failed(tooFar));
+
         FMDictionary relaunched = manager.sendEvent(FMAppleEvent.of(
             FMAppleEvent.REQUIRED_SUITE, FMAppleEvent.QUIT, FMString.of("Finder"), null));
         drain();
@@ -162,6 +240,30 @@ public final class ScriptingTest {
             ? "a program can be told what to do without anybody reading its words"
             : failures + " failed"));
         return failures;
+    }
+
+    /** A number back off the wire, however it was spelled on the way. */
+    private static long whole(Object answer) {
+        if (answer instanceof org.fractalmicro.foundation.FMNumber number) {
+            return number.asWhole();
+        }
+        return answer instanceof Number n ? n.longValue() : 0;
+    }
+
+    /** Whether an answer means yes, however the wire happened to spell it. */
+    private static boolean isYes(Object answer) {
+        if (answer instanceof org.fractalmicro.foundation.FMNumber number) {
+            return number.isTrue();
+        }
+        return answer instanceof Boolean truth && truth;
+    }
+
+    /** One question, asked the way a script asks it, with the answer or a refusal. */
+    private static Object get(FMAppleEventManager manager, FMString command,
+                              FMScriptObjectSpecifier what) {
+        FMDictionary reply = manager.sendEvent(FMAppleEvent.of(FMAppleEvent.CORE_SUITE,
+            command, FMString.of("Finder"), what.asDictionary()));
+        return FMAppleEventManager.failed(reply) ? null : FMAppleEventManager.result(reply);
     }
 
     private static int countFinderWindows(Desktop desktop) {
